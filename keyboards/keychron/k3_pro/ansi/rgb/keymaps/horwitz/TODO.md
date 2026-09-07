@@ -6,8 +6,6 @@
 * `process_record_user` vs. `rgb_matrix_indicators_advanced_user`
 * `[cg]cp.h` \(`LAYOUT_[cg]cp`\) \(etc.\): construct as a value instead of a #define
 * `gcp.h` \(`TD_GRAY`\): define somewhere aside from `gcp.h`\?
-* `gcp.h`: derive `COLOR_PALETTE_SIZE` from or use `COLOR_PALETTE_SIZE` to validate sizeof `color_picker_color_hues`
-  and/or `color_picker_color_palette_keycodes`
 * `([cg]cp|fnhi).c` \(`rgb_matrix_indicators_advanced_user_([cg]cp|fnhi)`\): return `bool` instead of `void`\?
 * `ccp.c`: do something fancier than `RGB_WHITE` with keycodes 0–15 \(maybe something state dependent\)\?
 * `fnhi.c`: validate that `RGB_MATRIX_LED_COUNT` is 84\(\?\)
