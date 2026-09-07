@@ -1,5 +1,4 @@
 * make any use of `(RGB|HSV)_(AZURE|BLUE|...)` from `color.h`\?
-* `process_record_user` vs. `rgb_matrix_indicators_advanced_user`
 * `[cg]cp.h` \(`LAYOUT_[cg]cp`\) \(etc.\): construct as a value instead of a #define
 * `gcp.h` \(`TD_GRAY`\): define somewhere aside from `gcp.h`\?
 * `([cg]cp|fnhi).c` \(`rgb_matrix_indicators_advanced_user_([cg]cp|fnhi)`\): return `bool` instead of `void`\?

@@ -123,6 +123,22 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return layer_state_set_user_ccp(state);
 }
 
+/*
+ * Design note: split between process_record_user and rgb_matrix_indicators_advanced_user
+ *
+ * process_record_user is called on each key press/release event. It owns:
+ *   - one-shot state changes triggered by a keypress: updating ccpRgb, index_in_byte, etc.
+ *   - persistent RGB state changes: rgb_matrix_mode(), rgb_matrix_sethsv() (both write to EEPROM)
+ *   - layer transitions: layer_on(), layer_off()
+ *
+ * rgb_matrix_indicators_advanced_user is called on every render frame. It owns:
+ *   - per-frame LED display: clearing the buffer (rgb_matrix_set_color_all) and repainting the
+ *     current state each frame (GCP palette, CCP color preview and nibble readout, FN-HI highlights)
+ *
+ * The split is: key-event-driven state changes go in process_record_user; per-frame display of
+ * that state goes in rgb_matrix_indicators_advanced_user. Nothing appears to be in the wrong place.
+ */
+
 // note potential short circuit
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return (bool)(process_record_user_gcp(keycode, record) && // [GCP]
