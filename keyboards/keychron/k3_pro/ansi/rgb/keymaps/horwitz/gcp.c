@@ -60,9 +60,6 @@ void keyboard_post_init_user_gcp(void) {
     }
 }
 
-// TODO? check that the rvalue for the color_picker_color_palette_keycodes assignment actually has COLOR_PALETTE_SIZE
-//       elements (not fewer--too many would lead to a compilation failure, but too few would leave (presumably
-//       unwanted) 0s at the end)
 int color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE] = {
     16, // `    (COLOR00: (1) red)
     31, // TAB  (COLOR01: (5) scarlet)
@@ -113,6 +110,9 @@ int color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE] = {
     57, // '    (COLOR46: (4) crimson)
     71  // RSFT (COLOR47: (5) amaranth)
 };
+// too many elements -> compile error; too few -> silent trailing zeros, so assert the count explicitly
+_Static_assert(sizeof(color_picker_color_palette_keycodes) / sizeof(color_picker_color_palette_keycodes[0]) == COLOR_PALETTE_SIZE,
+               "color_picker_color_palette_keycodes must have exactly COLOR_PALETTE_SIZE elements");
 int color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
 // returns 0 for COLOR00, 1 for COLOR01, ..., 47 for COLOR47

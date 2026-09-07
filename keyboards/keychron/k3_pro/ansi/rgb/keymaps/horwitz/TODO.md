@@ -17,8 +17,6 @@
   a header file\?\)
 * `fnhi.c` \(`rgb_matrix_indicators_advanced_user_fnhi`\): if all `r`,`g`,`b` are close to 255/2, the complement will be
   close to \(and hard to discern from\) the original color \(should this be changed\?\)
-* `gcp.c`: when `color_picker_color_palette_keycodes` is initialized, validate that the array's size
-  is `COLOR_PALETTE_SIZE`
 * `keymap.c`: should `rgb_matrix_indicators_advanced_user` always return `true`\?
 * `rgb_to_hsv` and `hsv_to_rgb_nocie` are not inverses of each other
     * rgb 255 0 255 -> hsv 213 255 255 -> rgbBack 255 0 252
