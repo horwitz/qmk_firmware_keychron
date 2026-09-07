@@ -246,6 +246,12 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
 #endif
         layer_on(CCP);
         retval = false;
+    // [CCP]
+    } else if (keycode == CCPABORT) {
+        if (record->event.pressed) {
+            layer_off(CCP);
+        }
+        retval = false;
     } else {
         retval = true; // process all other keycodes normally
     }

@@ -23,6 +23,7 @@ enum ctrl_keycodes {
 
 // [CCP] // meta CCP
         TOCCP,
+        CCPABORT, // abort CCP without applying color; returns to whichever base layer was active
 // [CCP]
         RHI, RLI, GHI, GLI, BHI, BLI,
         RHD, RLD, GHD, GLD, BHD, BLD,
