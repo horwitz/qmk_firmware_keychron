@@ -1,9 +1,3 @@
-* `TO()` vs. `TG()`
-  - TO(layer) — activates exactly that layer, deactivates all others. Deterministic: you always end up in a known state.
-  - TG(layer) — toggles the layer. If it was off, turns it on; if on, turns it off. State-dependent: the result depends on what was active before.
-
-  For a temporary overlay like CCP or GCP (where you want to return cleanly to wherever you came from), layer_on/layer_off is actually more precise than either keycode, since it only affects that one layer. TO() would blow away any other active layers. TG() could leave the layer stuck on if pressed at the wrong time.
-
 * what exactly _is_ the color returned by `rgb_matrix_get_hsv()`\? is this some overall color \(as opposed to per-key
   ones\)\?
 * make any use of `(RGB|HSV)_(AZURE|BLUE|...)` from `color.h`\?
