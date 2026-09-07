@@ -7,6 +7,7 @@ extern "C" {
 #include "util.h"
 }
 #include <string>
+#include <sstream>
 #include <iomanip>
 #include <map>
 
