@@ -136,7 +136,7 @@ enum COLOR_SCHEME get_color_scheme(uint16_t keycode) {
     } else if (keycode >= GRAY00 && keycode <= GRAY11) {
         retval = GRAY_SCHEME;
     } else {
-        retval = -1; // this should never happen... (TODO handle some other way?)
+        retval = UNKNOWN_SCHEME;
     }
 
     return retval;
