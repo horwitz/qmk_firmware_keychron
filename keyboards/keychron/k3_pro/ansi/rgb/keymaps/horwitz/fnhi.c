@@ -16,7 +16,8 @@
 // for any given layer, layers_used_indices[layer] should not exceed RGB_MATRIX_LED_COUNT in size, since each index
 // found in the array should represent a key with a distinct light (see also: doc for
 // initialize_layer_used_indices_inner)
-// TODO? validate that RGB_MATRIX_LED_COUNT is 84
+// keycode indices (0–83) are hardcoded throughout this file based on the K3 Pro's 84-key layout
+_Static_assert(RGB_MATRIX_LED_COUNT == 84, "fnhi.c assumes RGB_MATRIX_LED_COUNT == 84 (K3 Pro ANSI layout)");
 char layers_used_indices[DYNAMIC_KEYMAP_LAYER_COUNT][RGB_MATRIX_LED_COUNT];
 int layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
 

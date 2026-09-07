@@ -8,7 +8,6 @@
 * `gcp.h` \(`TD_GRAY`\): define somewhere aside from `gcp.h`\?
 * `([cg]cp|fnhi).c` \(`rgb_matrix_indicators_advanced_user_([cg]cp|fnhi)`\): return `bool` instead of `void`\?
 * `ccp.c`: do something fancier than `RGB_WHITE` with keycodes 0–15 \(maybe something state dependent\)\?
-* `fnhi.c`: validate that `RGB_MATRIX_LED_COUNT` is 84\(\?\)
 * `fnhi.c` \(`initialize_layer_used_indices`\): derive `layout` from `layer`\(\?\)
 * `fnhi.c` \(`keyboard_post_init_user_fnhi`\): do the `(mac|win)FnLayer` stuff differently \(at least move some of it to
   a header file\?\)
