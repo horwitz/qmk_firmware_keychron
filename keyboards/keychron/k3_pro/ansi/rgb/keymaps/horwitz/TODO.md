@@ -9,7 +9,6 @@
   a header file\?\)
 * `fnhi.c` \(`rgb_matrix_indicators_advanced_user_fnhi`\): if all `r`,`g`,`b` are close to 255/2, the complement will be
   close to \(and hard to discern from\) the original color \(should this be changed\?\)
-* `keymap.c`: should `rgb_matrix_indicators_advanced_user` always return `true`\?
 * "noeeprom" versions of methods\? \(use\? don't use\? use to replace \(some\) current methods\?\)
     * † `rgb_matrix_mode`                \[CPICK/ECP\] \(when setting color\)
     * † `rgb_matrix_sethsv`              \[CPICK/ECP\] \(when setting color\)

@@ -167,11 +167,14 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
             break;
         }
     }
-    // TODO should this always return true?
-    // assuming effects set to RGB_MATRIX_SOLID_COLOR
-    // return true: if CAPS off, CAPS matches solid color; if CAPS on, CAPS is red
-    // return false: if CAPS off, CAPS matches solid color; if CAPS on, CAPS is some color that is a function of the
-    //               solid color (e.g., if solid color is blue, CAPS is magenta(ish) when on; if solid color is green,
-    //                CAPS is yellow(ish) when on)
+    // the return value here is effectively meaningless: rgb_matrix_indicators_advanced_kb (the weak default,
+    // which just calls this function) is itself called from rgb_matrix_indicators_advanced, which is void and
+    // ignores the return value. no Keychron override of rgb_matrix_indicators_advanced_kb exists.
+    //
+    // the red CAPS LOCK indicator visible on the keyboard is also not controlled here. it is a dedicated
+    // hardware LED driven by LED_CAPS_LOCK_PIN via writePin() in k3_pro.c's matrix_scan_kb, entirely separate
+    // from the RGB matrix pipeline. the RGB matrix CAPS key (index 46) is actually dimmed to black when
+    // CAPS LOCK is active, via DIM_CAPS_LOCK in config.h → os_state_indicate() → SET_LED_OFF(CAPS_LOCK_INDEX),
+    // called from rgb_matrix_indicators_kb (the bluetooth indicator path), which runs before this function.
     return true;
 }
