@@ -1,6 +1,7 @@
 #include QMK_KEYBOARD_H
 #include "layers.h"
 #include "fnhi.h"
+#include "colorconst.h"
 #include "keymaps.h"
 
 /*
@@ -78,7 +79,7 @@ void rgb_matrix_indicators_advanced_user_fnhi(uint8_t layer) {
     //      to per-key ones)?
     // TODO? if all r,g,b are close to 255/2, the complement will be close to (and hard to discern from) the
     //       original color (should this be changed?)
-    RGB complement_rgb = { .r = 255 - rgb.r, .g = 255 - rgb.g, .b = 255 - rgb.b };
+    RGB complement_rgb = { .r = MAX_COMPONENT - rgb.r, .g = MAX_COMPONENT - rgb.g, .b = MAX_COMPONENT - rgb.b };
     for (int i = 0; i < layer_used_indices_size[layer]; ++i) {
         rgb_matrix_set_color(
             layers_used_indices[layer][i],

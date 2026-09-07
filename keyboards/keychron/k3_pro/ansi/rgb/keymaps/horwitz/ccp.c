@@ -2,6 +2,7 @@
 #include <math.h> // for round()
 #include "layers.h"
 #include "ccp.h"
+#include "colorconst.h"
 //#include "ctrlkeycodes.h"
 
 /*
@@ -49,7 +50,7 @@ HSV rgb_to_hsv(RGB rgb) {
     }
 
     // NB: hsv.v != 0 since chroma != 0
-    hsv.s = (uint8_t)round(255.0 * chroma / hsv.v);
+    hsv.s = (uint8_t)round(MAX_COMPONENT * chroma / (double)hsv.v);
 
     double unscaledSextupledH;
     if (rgbMax == rgb.r) {
@@ -61,7 +62,7 @@ HSV rgb_to_hsv(RGB rgb) {
     } else { // impossible case
         unscaledSextupledH = 0;
     }
-    hsv.h = (uint8_t)round(unscaledSextupledH * 255 / 6);
+    hsv.h = (uint8_t)round(unscaledSextupledH * MAX_COMPONENT / HUE_SEXTANTS);
 
     return hsv;
 }

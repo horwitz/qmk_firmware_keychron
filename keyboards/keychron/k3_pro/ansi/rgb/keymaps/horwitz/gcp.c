@@ -3,6 +3,7 @@
 //#include "layers.h"
 #include "gcp.h"
 #include "layout.h"
+#include "colorconst.h"
 
 /*
  * `fn+V` presents a 12x4 rainbow grid of keys and 12 grayscale keys† on the top row (with the remaining keys‡
@@ -52,12 +53,12 @@ void keyboard_post_init_user_gcp(void) {
     */
     for (int i = 0; i < COLOR_PALETTE_SIZE; ++i) {
         // NB: requires COLOR_PALETTE_SIZE < 512 or rvalue for largest i will be 256 (and hues must fall in [0,255])
-        color_picker_color_hues[i] = (uint8_t)round(i * 256.0 / COLOR_PALETTE_SIZE);
-        HSV hsv = { .h=color_picker_color_hues[i], .s=255, .v=255 };
+        color_picker_color_hues[i] = (uint8_t)round(i * HUE_STEPS / (double)COLOR_PALETTE_SIZE);
+        HSV hsv = { .h=color_picker_color_hues[i], .s=MAX_COMPONENT, .v=MAX_COMPONENT };
         color_picker_color_rgbs[i] = hsv_to_rgb_nocie(hsv);
     }
     for (int i = 0; i < GRAY_PALETTE_SIZE; ++i) {
-        color_picker_gray_intensities[i] = (uint8_t)round(i * 255.0 / (GRAY_PALETTE_SIZE - 1));
+        color_picker_gray_intensities[i] = (uint8_t)round(i * MAX_COMPONENT / (double)(GRAY_PALETTE_SIZE - 1));
     }
 }
 
@@ -150,7 +151,7 @@ bool process_record_user_gcp(uint16_t keycode, keyrecord_t *record) {
             rgb_matrix_mode(RGB_MATRIX_SOLID_COLOR);
             switch (get_color_scheme(keycode)) {
                 case RGB_SCHEME:
-                    rgb_matrix_sethsv(color_picker_color_hues[get_color_picker_color_keycode_index(keycode)], 255, 255);
+                    rgb_matrix_sethsv(color_picker_color_hues[get_color_picker_color_keycode_index(keycode)], MAX_COMPONENT, MAX_COMPONENT);
                     break;
                 case GRAY_SCHEME:
                     if (cPickGrayscaleAvailable) {
