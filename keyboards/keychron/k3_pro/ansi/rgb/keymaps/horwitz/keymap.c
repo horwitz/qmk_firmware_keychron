@@ -125,8 +125,8 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 // note potential short circuit
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    return process_record_user_gcp(keycode, record) && // [GCP]
-        process_record_user_ccp(keycode, record); // [CCP]
+    return (bool)(process_record_user_gcp(keycode, record) && // [GCP]
+        process_record_user_ccp(keycode, record)); // [CCP]
 }
 
 #if DEBUG

@@ -128,7 +128,7 @@ uint8_t get_color_picker_gray_keycode_index(uint16_t keycode) {
 }
 
 bool is_color_picker_color_keycode(uint16_t keycode) {
-    return keycode >= MIN_COLOR_KEYCODE && keycode <= MAX_COLOR_KEYCODE;
+    return (bool)(keycode >= MIN_COLOR_KEYCODE && keycode <= MAX_COLOR_KEYCODE);
 }
 
 enum COLOR_SCHEME get_color_scheme(uint16_t keycode) {

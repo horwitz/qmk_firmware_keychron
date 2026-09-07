@@ -2,7 +2,6 @@
 #include <math.h> // for round()
 #include "layers.h"
 #include "ccp.h"
-#include "colorconst.h"
 //#include "ctrlkeycodes.h"
 
 /*
@@ -32,7 +31,7 @@ static const uint16_t MAX_CCP_CHANGE_KEYCODE = CCPSET;
 
 // NB: does NOT include TOCCP (which is not on the CCP layer)
 bool is_ccp_change_keycode(uint16_t keycode) {
-    return keycode >= MIN_CCP_CHANGE_KEYCODE && keycode <= MAX_CCP_CHANGE_KEYCODE;
+    return (bool)(keycode >= MIN_CCP_CHANGE_KEYCODE && keycode <= MAX_CCP_CHANGE_KEYCODE);
 }
 
 HSV rgb_to_hsv(RGB rgb) {
@@ -205,10 +204,10 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
 
                 switch (ccp_key.nibbleLevel) {
                     case HIGH:
-                        index_in_byte = component / HIGH_NIBBLE_DELTA;
+                        index_in_byte = (int8_t)(component / HIGH_NIBBLE_DELTA);
                         break;
                     case LOW:
-                        index_in_byte = component % HIGH_NIBBLE_DELTA;
+                        index_in_byte = (int8_t)(component % HIGH_NIBBLE_DELTA);
                         break;
                 }
 
@@ -271,11 +270,11 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
 #endif
 
         rgb_matrix_set_color(32, 255, ccpRgb.g, ccpRgb.b); // Q
-        rgb_matrix_set_color(33, (ccpRgb.r / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + HIGH_NIBBLE_DELTA - 1, ccpRgb.g, ccpRgb.b); // W
+        rgb_matrix_set_color(33, (ccpRgb.r / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1), ccpRgb.g, ccpRgb.b); // W
         rgb_matrix_set_color(34, ccpRgb.r, 255, ccpRgb.b); // E
-        rgb_matrix_set_color(35, ccpRgb.r, (ccpRgb.g / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + HIGH_NIBBLE_DELTA - 1, ccpRgb.b); // R
+        rgb_matrix_set_color(35, ccpRgb.r, (ccpRgb.g / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1), ccpRgb.b); // R
         rgb_matrix_set_color(36, ccpRgb.r, ccpRgb.g, 255); // T
-        rgb_matrix_set_color(37, ccpRgb.r, ccpRgb.g, (ccpRgb.b / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + HIGH_NIBBLE_DELTA - 1); // Y
+        rgb_matrix_set_color(37, ccpRgb.r, ccpRgb.g, (ccpRgb.b / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1)); // Y
 
         rgb_matrix_set_color(39, ccpRgb.r, ccpRgb.g, ccpRgb.b); // I
         rgb_matrix_set_color(40, ccpRgb.r, ccpRgb.g, ccpRgb.b); // O

@@ -27,7 +27,7 @@ enum ctrl_keycodes {
 // [CCP]
         RHI, RLI, GHI, GLI, BHI, BLI,
         RHD, RLD, GHD, GLD, BHD, BLD,
-        CCPSET
+        CCPSET,
 };
 
 #endif

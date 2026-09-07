@@ -3,29 +3,30 @@
 
 #include "ctrlkeycodes.h"
 #include "layout.h"
+#include "colorconst.h"
 
 #define HIGH_NIBBLE_DELTA 16 // step size for a high-nibble adjustment (one hex digit's worth)
 
 // GCC statement-expression form: evaluates each argument exactly once, safe for side-effecting expressions
 #define min(a,b) \
-    ({ __typeof__ (a) __min_a = (a); \
-       __typeof__ (b) __min_b = (b); \
-       __min_a < __min_b ? __min_a : __min_b; })
+    ({ __typeof__ (a) min_lhs_ = (a); \
+       __typeof__ (b) min_rhs_ = (b); \
+       min_lhs_ < min_rhs_ ? min_lhs_ : min_rhs_; })
 #define max(a,b) \
-    ({ __typeof__ (a) __max_a = (a); \
-       __typeof__ (b) __max_b = (b); \
-       __max_a > __max_b ? __max_a : __max_b; })
-// compute a + b, ensuring that the value is at most 255
-// (assumes b <= 255)
+    ({ __typeof__ (a) max_lhs_ = (a); \
+       __typeof__ (b) max_rhs_ = (b); \
+       max_lhs_ > max_rhs_ ? max_lhs_ : max_rhs_; })
+// compute a + b, ensuring that the value is at most MAX_COMPONENT
+// (assumes b <= MAX_COMPONENT)
 #define addBounded(a,b) \
-    ({ __typeof__ (a) _a = (a); \
-        __typeof__ (b) _b = (b); \
-    _a > 255 - _b ? 255 : _a + _b; })
+    ({ __typeof__ (a) add_lhs_ = (a); \
+       __typeof__ (b) add_rhs_ = (b); \
+       add_lhs_ > MAX_COMPONENT - add_rhs_ ? MAX_COMPONENT : add_lhs_ + add_rhs_; })
 // compute a - b, ensuring that the value is at least 0
 #define subtractBounded(a,b) \
-    ({ __typeof__ (a) _a = (a); \
-        __typeof__ (b) _b = (b); \
-    _a < _b ? 0 : _a - _b; })
+    ({ __typeof__ (a) sub_lhs_ = (a); \
+       __typeof__ (b) sub_rhs_ = (b); \
+       sub_lhs_ < sub_rhs_ ? 0 : sub_lhs_ - sub_rhs_; })
 
 enum RGB_COLOR { RED, GREEN, BLUE };
 enum NIBBLE_LEVEL { HIGH, LOW };

@@ -7,7 +7,7 @@ enum layers {
     WIN_BASE,
     WIN_FN,
     GCP, // [GCP]
-    CCP // [CCP]
+    CCP, // [CCP]
 };
 
 #endif
