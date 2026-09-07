@@ -185,13 +185,13 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
                 }
 
                 uint8_t absDelta;
-                 switch (ccp_key.nibbleLevel) {
-                     case HIGH:
-                         absDelta = HIGH_NIBBLE_DELTA;
-                         break;
-                     case LOW:
-                         absDelta = 1;
-                         break;
+                switch (ccp_key.nibbleLevel) {
+                    case HIGH:
+                        absDelta = HIGH_NIBBLE_DELTA;
+                        break;
+                    case LOW:
+                        absDelta = 1;
+                        break;
                 }
                 switch (ccp_key.deltaDir) {
                     case INC:
