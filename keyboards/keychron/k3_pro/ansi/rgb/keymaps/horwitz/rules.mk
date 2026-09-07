@@ -10,4 +10,5 @@ endif
 
 SRC += fnhi.c
 SRC += gcp.c
+SRC += ccp_color.c
 SRC += ccp.c
