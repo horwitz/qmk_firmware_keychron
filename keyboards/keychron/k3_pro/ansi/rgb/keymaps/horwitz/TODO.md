@@ -10,7 +10,6 @@
 * `gcp.h` \(`TD_GRAY`\): define somewhere aside from `gcp.h`\?
 * `gcp.h`: derive `COLOR_PALETTE_SIZE` from or use `COLOR_PALETTE_SIZE` to validate sizeof `color_picker_color_hues`
   and/or `color_picker_color_palette_keycodes`
-* `ccp.c`: move `(MIN|MAX)_CCP_CHANGE_KEYCODE` definitions to `ccp.h` \(\\?\)
 * `([cg]cp|fnhi).c` \(`rgb_matrix_indicators_advanced_user_([cg]cp|fnhi)`\): return `bool` instead of `void`\?
 * `ccp.c`: do something fancier than `RGB_WHITE` with keycodes 0–15 \(maybe something state dependent\)\?
 * `fnhi.c`: validate that `RGB_MATRIX_LED_COUNT` is 84\(\?\)
@@ -19,10 +18,8 @@
   a header file\?\)
 * `fnhi.c` \(`rgb_matrix_indicators_advanced_user_fnhi`\): if all `r`,`g`,`b` are close to 255/2, the complement will be
   close to \(and hard to discern from\) the original color \(should this be changed\?\)
-* `gcp.c`: move `(MIN|MAX)_COLOR_KEYCODE` definitions to `gcp.h`\(\?\)
 * `gcp.c`: when `color_picker_color_palette_keycodes` is initialized, validate that the array's size
   is `COLOR_PALETTE_SIZE`
-* `gcp.c` \(`get_color_scheme`\): handle else case differently\?
 * `keymap.c`: should `rgb_matrix_indicators_advanced_user` always return `true`\?
 * `rgb_to_hsv` and `hsv_to_rgb_nocie` are not inverses of each other
     * rgb 255 0 255 -> hsv 213 255 255 -> rgbBack 255 0 252
