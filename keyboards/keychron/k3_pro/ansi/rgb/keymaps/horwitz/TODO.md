@@ -1,5 +1,17 @@
 * what exactly _is_ the color returned by `rgb_matrix_get_hsv()`\? is this some overall color \(as opposed to per-key
   ones\)\?
+
+ The global HSV isn't specifically a "default if no per-key assignment" — it's the color parameter that the currently active effect uses. Its meaning depends on the mode:
+
+- In RGB_MATRIX_SOLID_COLOR: every key gets rendered at that HSV, then rgb_matrix_indicators_advanced_user can override individual keys on top.
+- In other modes (breathing, rainbow, etc.): the global HSV is used as an animation parameter — e.g., the base hue for a rainbow sweep, or the target color for a breathing effect. Per-key overrides still happen on top.
+
+So rgb_matrix_get_hsv() is really just "whatever HSV the user last set via rgb_matrix_sethsv()" — it's stored in the RGB matrix config (and written to EEPROM unless you use the _noeeprom variant). It's the color the user "chose" for their keyboard.
+
+In ccp.c, ccpRgb = hsv_to_rgb_nocie(rgb_matrix_get_hsv()) seeds the CCP editor with that stored color when entering CCP mode — so you start editing from wherever the keyboard is currently set, which is the right behavior.
+
+
+
 * make any use of `(RGB|HSV)_(AZURE|BLUE|...)` from `color.h`\?
 * `process_record_user` vs. `rgb_matrix_indicators_advanced_user`
 * `[cg]cp.h` \(`LAYOUT_[cg]cp`\) \(etc.\): construct as a value instead of a #define
