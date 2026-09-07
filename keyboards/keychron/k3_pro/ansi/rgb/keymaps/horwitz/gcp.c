@@ -1,9 +1,7 @@
 #include QMK_KEYBOARD_H
-#include <math.h> // for round()
 //#include "layers.h"
-#include "gcp.h"
+#include "gcp.h"    // transitively includes gcp_color.h (color_hue_for_index, gray_intensity_for_index) and colorconst.h
 #include "layout.h"
-#include "colorconst.h"
 
 /*
  * `fn+V` presents a 12x4 rainbow grid of keys and 12 grayscale keys† on the top row (with the remaining keys‡
@@ -52,13 +50,12 @@ void keyboard_post_init_user_gcp(void) {
     192, 197, 203, 208, 213, 219, 224, 229, 235, 240, 245, 251
     */
     for (int i = 0; i < COLOR_PALETTE_SIZE; ++i) {
-        // NB: requires COLOR_PALETTE_SIZE < 512 or rvalue for largest i will be 256 (and hues must fall in [0,255])
-        color_picker_color_hues[i] = (uint8_t)round(i * HUE_STEPS / (double)COLOR_PALETTE_SIZE);
+        color_picker_color_hues[i] = color_hue_for_index(i);
         HSV hsv = { .h=color_picker_color_hues[i], .s=MAX_COMPONENT, .v=MAX_COMPONENT };
         color_picker_color_rgbs[i] = hsv_to_rgb_nocie(hsv);
     }
     for (int i = 0; i < GRAY_PALETTE_SIZE; ++i) {
-        color_picker_gray_intensities[i] = (uint8_t)round(i * MAX_COMPONENT / (double)(GRAY_PALETTE_SIZE - 1));
+        color_picker_gray_intensities[i] = gray_intensity_for_index(i);
     }
 }
 

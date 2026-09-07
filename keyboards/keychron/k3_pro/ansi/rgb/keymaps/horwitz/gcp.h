@@ -2,6 +2,7 @@
 #define GCP_H_INCLUDED
 
 #include "ctrlkeycodes.h"
+#include "gcp_color.h"
 
 // Tap Dance declarations
 enum {
@@ -13,8 +14,6 @@ enum COLOR_SCHEME { RGB_SCHEME, GRAY_SCHEME, UNKNOWN_SCHEME, };
 // TODO? (1) derive via sizeof color_picker_color_hues and/or color_picker_color_palette_keycodes OR (2) validate that
 //       color_picker_color_palette_keycodes is initialized with an rvalue of COLOR_PALETTE_SIZE elements (see comment
 //       above color_picker_color_palette_keycodes's initialization)
-#define COLOR_PALETTE_SIZE 48
-#define GRAY_PALETTE_SIZE 12
 
 // TODO? do this as a value instead of a define (maybe  const uint16_t PROGMEM ccp_layer_keymap[MATRIX_ROWS][MATRIX_COLS]  ?)
 // keycode 73 (End) is lit RED, though pressing any XXXXXXX aborts color choosing

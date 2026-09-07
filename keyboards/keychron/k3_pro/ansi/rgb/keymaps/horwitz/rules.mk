@@ -9,6 +9,7 @@ ifeq ($(DEBUG), 1)
 endif
 
 SRC += fnhi.c
+SRC += gcp_color.c
 SRC += gcp.c
 SRC += ccp_color.c
 SRC += ccp.c
