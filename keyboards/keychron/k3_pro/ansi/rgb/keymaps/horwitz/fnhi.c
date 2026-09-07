@@ -1,17 +1,14 @@
 #include QMK_KEYBOARD_H
 #include "layers.h"
 #include "fnhi.h"
-#include "colorconst.h"
 #include "keymaps.h"
 
 /*
- * When the `fn` key is pressed, the keys with new keycodes (i.e., not `_______`) will light up in the color
- * complementary to the color† of layer 0‡; the remaining keys will retain the lighting behavior from before the `fn`
- * key was pressed.
+ * When the `fn` key is pressed, the keys with new keycodes (i.e., not `_______`) will light up at the complementary
+ * hue of the keyboard's current global solid color (rgb_matrix_get_hsv()), always at full saturation and brightness;
+ * the remaining keys will retain the lighting behavior from before the `fn` key was pressed.
  *
- * † main(?) color
- * ‡ or is it the layer from which one came (e.g., starting at a base layer of 2, will these be complementary to layer
- *   2's color†)?
+ * See the comment on complement_hsv in rgb_matrix_indicators_advanced_user_fnhi for the rationale.
 */
 
 // for any given layer, layers_used_indices[layer] should not exceed RGB_MATRIX_LED_COUNT in size, since each index
@@ -70,16 +67,33 @@ void keyboard_post_init_user_fnhi(void) {
     initialize_layer_used_indices(WIN_FN, winFnLayer);
 }
 
-// when fn is held down, set lights yellow on keys whose behavior changed from base layer; inspired by
+// when fn is held down, highlight keys whose behavior changed from the base layer; inspired by
 // https://www.reddit.com/r/olkb/comments/kpro3p/comment/h3nb56h
 void rgb_matrix_indicators_advanced_user_fnhi(uint8_t layer) {
 //    rgb_matrix_set_color_all(RGB_BLUE); // uncomment to have transparent keys appear solid blue
-    RGB rgb = hsv_to_rgb_nocie(rgb_matrix_get_hsv());
-    // TODO what exactly _is_ the color returned by rgb_matrix_get_hsv()? is this some overall color (as opposed
-    //      to per-key ones)?
-    // TODO? if all r,g,b are close to 255/2, the complement will be close to (and hard to discern from) the
-    //       original color (should this be changed?)
-    RGB complement_rgb = { .r = MAX_COMPONENT - rgb.r, .g = MAX_COMPONENT - rgb.g, .b = MAX_COMPONENT - rgb.b };
+    HSV hsv = rgb_matrix_get_hsv();
+
+    // goal: highlight FN keys in a color that is maximally distinguishable from the base color.
+    //
+    // the naive approach of RGB componentwise inversion, (255-r, 255-g, 255-b), fails for
+    // near-gray base colors: e.g., (128,128,128) inverts to (127,127,127)--nearly identical.
+    //
+    // a strict HSV complement—shifting only the hue by 128, keeping s and v the same—avoids that
+    // specific failure but introduces another: for dark base colors (low v), the highlight is
+    // equally dark and may not stand out against the keyboard background.
+    //
+    // instead, we use the complementary hue, always at maximum saturation and brightness:
+    //   h' = (h + 128) % 256  — opposite hue on the color wheel
+    //   s' = 255              — fully saturated, regardless of base saturation
+    //   v' = 255              — full brightness, regardless of base brightness
+    //
+    // this is not a strict color-theory complement (which would preserve s and v), but it
+    // guarantees the highlight is always as visible as possible: full brightness means it pops
+    // against any dark background; full saturation means it is never a washed-out near-gray;
+    // and the complementary hue is the canonical choice for perceptual opposition.
+    HSV complement_hsv = { .h = (uint8_t)((hsv.h + 128) % 256), .s = 255, .v = 255 };
+    RGB complement_rgb = hsv_to_rgb_nocie(complement_hsv);
+
     for (int i = 0; i < layer_used_indices_size[layer]; ++i) {
         rgb_matrix_set_color(
             layers_used_indices[layer][i],
