@@ -49,7 +49,7 @@ HSV rgb_to_hsv(RGB rgb) {
     }
 
     // NB: hsv.v != 0 since chroma != 0
-    hsv.s = round(255.0 * chroma / hsv.v);
+    hsv.s = (uint8_t)round(255.0 * chroma / hsv.v);
 
     double unscaledSextupledH;
     if (rgbMax == rgb.r) {
@@ -61,9 +61,7 @@ HSV rgb_to_hsv(RGB rgb) {
     } else { // impossible case
         unscaledSextupledH = 0;
     }
-    hsv.h = (int) round(unscaledSextupledH * 255 / 6);
-
-    if (hsv.h < 0) hsv.h += 255;
+    hsv.h = (uint8_t)round(unscaledSextupledH * 255 / 6);
 
     return hsv;
 }
