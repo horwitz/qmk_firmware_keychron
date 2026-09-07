@@ -51,7 +51,7 @@ bool is_ccp_change_keycode(uint16_t keycode);
 
 HSV rgb_to_hsv(RGB rgb);
 
-extern int index_in_byte;
+extern int8_t index_in_byte;
 
 extern RGB ccpRgb;
 

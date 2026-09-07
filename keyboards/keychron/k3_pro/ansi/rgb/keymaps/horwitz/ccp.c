@@ -68,7 +68,7 @@ HSV rgb_to_hsv(RGB rgb) {
     return hsv;
 }
 
-int index_in_byte = -1; // 0-15 value equal to the last hex value edited (one of RH, RL, GH, GL, BH, BL)
+int8_t index_in_byte = -1; // 0-15 value equal to the last hex value edited (one of RH, RL, GH, GL, BH, BL)
 
 RGB ccpRgb;
 
@@ -186,7 +186,7 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
                         component = 0; // impossible case
                 }
 
-                int absDelta = -1;
+                uint8_t absDelta;
                  switch (ccp_key.nibbleLevel) {
                      case HIGH:
                          absDelta = HIGH_NIBBLE_DELTA;

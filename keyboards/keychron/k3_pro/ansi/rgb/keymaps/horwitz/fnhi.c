@@ -18,8 +18,8 @@
 // initialize_layer_used_indices_inner)
 // keycode indices (0–83) are hardcoded throughout this file based on the K3 Pro's 84-key layout
 _Static_assert(RGB_MATRIX_LED_COUNT == 84, "fnhi.c assumes RGB_MATRIX_LED_COUNT == 84 (K3 Pro ANSI layout)");
-char layers_used_indices[DYNAMIC_KEYMAP_LAYER_COUNT][RGB_MATRIX_LED_COUNT];
-int layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
+uint8_t layers_used_indices[DYNAMIC_KEYMAP_LAYER_COUNT][RGB_MATRIX_LED_COUNT];
+uint8_t layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
 
 /*
  * sets the values in [layer_used_indices] to the indices (in increasing order; a subset of 0-83) that are used in the
@@ -33,9 +33,9 @@ int layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
  * (apparently) the non-KC_NO keys are indexed 0-83 (and there are 96-84=12 instances of KC_NO (per layer))... see
  * LAYOUT_ansi_84's definition in obj_keychron_k3_pro_ansi_rgb/src/default_keyboard.h
  */
-int initialize_layer_used_indices_inner(int layer, char* layer_used_indices, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
-    int lui_i = 0;
-    int offset = 0;
+uint8_t initialize_layer_used_indices_inner(uint8_t layer, uint8_t* layer_used_indices, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
+    uint8_t lui_i = 0;
+    uint8_t offset = 0;
     for (int i = 0; i < MATRIX_ROWS * MATRIX_COLS; ++i) {
         int col = i % MATRIX_COLS;
         int row = i / MATRIX_COLS;
@@ -54,7 +54,7 @@ int initialize_layer_used_indices_inner(int layer, char* layer_used_indices, con
     return lui_i;
 }
 
-void initialize_layer_used_indices(int layer, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
+void initialize_layer_used_indices(uint8_t layer, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
     layer_used_indices_size[layer] = initialize_layer_used_indices_inner(layer, layers_used_indices[layer], keymap);
 }
 
