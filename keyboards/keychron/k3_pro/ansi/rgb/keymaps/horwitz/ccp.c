@@ -189,7 +189,7 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
                 int absDelta = -1;
                  switch (ccp_key.nibbleLevel) {
                      case HIGH:
-                         absDelta = 16;
+                         absDelta = HIGH_NIBBLE_DELTA;
                          break;
                      case LOW:
                          absDelta = 1;
@@ -206,10 +206,10 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
 
                 switch (ccp_key.nibbleLevel) {
                     case HIGH:
-                        index_in_byte = component / 16;
+                        index_in_byte = component / HIGH_NIBBLE_DELTA;
                         break;
                     case LOW:
-                        index_in_byte = component % 16;
+                        index_in_byte = component % HIGH_NIBBLE_DELTA;
                         break;
                 }
 
@@ -266,17 +266,17 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
         rgb_matrix_set_color_all(RGB_OFF); // RGB_OFF == RGB_BLACK // set keys not changed below to black
         // ESC currently used for top-row 0-15 readout, so we couldn't use it as the abort key (at least we couldn't
         // color it to _signify_ that it's the abort key), so we use the End key as the abort key
-        rgb_matrix_set_color(73, RGB_RED); // set End to red // TODO? different color here
+        rgb_matrix_set_color(LED_INDEX_END, RGB_RED); // set End to red // TODO? different color here
 #if DEBUG
         uprintf("R (AS): %2u / G (DF): %2u / B (GH): %2u\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
 #endif
 
         rgb_matrix_set_color(32, 255, ccpRgb.g, ccpRgb.b); // Q
-        rgb_matrix_set_color(33, (ccpRgb.r / 16) * 16 + 16 - 1, ccpRgb.g, ccpRgb.b); // W
+        rgb_matrix_set_color(33, (ccpRgb.r / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + HIGH_NIBBLE_DELTA - 1, ccpRgb.g, ccpRgb.b); // W
         rgb_matrix_set_color(34, ccpRgb.r, 255, ccpRgb.b); // E
-        rgb_matrix_set_color(35, ccpRgb.r, (ccpRgb.g / 16) * 16 + 16 - 1, ccpRgb.b); // R
+        rgb_matrix_set_color(35, ccpRgb.r, (ccpRgb.g / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + HIGH_NIBBLE_DELTA - 1, ccpRgb.b); // R
         rgb_matrix_set_color(36, ccpRgb.r, ccpRgb.g, 255); // T
-        rgb_matrix_set_color(37, ccpRgb.r, ccpRgb.g, (ccpRgb.b / 16) * 16 + 16 - 1); // Y
+        rgb_matrix_set_color(37, ccpRgb.r, ccpRgb.g, (ccpRgb.b / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + HIGH_NIBBLE_DELTA - 1); // Y
 
         rgb_matrix_set_color(39, ccpRgb.r, ccpRgb.g, ccpRgb.b); // I
         rgb_matrix_set_color(40, ccpRgb.r, ccpRgb.g, ccpRgb.b); // O
@@ -296,11 +296,11 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
         rgb_matrix_set_color(52, 0, 0, ccpRgb.b); // H
 
         rgb_matrix_set_color(61, 0, ccpRgb.g, ccpRgb.b); // Z
-        rgb_matrix_set_color(62, (ccpRgb.r / 16) * 16, ccpRgb.g, ccpRgb.b); // X
+        rgb_matrix_set_color(62, (ccpRgb.r / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA, ccpRgb.g, ccpRgb.b); // X
         rgb_matrix_set_color(63, ccpRgb.r, 0, ccpRgb.b); // C
-        rgb_matrix_set_color(64, ccpRgb.r, (ccpRgb.g / 16) * 16, ccpRgb.b); // V
+        rgb_matrix_set_color(64, ccpRgb.r, (ccpRgb.g / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA, ccpRgb.b); // V
         rgb_matrix_set_color(65, ccpRgb.r, ccpRgb.g, 0); // B
-        rgb_matrix_set_color(66, ccpRgb.r, ccpRgb.g, (ccpRgb.b / 16) * 16); // N
+        rgb_matrix_set_color(66, ccpRgb.r, ccpRgb.g, (ccpRgb.b / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA); // N
 
         rgb_matrix_set_color(58, RGB_WHITE); // ENTER
 

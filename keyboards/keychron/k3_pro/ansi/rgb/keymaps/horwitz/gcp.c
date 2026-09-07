@@ -2,6 +2,7 @@
 #include <math.h> // for round()
 //#include "layers.h"
 #include "gcp.h"
+#include "layout.h"
 
 /*
  * `fn+V` presents a 12x4 rainbow grid of keys and 12 grayscale keys† on the top row (with the remaining keys‡
@@ -171,7 +172,7 @@ bool process_record_user_gcp(uint16_t keycode, keyrecord_t *record) {
 
 void rgb_matrix_indicators_advanced_user_gcp(void) {
     rgb_matrix_set_color_all(RGB_OFF); // RGB_OFF == RGB_BLACK // set keys not changed below to black
-    rgb_matrix_set_color(73, RGB_RED); // set End to red // TODO? different color here
+    rgb_matrix_set_color(LED_INDEX_END, RGB_RED); // set End to red // TODO? different color here
 
     for (int i = 0; i < COLOR_PALETTE_SIZE; ++i) {
         RGB rgb = color_picker_color_rgbs[i];

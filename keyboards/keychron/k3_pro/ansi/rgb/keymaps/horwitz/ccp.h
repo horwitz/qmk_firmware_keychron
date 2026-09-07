@@ -2,6 +2,9 @@
 #define CCP_H_INCLUDED
 
 #include "ctrlkeycodes.h"
+#include "layout.h"
+
+#define HIGH_NIBBLE_DELTA 16 // step size for a high-nibble adjustment (one hex digit's worth)
 
 // GCC statement-expression form: evaluates each argument exactly once, safe for side-effecting expressions
 #define min(a,b) \
