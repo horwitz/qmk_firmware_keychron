@@ -156,6 +156,11 @@ bool process_record_user_gcp(uint16_t keycode, keyrecord_t *record) {
                         rgb_matrix_sethsv(0, 0, color_picker_gray_intensities[get_color_picker_gray_keycode_index(keycode)]);
                     }
                     break;
+                case UNKNOWN_SCHEME:
+#if DEBUG
+                    uprintf("get_color_scheme: unexpected UNKNOWN_SCHEME for keycode %u\n", keycode);
+#endif
+                    break;
             }
         }
         retval = false;
