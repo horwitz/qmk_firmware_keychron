@@ -144,7 +144,7 @@ static enum COLOR_SCHEME get_color_scheme(uint16_t keycode) {
     return retval;
 }
 
-bool process_record_user_gcp(uint16_t keycode, keyrecord_t *record) {
+bool process_record_user_gcp(uint16_t keycode, const keyrecord_t *record) {
     bool retval = true;
     if (is_color_picker_color_keycode(keycode)) {
         if (record -> event.pressed) {

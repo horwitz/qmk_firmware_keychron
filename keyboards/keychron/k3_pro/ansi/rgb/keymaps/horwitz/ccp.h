@@ -54,7 +54,7 @@ extern RGB ccpRgb;
 
 layer_state_t layer_state_set_user_ccp(layer_state_t state);
 
-bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record);
+bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record);
 
 void rgb_matrix_indicators_advanced_user_ccp(void);
 

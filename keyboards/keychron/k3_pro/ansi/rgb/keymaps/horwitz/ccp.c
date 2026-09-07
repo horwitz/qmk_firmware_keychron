@@ -143,7 +143,7 @@ layer_state_t layer_state_set_user_ccp(layer_state_t state) {
     return state;
 }
 
-bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
+bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record) {
     bool retval;
 
     if (is_ccp_change_keycode(keycode)) {

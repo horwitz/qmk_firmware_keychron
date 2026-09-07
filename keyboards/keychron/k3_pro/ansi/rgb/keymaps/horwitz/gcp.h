@@ -29,7 +29,7 @@ enum COLOR_SCHEME { RGB_SCHEME, GRAY_SCHEME, UNKNOWN_SCHEME, };
 
 void keyboard_post_init_user_gcp(void);
 
-bool process_record_user_gcp(uint16_t keycode, keyrecord_t *record);
+bool process_record_user_gcp(uint16_t keycode, const keyrecord_t *record);
 
 void rgb_matrix_indicators_advanced_user_gcp(void);
 
