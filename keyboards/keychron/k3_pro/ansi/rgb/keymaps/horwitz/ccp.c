@@ -30,11 +30,11 @@ static const uint16_t MIN_CCP_CHANGE_KEYCODE = RHI;
 static const uint16_t MAX_CCP_CHANGE_KEYCODE = CCPSET;
 
 // NB: does NOT include TOCCP (which is not on the CCP layer)
-bool is_ccp_change_keycode(uint16_t keycode) {
+static bool is_ccp_change_keycode(uint16_t keycode) {
     return (bool)(keycode >= MIN_CCP_CHANGE_KEYCODE && keycode <= MAX_CCP_CHANGE_KEYCODE);
 }
 
-HSV rgb_to_hsv(RGB rgb) {
+static HSV rgb_to_hsv(RGB rgb) {
     HSV hsv;
 
     uint8_t rgbMin = min(rgb.r, min(rgb.g, rgb.b));
@@ -70,7 +70,7 @@ int8_t index_in_byte = -1; // 0-15 value equal to the last hex value edited (one
 
 RGB ccpRgb;
 
-ccp_key_t get_ccp_key(uint16_t keycode) {
+static ccp_key_t get_ccp_key(uint16_t keycode) {
     ccp_key_t ccp_key;
 
     switch (keycode) {

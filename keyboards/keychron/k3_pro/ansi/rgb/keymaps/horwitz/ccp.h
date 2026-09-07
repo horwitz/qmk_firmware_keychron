@@ -48,15 +48,9 @@ typedef struct {
     XXXXXXX,  XXXXXXX,  XXXXXXX,                                XXXXXXX,                                XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX \
 )
 
-bool is_ccp_change_keycode(uint16_t keycode);
-
-HSV rgb_to_hsv(RGB rgb);
-
 extern int8_t index_in_byte;
 
 extern RGB ccpRgb;
-
-ccp_key_t get_ccp_key(uint16_t keycode);
 
 layer_state_t layer_state_set_user_ccp(layer_state_t state);
 

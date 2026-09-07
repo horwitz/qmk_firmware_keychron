@@ -31,7 +31,7 @@ uint8_t color_picker_gray_intensities[GRAY_PALETTE_SIZE];
 
 bool cPickGrayscaleAvailable = false;
 
-void dance_grayscale(tap_dance_state_t *state, void *user_data) {
+static void dance_grayscale(tap_dance_state_t *state, void *user_data) {
     if (state->count == 2) {
         cPickGrayscaleAvailable = !cPickGrayscaleAvailable;
     }
@@ -118,20 +118,20 @@ _Static_assert(sizeof(color_picker_color_palette_keycodes) / sizeof(color_picker
 uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
 // returns 0 for COLOR00, 1 for COLOR01, ..., 47 for COLOR47
-uint8_t get_color_picker_color_keycode_index(uint16_t keycode) {
+static uint8_t get_color_picker_color_keycode_index(uint16_t keycode) {
     return keycode - COLOR00;
 }
 
 // returns 0 for GRAY00, 1 for GRAY01, ..., 11 for GRAY11
-uint8_t get_color_picker_gray_keycode_index(uint16_t keycode) {
+static uint8_t get_color_picker_gray_keycode_index(uint16_t keycode) {
     return keycode - GRAY00;
 }
 
-bool is_color_picker_color_keycode(uint16_t keycode) {
+static bool is_color_picker_color_keycode(uint16_t keycode) {
     return (bool)(keycode >= MIN_COLOR_KEYCODE && keycode <= MAX_COLOR_KEYCODE);
 }
 
-enum COLOR_SCHEME get_color_scheme(uint16_t keycode) {
+static enum COLOR_SCHEME get_color_scheme(uint16_t keycode) {
     enum COLOR_SCHEME retval;
     if (keycode >= COLOR00 && keycode <= COLOR47) {
         retval = RGB_SCHEME;
