@@ -22,7 +22,6 @@
     * rgb 255 0 210 -> hsv 221 255 255 -> rgbBack 255 0 204
     * rgb 255 0 204 -> hsv 222 255 255 -> rgbBack 255 0 198
     * rgb 255 0 198 -> hsv 223 255 255 -> rgbBack 255 0 192
-* for FN_HI, try `f(x) = (x + 128) % 255` instead of `f(x) = 255 - x`\? \(or something else\?\)
 * "noeeprom" versions of methods\? \(use\? don't use\? use to replace \(some\) current methods\?\)
     * † `rgb_matrix_mode`                \[CPICK/ECP\] \(when setting color\)
     * † `rgb_matrix_sethsv`              \[CPICK/ECP\] \(when setting color\)
