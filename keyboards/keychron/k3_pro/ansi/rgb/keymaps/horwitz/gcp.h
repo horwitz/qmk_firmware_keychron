@@ -16,7 +16,6 @@ enum COLOR_SCHEME { RGB_SCHEME, GRAY_SCHEME, UNKNOWN_SCHEME };
 #define COLOR_PALETTE_SIZE 48
 #define GRAY_PALETTE_SIZE 12
 
-// TODO go back to WIN_BASE (instead of MAC_BASE) as appropriate (sim. for LAYOUT_ccp in ccp.h)
 // TODO? do this as a value instead of a define (maybe  const uint16_t PROGMEM ccp_layer_keymap[MATRIX_ROWS][MATRIX_COLS]  ?)
 // keycode 73 (End) is lit RED, though pressing any XXXXXXX aborts color choosing
 #define LAYOUT_gcp LAYOUT_ansi_84( \
