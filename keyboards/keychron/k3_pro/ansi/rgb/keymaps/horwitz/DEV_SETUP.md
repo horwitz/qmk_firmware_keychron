@@ -76,3 +76,13 @@ qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz
 ```sh
 qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz
 ```
+
+## Debug builds
+
+Pass `DEBUG=1` to enable console output and `uprintf` statements:
+
+```sh
+qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz DEBUG=1
+```
+
+This automatically sets `CONSOLE_ENABLE = yes` and `#define DEBUG 1`. View output in QMK Toolbox's console.

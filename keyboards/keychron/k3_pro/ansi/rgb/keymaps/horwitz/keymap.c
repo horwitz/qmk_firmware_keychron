@@ -24,8 +24,8 @@
  *
  * (1) SHORT NAME†: [DEBUG]
  *     DETAILS: When enabled, outputs the result of `uprintf` statements--these can be seen in the QMK Toolbox console.
- *     TO ACTIVATE: To debug, set `DEBUG` to 1 and make sure that (horwitz/)rules.mk contains `CONSOLE_ENABLE = yes`;
- *                  then use (e.g.) `uprintf` to print debug output.
+ *     TO ACTIVATE: Compile with `DEBUG=1` (e.g. `qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz DEBUG=1`);
+ *                  rules.mk enables CONSOLE_ENABLE automatically. Then use (e.g.) `uprintf` to print debug output.
  *
  * (2) SHORT NAME: [FN-HI]
  *     DETAILS: see fnhi.c
@@ -51,7 +51,9 @@
  *   feature is commented in that fashion)
  */
 
+#ifndef DEBUG
 #define DEBUG 0 // [DEBUG]
+#endif
 
 #include QMK_KEYBOARD_H
 #include "layers.h"
