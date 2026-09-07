@@ -86,6 +86,15 @@ TEST(RgbToHsv, Orange) {
     EXPECT_EQ(255, hsv.v);
 }
 
+TEST(RgbToHsv, Gray) {
+    // achromatic with v > 0: exercises the chroma==0 early-return path for non-black inputs
+    RGB rgb = {.r = 128, .g = 128, .b = 128};
+    HSV hsv = rgb_to_hsv(rgb);
+    EXPECT_EQ(0,   hsv.h);
+    EXPECT_EQ(0,   hsv.s);
+    EXPECT_EQ(128, hsv.v);
+}
+
 // addBounded
 
 TEST(AddBounded, NoOverflow) {
@@ -101,7 +110,15 @@ TEST(AddBounded, Overflow) {
 }
 
 TEST(AddBounded, ZeroPlusZero) {
-    EXPECT_EQ(0, addBounded(0, 0));
+    EXPECT_EQ(0,   addBounded(0, 0));
+}
+
+TEST(AddBounded, MaxPlusZero) {
+    EXPECT_EQ(255, addBounded(255, 0));
+}
+
+TEST(AddBounded, ZeroPlusMax) {
+    EXPECT_EQ(255, addBounded(0, 255));
 }
 
 // subtractBounded
@@ -119,7 +136,15 @@ TEST(SubtractBounded, Underflow) {
 }
 
 TEST(SubtractBounded, ZeroMinusZero) {
-    EXPECT_EQ(0, subtractBounded(0, 0));
+    EXPECT_EQ(0,   subtractBounded(0, 0));
+}
+
+TEST(SubtractBounded, MaxMinusMax) {
+    EXPECT_EQ(0,   subtractBounded(255, 255));
+}
+
+TEST(SubtractBounded, MaxMinusZero) {
+    EXPECT_EQ(255, subtractBounded(255, 0));
 }
 
 // min / max
