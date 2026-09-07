@@ -10,18 +10,6 @@
 * `fnhi.c` \(`rgb_matrix_indicators_advanced_user_fnhi`\): if all `r`,`g`,`b` are close to 255/2, the complement will be
   close to \(and hard to discern from\) the original color \(should this be changed\?\)
 * `keymap.c`: should `rgb_matrix_indicators_advanced_user` always return `true`\?
-* `rgb_to_hsv` and `hsv_to_rgb_nocie` are not inverses of each other
-    * rgb 255 0 255 -> hsv 213 255 255 -> rgbBack 255 0 252
-    * rgb 255 0 252 -> hsv 214 255 255 -> rgbBack 255 0 246
-    * rgb 255 0 246 -> hsv 215 255 255 -> rgbBack 255 0 240
-    * rgb 255 0 240 -> hsv 216 255 255 -> rgbBack 255 0 234
-    * rgb 255 0 234 -> hsv 217 255 255 -> rgbBack 255 0 228
-    * rgb 255 0 228 -> hsv 218 255 255 -> rgbBack 255 0 222
-    * rgb 255 0 222 -> hsv 219 255 255 -> rgbBack 255 0 216
-    * rgb 255 0 216 -> hsv 220 255 255 -> rgbBack 255 0 210
-    * rgb 255 0 210 -> hsv 221 255 255 -> rgbBack 255 0 204
-    * rgb 255 0 204 -> hsv 222 255 255 -> rgbBack 255 0 198
-    * rgb 255 0 198 -> hsv 223 255 255 -> rgbBack 255 0 192
 * "noeeprom" versions of methods\? \(use\? don't use\? use to replace \(some\) current methods\?\)
     * † `rgb_matrix_mode`                \[CPICK/ECP\] \(when setting color\)
     * † `rgb_matrix_sethsv`              \[CPICK/ECP\] \(when setting color\)

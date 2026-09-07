@@ -205,6 +205,24 @@ bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record) {
         retval = false;
     // [CCP]
     } else if (keycode == TOCCP) {
+        // CCP works in RGB space because that is the familiar model for users (e.g., HTML hex codes).
+        // The hardware API, however, stores and applies color in HSV (rgb_matrix_sethsv writes to
+        // EEPROM). This requires two conversions:
+        //   - on CCP entry (here): HSV -> RGB via hsv_to_rgb_nocie, to seed ccpRgb from the stored color
+        //   - on CCP commit (CCPSET, above): RGB -> HSV via rgb_to_hsv, to write back to the hardware
+        //
+        // These two functions are not exact inverses. hsv_to_rgb_nocie uses integer arithmetic
+        // (quantization loss) and rgb_to_hsv uses floating-point with round(). A round-trip
+        // HSV -> RGB -> HSV can introduce a small error (typically ±1 per component) that accumulates
+        // across repeated CCP sessions. e.g.:
+        //   rgb (255,0,255) -> hsv (213,255,255) -> rgb (255,0,252)
+        //   rgb (255,0,252) -> hsv (214,255,255) -> rgb (255,0,246)
+        //   ... (blue channel drifts ~6 units per round-trip)
+        //
+        // In practice, drift is imperceptible for most colors and takes many sessions to accumulate,
+        // so it is tolerated for now. The planned fix is to store the last RGB set via CCP and only
+        // reseed ccpRgb from hsv_to_rgb_nocie when the stored color has changed externally (i.e., was
+        // not the result of a CCP commit).
         ccpRgb = hsv_to_rgb_nocie(rgb_matrix_get_hsv());
 #if DEBUG
         uprintf("setting ccpRgb: (%d,%d,%d)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
