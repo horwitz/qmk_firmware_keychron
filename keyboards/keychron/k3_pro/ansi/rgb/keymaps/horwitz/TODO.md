@@ -5,7 +5,6 @@
 * make any use of `(RGB|HSV)_(AZURE|BLUE|...)` from `color.h`\?
 * `process_record_user` vs. `rgb_matrix_indicators_advanced_user`
 * `ccph.h`: switch `min` and `max` to use fancier macro
-* `[cg]cp.h` \(`LAYOUT_[cg]cp`\): go back to `WIN_BASE` instead of `MAC_BASE` \(as appropriate\)
 * `[cg]cp.h` \(`LAYOUT_[cg]cp`\) \(etc.\): construct as a value instead of a #define
 * `gcp.h` \(`TD_GRAY`\): define somewhere aside from `gcp.h`\?
 * `gcp.h`: derive `COLOR_PALETTE_SIZE` from or use `COLOR_PALETTE_SIZE` to validate sizeof `color_picker_color_hues`
