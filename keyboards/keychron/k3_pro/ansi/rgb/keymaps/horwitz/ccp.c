@@ -154,12 +154,16 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
             if (keycode == CCPSET) {
                 rgb_matrix_mode(RGB_MATRIX_SOLID_COLOR);
                 HSV hsv = rgb_to_hsv(ccpRgb);
-//                uprintf("CCPSET: ccpRgb=(%d,%d,%d) -> hsv=(%d,%d,%d)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b, hsv.h, hsv.s, hsv.v);
+#if DEBUG
+                uprintf("CCPSET: ccpRgb=(%d,%d,%d) -> hsv=(%d,%d,%d)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b, hsv.h, hsv.s, hsv.v);
+#endif
                 rgb_matrix_sethsv(hsv.h, hsv.s, hsv.v);
                 layer_off(CCP);
             } else {
-//                uprintf("keycode-RHI: %2u\n", keycode - RHI);
-//                uprintf(">> ccpRgb: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#if DEBUG
+                uprintf("keycode-RHI: %2u\n", keycode - RHI);
+                uprintf(">> ccpRgb: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#endif
                 // if RHI, then ccpRgb.r += 16, index_in_byte = ccpRgb.r/16
                 // if RHD, then ccpRgb.r -= 16, index_in_byte = ccpRgb.r/16
                 // if RLI, then ++(ccpRgb.r), index_in_byte = ccpRgb.r % 16
@@ -210,7 +214,9 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
                         break;
                 }
 
-//uprintf("before: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#if DEBUG
+                uprintf("before: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#endif
                 switch (ccp_key.color) {
                     case RED:
                         ccpRgb.r = component;
@@ -222,17 +228,23 @@ bool process_record_user_ccp(uint16_t keycode, keyrecord_t *record) {
                         ccpRgb.b = component;
                         break;
                 }
-//uprintf("after: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#if DEBUG
+                uprintf("after: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#endif
 
             }
-//            uprintf("<< ccpRgb: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
-//            uprintf("iib: %2u\n", index_in_byte);
+#if DEBUG
+            uprintf("<< ccpRgb: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+            uprintf("iib: %2u\n", index_in_byte);
+#endif
         }
         retval = false;
     // [CCP]
     } else if (keycode == TOCCP) {
         ccpRgb = hsv_to_rgb_nocie(rgb_matrix_get_hsv());
-//        uprintf("setting ccpRgb: (%d,%d,%d)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#if DEBUG
+        uprintf("setting ccpRgb: (%d,%d,%d)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#endif
         layer_on(CCP);
         retval = false;
     } else {
@@ -250,7 +262,9 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
         // ESC currently used for top-row 0-15 readout, so we couldn't use it as the abort key (at least we couldn't
         // color it to _signify_ that it's the abort key), so we use the End key as the abort key
         rgb_matrix_set_color(73, RGB_RED); // set End to red // TODO? different color here
-//            uprintf("R (AS): %2u / G (DF): %2u / B (GH): %2u\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#if DEBUG
+        uprintf("R (AS): %2u / G (DF): %2u / B (GH): %2u\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
+#endif
 
         rgb_matrix_set_color(32, 255, ccpRgb.g, ccpRgb.b); // Q
         rgb_matrix_set_color(33, (ccpRgb.r / 16) * 16 + 16 - 1, ccpRgb.g, ccpRgb.b); // W
@@ -285,9 +299,11 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
 
         rgb_matrix_set_color(58, RGB_WHITE); // ENTER
 
-//            if (index_in_byte >= 0) {
-//                uprintf("setting 0-%2u to white\n", index_in_byte);
-//            }
+#if DEBUG
+        if (index_in_byte >= 0) {
+            uprintf("setting 0-%2u to white\n", index_in_byte);
+        }
+#endif
         // if index_in_byte >= 0, color ESC (white)
         // and if index_in_byte >= 1, color F1
         // ...

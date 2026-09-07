@@ -24,7 +24,7 @@
  *
  * (1) SHORT NAME†: [DEBUG]
  *     DETAILS: When enabled, outputs the result of `uprintf` statements--these can be seen in the QMK Toolbox console.
- *     TO ACTIVATE: To debug, set `DEBUG` to true and make sure that (horwitz/)rules.mk contains `CONSOLE_ENABLE = yes`;
+ *     TO ACTIVATE: To debug, set `DEBUG` to 1 and make sure that (horwitz/)rules.mk contains `CONSOLE_ENABLE = yes`;
  *                  then use (e.g.) `uprintf` to print debug output.
  *
  * (2) SHORT NAME: [FN-HI]
@@ -51,7 +51,7 @@
  *   feature is commented in that fashion)
  */
 
-#define DEBUG false // [DEBUG]
+#define DEBUG 0 // [DEBUG]
 
 #include QMK_KEYBOARD_H
 #include "layers.h"
@@ -127,15 +127,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         process_record_user_ccp(keycode, record); // [CCP]
 }
 
-//uint8_t last_layer = -1;
+#if DEBUG
+static uint8_t last_layer = -1;
+#endif
 
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     uint8_t layer = biton32(layer_state);
 
-//    if (layer != last_layer) {
-//        uprintf("layer: %d\n", layer);
-//        last_layer = layer;
-//    }
+#if DEBUG
+    if (layer != last_layer) {
+        uprintf("layer: %d\n", layer);
+        last_layer = layer;
+    }
+#endif
 
     switch (layer) {
         case MAC_BASE:
