@@ -3,20 +3,15 @@
 
 #include "ctrlkeycodes.h"
 
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-// TODO(?) use (a not-broken version of) these macros instead of the macros above
-//         (see https://stackoverflow.com/a/3437484)
-/*
+// GCC statement-expression form: evaluates each argument exactly once, safe for side-effecting expressions
 #define min(a,b) \
-    ({ __typeof__ (a) _a = (a); \
-        __typeof__ (b) _b = (b); \
-    _a < _b ? _a : _b; })
+    ({ __typeof__ (a) __min_a = (a); \
+       __typeof__ (b) __min_b = (b); \
+       __min_a < __min_b ? __min_a : __min_b; })
 #define max(a,b) \
-    ({ __typeof__ (a) _a = (a); \
-        __typeof__ (b) _b = (b); \
-    _a > _b ? _a : _b; })
-*/
+    ({ __typeof__ (a) __max_a = (a); \
+       __typeof__ (b) __max_b = (b); \
+       __max_a > __max_b ? __max_a : __max_b; })
 // compute a + b, ensuring that the value is at most 255
 // (assumes b <= 255)
 #define addBounded(a,b) \
