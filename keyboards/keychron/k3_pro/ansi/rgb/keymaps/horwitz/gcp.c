@@ -24,9 +24,9 @@
 static const uint16_t MIN_COLOR_KEYCODE = COLOR00;
 static const uint16_t MAX_COLOR_KEYCODE = GRAY11;
 
-int color_picker_color_hues[COLOR_PALETTE_SIZE];
+uint8_t color_picker_color_hues[COLOR_PALETTE_SIZE];
 RGB color_picker_color_rgbs[COLOR_PALETTE_SIZE];
-int color_picker_gray_intensities[GRAY_PALETTE_SIZE];
+uint8_t color_picker_gray_intensities[GRAY_PALETTE_SIZE];
 
 bool cPickGrayscaleAvailable = false;
 
@@ -52,16 +52,16 @@ void keyboard_post_init_user_gcp(void) {
     */
     for (int i = 0; i < COLOR_PALETTE_SIZE; ++i) {
         // NB: requires COLOR_PALETTE_SIZE < 512 or rvalue for largest i will be 256 (and hues must fall in [0,255])
-        color_picker_color_hues[i] = round(i * 256.0 / COLOR_PALETTE_SIZE);
+        color_picker_color_hues[i] = (uint8_t)round(i * 256.0 / COLOR_PALETTE_SIZE);
         HSV hsv = { .h=color_picker_color_hues[i], .s=255, .v=255 };
         color_picker_color_rgbs[i] = hsv_to_rgb_nocie(hsv);
     }
     for (int i = 0; i < GRAY_PALETTE_SIZE; ++i) {
-        color_picker_gray_intensities[i] = round(i * 255.0 / (GRAY_PALETTE_SIZE - 1));
+        color_picker_gray_intensities[i] = (uint8_t)round(i * 255.0 / (GRAY_PALETTE_SIZE - 1));
     }
 }
 
-int color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE] = {
+uint8_t color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE] = {
     16, // `    (COLOR00: (1) red)
     31, // TAB  (COLOR01: (5) scarlet)
     46, // CAPS (COLOR02: (4) vermilion)
@@ -114,15 +114,15 @@ int color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE] = {
 // too many elements -> compile error; too few -> silent trailing zeros, so assert the count explicitly
 _Static_assert(sizeof(color_picker_color_palette_keycodes) / sizeof(color_picker_color_palette_keycodes[0]) == COLOR_PALETTE_SIZE,
                "color_picker_color_palette_keycodes must have exactly COLOR_PALETTE_SIZE elements");
-int color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
 // returns 0 for COLOR00, 1 for COLOR01, ..., 47 for COLOR47
-int get_color_picker_color_keycode_index(uint16_t keycode) {
+uint8_t get_color_picker_color_keycode_index(uint16_t keycode) {
     return keycode - COLOR00;
 }
 
-// returns 0 for GRAY00, 1 for COLOR01, ..., 11 for GRAY11
-int get_color_picker_gray_keycode_index(uint16_t keycode) {
+// returns 0 for GRAY00, 1 for GRAY01, ..., 11 for GRAY11
+uint8_t get_color_picker_gray_keycode_index(uint16_t keycode) {
     return keycode - GRAY00;
 }
 
@@ -180,7 +180,7 @@ void rgb_matrix_indicators_advanced_user_gcp(void) {
     }
     if (cPickGrayscaleAvailable) {
         for (int i = 0; i < GRAY_PALETTE_SIZE; ++i) {
-            int intensity = color_picker_gray_intensities[i];
+            uint8_t intensity = color_picker_gray_intensities[i];
             rgb_matrix_set_color(color_picker_gray_palette_keycodes[i], intensity, intensity, intensity);
         }
     }
