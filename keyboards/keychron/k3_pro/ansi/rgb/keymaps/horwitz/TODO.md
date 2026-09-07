@@ -1,7 +1,7 @@
 * `TO()` vs. `TG()`
 * what exactly _is_ the color returned by `rgb_matrix_get_hsv()`\? is this some overall color \(as opposed to per-key
   ones\)\?
-* `uint16_t` vs. `int` \(etc.\)
+* `uint16_t` vs. `int` \(etc.\) (all values fit in [0,255]; using uint8_t makes the intent explicit and saves memory; explicit (uint8_t) casts on round() assignments suppress implicit double -> uint8_t conversion warnings)
 * make any use of `(RGB|HSV)_(AZURE|BLUE|...)` from `color.h`\?
 * `process_record_user` vs. `rgb_matrix_indicators_advanced_user`
 * `[cg]cp.h` \(`LAYOUT_[cg]cp`\) \(etc.\): construct as a value instead of a #define
