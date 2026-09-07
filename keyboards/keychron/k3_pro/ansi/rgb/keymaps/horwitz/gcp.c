@@ -20,9 +20,8 @@
  * ‡ End is set to RGB_RED and, when hit, leaves the layer, making no change to the base layer's color
  */
 
-// TODO(?) move (MIN|MAX)_COLOR_KEYCODE definitions to gcp.h
-int MIN_COLOR_KEYCODE = COLOR00;
-int MAX_COLOR_KEYCODE = GRAY11;
+static const uint16_t MIN_COLOR_KEYCODE = COLOR00;
+static const uint16_t MAX_COLOR_KEYCODE = GRAY11;
 
 int color_picker_color_hues[COLOR_PALETTE_SIZE];
 RGB color_picker_color_rgbs[COLOR_PALETTE_SIZE];

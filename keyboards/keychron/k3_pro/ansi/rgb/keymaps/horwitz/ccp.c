@@ -26,9 +26,8 @@
  * NOTE: The feature creates a fourth layer (layer 3) (meant only to be accessed for the purposes mentioned above).
  */
 
-// TODO(?) move (MIN|MAX)_CCP_CHANGE_KEYCODE definitions to ccp.h
-int MIN_CCP_CHANGE_KEYCODE = RHI;
-int MAX_CCP_CHANGE_KEYCODE = CCPSET;
+static const uint16_t MIN_CCP_CHANGE_KEYCODE = RHI;
+static const uint16_t MAX_CCP_CHANGE_KEYCODE = CCPSET;
 
 // NB: does NOT include TOCCP (which is not on the CCP layer)
 bool is_ccp_change_keycode(uint16_t keycode) {
