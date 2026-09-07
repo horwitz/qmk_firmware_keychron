@@ -5,3 +5,4 @@
 VPATH += keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz
 
 SRC += ccp_color.c
+SRC += gcp_color.c
