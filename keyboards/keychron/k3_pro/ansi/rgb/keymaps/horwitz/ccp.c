@@ -265,7 +265,7 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
         rgb_matrix_set_color_all(RGB_OFF); // RGB_OFF == RGB_BLACK // set keys not changed below to black
         // ESC currently used for top-row 0-15 readout, so we couldn't use it as the abort key (at least we couldn't
         // color it to _signify_ that it's the abort key), so we use the End key as the abort key
-        rgb_matrix_set_color(LED_INDEX_END, RGB_RED); // set End to red // TODO? different color here
+        rgb_matrix_set_color(LED_INDEX_END, RGB_RED); // set End to red (abort key)
 #if DEBUG
         uprintf("R (AS): %2u / G (DF): %2u / B (GH): %2u\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
 #endif
