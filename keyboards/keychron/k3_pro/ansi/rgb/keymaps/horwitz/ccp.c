@@ -271,38 +271,38 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
         uprintf("R (AS): %2u / G (DF): %2u / B (GH): %2u\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
 #endif
 
-        rgb_matrix_set_color(32, 255, ccpRgb.g, ccpRgb.b); // Q
-        rgb_matrix_set_color(33, (ccpRgb.r / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1), ccpRgb.g, ccpRgb.b); // W
-        rgb_matrix_set_color(34, ccpRgb.r, 255, ccpRgb.b); // E
-        rgb_matrix_set_color(35, ccpRgb.r, (ccpRgb.g / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1), ccpRgb.b); // R
-        rgb_matrix_set_color(36, ccpRgb.r, ccpRgb.g, 255); // T
-        rgb_matrix_set_color(37, ccpRgb.r, ccpRgb.g, (ccpRgb.b / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1)); // Y
+        rgb_matrix_set_color(LED_INDEX_Q, 255, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_W, (ccpRgb.r / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1), ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_E, ccpRgb.r, 255, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_R, ccpRgb.r, (ccpRgb.g / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1), ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_T, ccpRgb.r, ccpRgb.g, 255);
+        rgb_matrix_set_color(LED_INDEX_Y, ccpRgb.r, ccpRgb.g, (ccpRgb.b / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA + (HIGH_NIBBLE_DELTA - 1));
 
-        rgb_matrix_set_color(39, ccpRgb.r, ccpRgb.g, ccpRgb.b); // I
-        rgb_matrix_set_color(40, ccpRgb.r, ccpRgb.g, ccpRgb.b); // O
-        rgb_matrix_set_color(41, ccpRgb.r, ccpRgb.g, ccpRgb.b); // P
-        rgb_matrix_set_color(54, ccpRgb.r, ccpRgb.g, ccpRgb.b); // K
-        rgb_matrix_set_color(55, ccpRgb.r, ccpRgb.g, ccpRgb.b); // L
-        rgb_matrix_set_color(56, ccpRgb.r, ccpRgb.g, ccpRgb.b); // ;
-        rgb_matrix_set_color(68, ccpRgb.r, ccpRgb.g, ccpRgb.b); // ,
-        rgb_matrix_set_color(69, ccpRgb.r, ccpRgb.g, ccpRgb.b); // .
-        rgb_matrix_set_color(70, ccpRgb.r, ccpRgb.g, ccpRgb.b); // /
+        rgb_matrix_set_color(LED_INDEX_I,    ccpRgb.r, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_O,    ccpRgb.r, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_P,    ccpRgb.r, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_K,    ccpRgb.r, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_L,    ccpRgb.r, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_SCLN, ccpRgb.r, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_COMM, ccpRgb.r, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_DOT,  ccpRgb.r, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_SLSH, ccpRgb.r, ccpRgb.g, ccpRgb.b);
 
-        rgb_matrix_set_color(47, ccpRgb.r, 0, 0); // A
-        rgb_matrix_set_color(48, ccpRgb.r, 0, 0); // S
-        rgb_matrix_set_color(49, 0, ccpRgb.g, 0); // D
-        rgb_matrix_set_color(50, 0, ccpRgb.g, 0); // F
-        rgb_matrix_set_color(51, 0, 0, ccpRgb.b); // G
-        rgb_matrix_set_color(52, 0, 0, ccpRgb.b); // H
+        rgb_matrix_set_color(LED_INDEX_A, ccpRgb.r, 0, 0);
+        rgb_matrix_set_color(LED_INDEX_S, ccpRgb.r, 0, 0);
+        rgb_matrix_set_color(LED_INDEX_D, 0, ccpRgb.g, 0);
+        rgb_matrix_set_color(LED_INDEX_F, 0, ccpRgb.g, 0);
+        rgb_matrix_set_color(LED_INDEX_G, 0, 0, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_H, 0, 0, ccpRgb.b);
 
-        rgb_matrix_set_color(61, 0, ccpRgb.g, ccpRgb.b); // Z
-        rgb_matrix_set_color(62, (ccpRgb.r / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA, ccpRgb.g, ccpRgb.b); // X
-        rgb_matrix_set_color(63, ccpRgb.r, 0, ccpRgb.b); // C
-        rgb_matrix_set_color(64, ccpRgb.r, (ccpRgb.g / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA, ccpRgb.b); // V
-        rgb_matrix_set_color(65, ccpRgb.r, ccpRgb.g, 0); // B
-        rgb_matrix_set_color(66, ccpRgb.r, ccpRgb.g, (ccpRgb.b / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA); // N
+        rgb_matrix_set_color(LED_INDEX_Z, 0, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_X, (ccpRgb.r / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA, ccpRgb.g, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_C, ccpRgb.r, 0, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_V, ccpRgb.r, (ccpRgb.g / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA, ccpRgb.b);
+        rgb_matrix_set_color(LED_INDEX_B, ccpRgb.r, ccpRgb.g, 0);
+        rgb_matrix_set_color(LED_INDEX_N, ccpRgb.r, ccpRgb.g, (ccpRgb.b / HIGH_NIBBLE_DELTA) * HIGH_NIBBLE_DELTA);
 
-        rgb_matrix_set_color(58, RGB_WHITE); // ENTER
+        rgb_matrix_set_color(LED_INDEX_ENT, RGB_WHITE);
 
 #if DEBUG
         if (index_in_byte >= 0) {
