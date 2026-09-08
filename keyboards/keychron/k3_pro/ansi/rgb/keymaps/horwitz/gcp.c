@@ -46,20 +46,10 @@ tap_dance_action_t tap_dance_actions[] = {
 
 
 static void initialize_gcp_palette_keycodes(const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
-    uint8_t led_index = 0;
-    for (int row = 0; row < MATRIX_ROWS; ++row) {
-        for (int col = 0; col < MATRIX_COLS; ++col) {
-            if (ansi_84_hole_map[row][col] != KC_NO) {
-                uint16_t kc = keymap[row][col];
-                if (kc >= COLOR00 && kc <= COLOR47) {
-                    color_picker_color_palette_keycodes[kc - COLOR00] = led_index;
-                } else if (kc >= GRAY00 && kc <= GRAY11) {
-                    color_picker_gray_palette_keycodes[kc - GRAY00] = led_index;
-                }
-                ++led_index;
-            }
-        }
-    }
+    scan_palette_keycodes(
+        &keymap[0][0], &ansi_84_hole_map[0][0], MATRIX_ROWS, MATRIX_COLS,
+        COLOR00, COLOR_PALETTE_SIZE, color_picker_color_palette_keycodes,
+        GRAY00,  GRAY_PALETTE_SIZE,  color_picker_gray_palette_keycodes);
 }
 
 void keyboard_post_init_user_gcp(void) {

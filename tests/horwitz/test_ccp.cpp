@@ -101,6 +101,20 @@ TEST(RgbToHsv, Gray) {
     EXPECT_EQ(128, hsv.v);
 }
 
+TEST(RgbToHsv, LossyInverse) {
+    // Two distinct RGBs that map to the same HSV, showing that rgb_to_hsv is lossy.
+    // This is the root cause of CCP round-trip drift: hardware stores HSV, so re-entering
+    // CCP after hsv_to_rgb_nocie can produce a different RGB than the one originally set.
+    // The hasCcpSetRgb cache in ccp.c prevents that drift.
+    RGB a = make_rgb(255, 81, 0);  // round(81/6.0) = round(13.5) = 14
+    RGB b = make_rgb(255, 86, 0);  // round(86/6.0) = round(14.33) = 14 — same hue
+    HSV hsv_a = rgb_to_hsv(a);
+    HSV hsv_b = rgb_to_hsv(b);
+    EXPECT_EQ(hsv_a.h, hsv_b.h);
+    EXPECT_EQ(hsv_a.s, hsv_b.s);
+    EXPECT_EQ(hsv_a.v, hsv_b.v);
+}
+
 // addBounded
 
 TEST(AddBounded, NoOverflow) {
