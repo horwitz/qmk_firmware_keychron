@@ -4,10 +4,16 @@ extern "C" {
 #include "ccp_color.h"
 }
 
+static RGB make_rgb(uint8_t r, uint8_t g, uint8_t b) {
+    RGB rgb;
+    rgb.r = r; rgb.g = g; rgb.b = b;
+    return rgb;
+}
+
 // rgb_to_hsv
 
 TEST(RgbToHsv, Black) {
-    RGB rgb = {.r = 0, .g = 0, .b = 0};
+    RGB rgb = make_rgb(0, 0, 0);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(0, hsv.h);
     EXPECT_EQ(0, hsv.s);
@@ -15,7 +21,7 @@ TEST(RgbToHsv, Black) {
 }
 
 TEST(RgbToHsv, White) {
-    RGB rgb = {.r = 255, .g = 255, .b = 255};
+    RGB rgb = make_rgb(255, 255, 255);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(0,   hsv.h);
     EXPECT_EQ(0,   hsv.s);
@@ -23,7 +29,7 @@ TEST(RgbToHsv, White) {
 }
 
 TEST(RgbToHsv, Red) {
-    RGB rgb = {.r = 255, .g = 0, .b = 0};
+    RGB rgb = make_rgb(255, 0, 0);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(0,   hsv.h);
     EXPECT_EQ(255, hsv.s);
@@ -31,7 +37,7 @@ TEST(RgbToHsv, Red) {
 }
 
 TEST(RgbToHsv, Green) {
-    RGB rgb = {.r = 0, .g = 255, .b = 0};
+    RGB rgb = make_rgb(0, 255, 0);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(85,  hsv.h);
     EXPECT_EQ(255, hsv.s);
@@ -39,7 +45,7 @@ TEST(RgbToHsv, Green) {
 }
 
 TEST(RgbToHsv, Blue) {
-    RGB rgb = {.r = 0, .g = 0, .b = 255};
+    RGB rgb = make_rgb(0, 0, 255);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(170, hsv.h);
     EXPECT_EQ(255, hsv.s);
@@ -47,7 +53,7 @@ TEST(RgbToHsv, Blue) {
 }
 
 TEST(RgbToHsv, Yellow) {
-    RGB rgb = {.r = 255, .g = 255, .b = 0};
+    RGB rgb = make_rgb(255, 255, 0);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(43,  hsv.h);
     EXPECT_EQ(255, hsv.s);
@@ -55,7 +61,7 @@ TEST(RgbToHsv, Yellow) {
 }
 
 TEST(RgbToHsv, Cyan) {
-    RGB rgb = {.r = 0, .g = 255, .b = 255};
+    RGB rgb = make_rgb(0, 255, 255);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(128, hsv.h);
     EXPECT_EQ(255, hsv.s);
@@ -63,7 +69,7 @@ TEST(RgbToHsv, Cyan) {
 }
 
 TEST(RgbToHsv, Magenta) {
-    RGB rgb = {.r = 255, .g = 0, .b = 255};
+    RGB rgb = make_rgb(255, 0, 255);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(213, hsv.h);
     EXPECT_EQ(255, hsv.s);
@@ -71,7 +77,7 @@ TEST(RgbToHsv, Magenta) {
 }
 
 TEST(RgbToHsv, DarkRed) {
-    RGB rgb = {.r = 128, .g = 0, .b = 0};
+    RGB rgb = make_rgb(128, 0, 0);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(0,   hsv.h);
     EXPECT_EQ(255, hsv.s);
@@ -79,7 +85,7 @@ TEST(RgbToHsv, DarkRed) {
 }
 
 TEST(RgbToHsv, Orange) {
-    RGB rgb = {.r = 255, .g = 128, .b = 0};
+    RGB rgb = make_rgb(255, 128, 0);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(21,  hsv.h);
     EXPECT_EQ(255, hsv.s);
@@ -88,7 +94,7 @@ TEST(RgbToHsv, Orange) {
 
 TEST(RgbToHsv, Gray) {
     // achromatic with v > 0: exercises the chroma==0 early-return path for non-black inputs
-    RGB rgb = {.r = 128, .g = 128, .b = 128};
+    RGB rgb = make_rgb(128, 128, 128);
     HSV hsv = rgb_to_hsv(rgb);
     EXPECT_EQ(0,   hsv.h);
     EXPECT_EQ(0,   hsv.s);
