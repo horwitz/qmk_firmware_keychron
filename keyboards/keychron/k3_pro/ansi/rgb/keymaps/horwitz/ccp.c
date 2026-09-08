@@ -33,9 +33,9 @@ static bool is_ccp_change_keycode(uint16_t keycode) {
     return (bool)(keycode >= MIN_CCP_CHANGE_KEYCODE && keycode <= MAX_CCP_CHANGE_KEYCODE);
 }
 
-int8_t index_in_byte = -1; // 0-15 value equal to the last hex value edited (one of RH, RL, GH, GL, BH, BL)
+static int8_t index_in_byte = -1; // 0-15 value equal to the last hex value edited (one of RH, RL, GH, GL, BH, BL)
 
-RGB ccpRgb;
+static RGB ccpRgb;
 
 // Used to avoid round-trip drift on re-entry into CCP. Set by CCPSET; see TOCCP for usage.
 static RGB  lastCcpSetRgb;

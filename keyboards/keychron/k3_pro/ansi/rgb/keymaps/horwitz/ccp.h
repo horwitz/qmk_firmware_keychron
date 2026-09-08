@@ -26,10 +26,6 @@ typedef struct {
     XXXXXXX,  XXXXXXX,  XXXXXXX,                                XXXXXXX,                                XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX \
 )
 
-extern int8_t index_in_byte;
-
-extern RGB ccpRgb;
-
 layer_state_t layer_state_set_user_ccp(layer_state_t state);
 
 bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record);
