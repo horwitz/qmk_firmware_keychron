@@ -21,8 +21,15 @@
  * ‡ End is set to RGB_RED and, when hit, leaves the layer, making no change to the base layer's color
  */
 
-static const uint16_t MIN_COLOR_KEYCODE = COLOR00;
-static const uint16_t MAX_COLOR_KEYCODE = GRAY12;
+#define MIN_COLOR_KEYCODE COLOR00
+#define MAX_COLOR_KEYCODE COLOR47
+#define MIN_GRAY_KEYCODE  GRAY00
+#define MAX_GRAY_KEYCODE  GRAY12
+
+_Static_assert(MAX_COLOR_KEYCODE - MIN_COLOR_KEYCODE + 1 == COLOR_PALETTE_SIZE,
+               "COLOR_PALETTE_SIZE does not match MIN_COLOR_KEYCODE..MAX_COLOR_KEYCODE range");
+_Static_assert(MAX_GRAY_KEYCODE - MIN_GRAY_KEYCODE + 1 == GRAY_PALETTE_SIZE,
+               "GRAY_PALETTE_SIZE does not match MIN_GRAY_KEYCODE..MAX_GRAY_KEYCODE range");
 
 uint8_t color_picker_color_hues[COLOR_PALETTE_SIZE];
 RGB color_picker_color_rgbs[COLOR_PALETTE_SIZE];
@@ -49,8 +56,8 @@ tap_dance_action_t tap_dance_actions[] = {
 static void initialize_gcp_palette_keycodes(const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
     scan_palette_keycodes(
         &keymap[0][0], &ansi_84_hole_map[0][0], MATRIX_ROWS, MATRIX_COLS,
-        COLOR00, COLOR_PALETTE_SIZE, color_picker_color_palette_keycodes,
-        GRAY00,  GRAY_PALETTE_SIZE,  color_picker_gray_palette_keycodes);
+        MIN_COLOR_KEYCODE, COLOR_PALETTE_SIZE, color_picker_color_palette_keycodes,
+        MIN_GRAY_KEYCODE,  GRAY_PALETTE_SIZE,  color_picker_gray_palette_keycodes);
 }
 
 void keyboard_post_init_user_gcp(void) {
@@ -73,25 +80,25 @@ void keyboard_post_init_user_gcp(void) {
     }
 }
 
-// returns 0 for COLOR00, 1 for COLOR01, ..., 47 for COLOR47
+// returns 0 for MIN_COLOR_KEYCODE, 1 for the next, ..., COLOR_PALETTE_SIZE-1 for MAX_COLOR_KEYCODE
 static uint8_t get_color_picker_color_keycode_index(uint16_t keycode) {
-    return keycode - COLOR00;
+    return keycode - MIN_COLOR_KEYCODE;
 }
 
-// returns 0 for GRAY00, 1 for GRAY01, ..., 11 for GRAY11
+// returns 0 for MIN_GRAY_KEYCODE, 1 for the next, ..., GRAY_PALETTE_SIZE-1 for MAX_GRAY_KEYCODE
 static uint8_t get_color_picker_gray_keycode_index(uint16_t keycode) {
-    return keycode - GRAY00;
+    return keycode - MIN_GRAY_KEYCODE;
 }
 
-static bool is_color_picker_color_keycode(uint16_t keycode) {
-    return (bool)(keycode >= MIN_COLOR_KEYCODE && keycode <= MAX_COLOR_KEYCODE);
+static bool is_gcp_keycode(uint16_t keycode) {
+    return (bool)(keycode >= MIN_COLOR_KEYCODE && keycode <= MAX_GRAY_KEYCODE);
 }
 
 static enum COLOR_SCHEME get_color_scheme(uint16_t keycode) {
     enum COLOR_SCHEME retval;
-    if (keycode >= COLOR00 && keycode <= COLOR47) {
+    if (keycode >= MIN_COLOR_KEYCODE && keycode <= MAX_COLOR_KEYCODE) {
         retval = RGB_SCHEME;
-    } else if (keycode >= GRAY00 && keycode <= GRAY12) {
+    } else if (keycode >= MIN_GRAY_KEYCODE && keycode <= MAX_GRAY_KEYCODE) {
         retval = GRAY_SCHEME;
     } else {
         retval = UNKNOWN_SCHEME;
@@ -102,7 +109,7 @@ static enum COLOR_SCHEME get_color_scheme(uint16_t keycode) {
 
 bool process_record_user_gcp(uint16_t keycode, const keyrecord_t *record) {
     bool retval = true;
-    if (is_color_picker_color_keycode(keycode)) {
+    if (is_gcp_keycode(keycode)) {
         if (record -> event.pressed) {
             rgb_matrix_mode(RGB_MATRIX_SOLID_COLOR);
             switch (get_color_scheme(keycode)) {
