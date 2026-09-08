@@ -44,22 +44,6 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_GRAY] = ACTION_TAP_DANCE_FN(dance_grayscale)
 };
 
-// ansi_84_hole_map[row][col] = 1 if it represents an actual key, 0 if it's a hole
-// (84 keys, 12 holes)
-//
-// expanding LAYOUT_ansi_84 with 84 identical non-KC_NO arguments (1 is the simplest choice
-// since KC_NO == 0) yields an array where the 12 hardware matrix holes appear as KC_NO.
-// those KC_NO values come from the macro body itself--not from our arguments--so
-// LAYOUT_ansi_84 (in default_keyboard.h) is the single source of truth for hole positions.
-// row argument counts match LAYOUT_ansi_84's parameter list (84 total, holes excluded).
-static const uint16_t ansi_84_hole_map[MATRIX_ROWS][MATRIX_COLS] = LAYOUT_ansi_84(
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,  // row 0: 16 keys, 0 holes
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,    // row 1: 15 keys, 1 hole  (col 14)
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,    // row 2: 15 keys, 1 hole  (col 14)
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,      // row 3: 14 keys, 2 holes (cols 12, 14)
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,      // row 4: 14 keys, 2 holes (cols 1, 12)
-    1,1,1,1,1,1,1,1,1,1               // row 5: 10 keys, 6 holes (cols 3, 4, 5, 7, 8, 9)
-);
 
 static void initialize_gcp_palette_keycodes(const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
     uint8_t led_index = 0;

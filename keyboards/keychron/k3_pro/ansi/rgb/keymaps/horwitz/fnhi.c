@@ -1,5 +1,6 @@
 #include QMK_KEYBOARD_H
 #include "layers.h"
+#include "layout.h"
 #include "fnhi.h"
 #include "keymaps.h"
 
@@ -20,46 +21,31 @@ static uint8_t layers_used_indices[DYNAMIC_KEYMAP_LAYER_COUNT][RGB_MATRIX_LED_CO
 static uint8_t layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
 
 /*
- * sets the values in [layer_used_indices] to the indices (in increasing order; a subset of 0-83) that are used in the
- * given [layer] ("used" = not _______) and returns how many values were set. (e.g., if keys at index 0, 5, 83 are the
- * only ones set, layer_used_indices will start { 0, 5, 83, ... } (followed by 0s) and
- * [initialize_layer_used_indices_inner]
- * will return 3.)
+ * sets layer_used_indices to the LED indices (0–83, in increasing order) of keys that are non-_______
+ * in the given keymap, and returns how many were found. Uses ansi_84_hole_map (see layout.c) to
+ * identify the 12 hardware holes; a hole position does not consume a LED index.
  *
- * [offset] is used below because [rgb_matrix_set_color]'s first argument appears to be based on an index of keys _not_
- * including KC_NO (== XXXXXXX)--there are 96 (=[MATRIX_ROWS] * [MATRIX_COLS]) keycodes in each keymaps[layer], but
- * (apparently) the non-KC_NO keys are indexed 0-83 (and there are 96-84=12 instances of KC_NO (per layer))... see
- * LAYOUT_ansi_84's definition in obj_keychron_k3_pro_ansi_rgb/src/default_keyboard.h
- *
- * INVARIANT: the layers passed here (MAC_FN, WIN_FN) must not use XXXXXXX (KC_NO) at non-hole positions.
- * Those layers use only _______ (KC_TRNS) and real keycodes, so every KC_NO encountered is a hardware
- * hole -- which is what offset counts. If XXXXXXX were used at a real key position (as LAYOUT_gcp does),
- * the offset would be over-counted and all subsequent LED indices would be wrong. (gcp.c solves this by
- * using ansi_84_hole_map as an authoritative hole map instead.)
+ * e.g., if only the keys at LED indices 0, 5, 83 are non-_______, layer_used_indices will start
+ * { 0, 5, 83, ... } (followed by 0s) and the function returns 3.
  */
-static uint8_t initialize_layer_used_indices_inner(uint8_t layer, uint8_t* layer_used_indices, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
+static uint8_t initialize_layer_used_indices_inner(uint8_t* layer_used_indices, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
     uint8_t lui_i = 0;
-    uint8_t offset = 0;
-    for (int i = 0; i < MATRIX_ROWS * MATRIX_COLS; ++i) {
-        int col = i % MATRIX_COLS;
-        int row = i / MATRIX_COLS;
-        switch (keymap[row][col]) {
-            case _______:
-                break;
-            case KC_NO: // == XXXXXXX
-                ++offset;
-                break;
-            default:
-                layer_used_indices[lui_i++] = i - offset;
-                break;
+    uint8_t led_index = 0;
+    for (int row = 0; row < MATRIX_ROWS; ++row) {
+        for (int col = 0; col < MATRIX_COLS; ++col) {
+            if (ansi_84_hole_map[row][col] != KC_NO) {
+                if (keymap[row][col] != _______) {
+                    layer_used_indices[lui_i++] = led_index;
+                }
+                ++led_index;
+            }
         }
     }
-
     return lui_i;
 }
 
 static void initialize_layer_used_indices(uint8_t layer, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
-    layer_used_indices_size[layer] = initialize_layer_used_indices_inner(layer, layers_used_indices[layer], keymap);
+    layer_used_indices_size[layer] = initialize_layer_used_indices_inner(layers_used_indices[layer], keymap);
 }
 
 // TODO? derive layout from layer (e.g., LAYOUT_macfn from MAC_FN)

@@ -8,6 +8,7 @@ ifeq ($(DEBUG), 1)
     OPT_DEFS += -DDEBUG=1
 endif
 
+SRC += layout.c
 SRC += fnhi.c
 SRC += gcp_color.c
 SRC += gcp.c
