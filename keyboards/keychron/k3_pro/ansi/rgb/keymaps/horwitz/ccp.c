@@ -37,6 +37,11 @@ int8_t index_in_byte = -1; // 0-15 value equal to the last hex value edited (one
 
 RGB ccpRgb;
 
+// Used to avoid round-trip drift on re-entry into CCP. Set by CCPSET; see TOCCP for usage.
+static RGB  lastCcpSetRgb;
+static HSV  lastCcpSetHsv;
+static bool hasCcpSetRgb = false;
+
 static ccp_key_t get_ccp_key(uint16_t keycode) {
     ccp_key_t ccp_key;
 
@@ -122,6 +127,9 @@ bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record) {
                 uprintf("CCPSET: ccpRgb=(%d,%d,%d) -> hsv=(%d,%d,%d)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b, hsv.h, hsv.s, hsv.v);
 #endif
                 rgb_matrix_sethsv(hsv.h, hsv.s, hsv.v);
+                lastCcpSetRgb = ccpRgb;
+                lastCcpSetHsv = hsv;
+                hasCcpSetRgb  = true;
                 layer_off(CCP);
             } else {
 #if DEBUG
@@ -219,11 +227,20 @@ bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record) {
         //   rgb (255,0,252) -> hsv (214,255,255) -> rgb (255,0,246)
         //   ... (blue channel drifts ~6 units per round-trip)
         //
-        // In practice, drift is imperceptible for most colors and takes many sessions to accumulate,
-        // so it is tolerated for now. The planned fix is to store the last RGB set via CCP and only
-        // reseed ccpRgb from hsv_to_rgb_nocie when the stored color has changed externally (i.e., was
-        // not the result of a CCP commit).
-        ccpRgb = hsv_to_rgb_nocie(rgb_matrix_get_hsv());
+        // Fix: if the current hardware HSV matches the HSV we committed in the last CCPSET, reseed
+        // from lastCcpSetRgb (the exact RGB we committed) rather than converting from HSV. This
+        // eliminates drift for re-entry after a CCP session. If the hardware HSV differs (color was
+        // changed externally, e.g. via GCP), we fall back to hsv_to_rgb_nocie -- unavoidably lossy
+        // since the hardware only stores HSV, but it only happens once (no accumulation).
+        HSV currentHsv = rgb_matrix_get_hsv();
+        if (hasCcpSetRgb &&
+                currentHsv.h == lastCcpSetHsv.h &&
+                currentHsv.s == lastCcpSetHsv.s &&
+                currentHsv.v == lastCcpSetHsv.v) {
+            ccpRgb = lastCcpSetRgb;
+        } else {
+            ccpRgb = hsv_to_rgb_nocie(currentHsv);
+        }
 #if DEBUG
         uprintf("setting ccpRgb: (%d,%d,%d)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
 #endif
