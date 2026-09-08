@@ -173,8 +173,7 @@ Checks license headers, `#pragma once` vs include guards, and other QMK-specific
 qmk lint -kb keychron/k3_pro/ansi/rgb -km horwitz
 ```
 
-The horwitz files intentionally use `#ifndef` include guards (not `#pragma once`) and are
-missing license headers — both are known, deferred issues.
+The horwitz files intentionally use `#ifndef` include guards (not `#pragma once`)--this is a known, deferred issue.
 
 ### clang-format
 
