@@ -24,7 +24,7 @@
  *
  * (1) SHORT NAME†: [DEBUG]
  *     DETAILS: When enabled, outputs the result of `uprintf` statements--these can be seen in the QMK Toolbox console.
- *     TO ACTIVATE: Compile with `DEBUG=1` (e.g. `qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz DEBUG=1`);
+ *     TO ACTIVATE: Compile with `DEBUG=1` (e.g., `qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz DEBUG=1`);
  *                  rules.mk enables CONSOLE_ENABLE automatically. Then use (e.g.) `uprintf` to print debug output.
  *
  * (2) SHORT NAME: [FN-HI]

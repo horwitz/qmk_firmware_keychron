@@ -1,6 +1,6 @@
 TAP_DANCE_ENABLE = yes
 
-# To enable debug output: compile with DEBUG=1 (e.g. qmk compile ... DEBUG=1)
+# To enable debug output: compile with DEBUG=1 (e.g., qmk compile ... DEBUG=1)
 # Must also have CONSOLE_ENABLE = yes, which is set automatically below.
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
