@@ -17,7 +17,7 @@ enum COLOR_SCHEME { RGB_SCHEME, GRAY_SCHEME, UNKNOWN_SCHEME, };
 // color palette (COLOR00–COLOR47): hex values from hsv_to_rgb_nocie(h, s=255, v=255); QMK's
 // integer >> 8 arithmetic causes slight imprecision at section boundaries (e.g., yellow is
 // #FEFF00 rather than #FFFF00, green is #03FF00 rather than #00FF00):
-//   COLOR00 -> LED 16  (`   )  (1) red            #FF0000
+//   COLOR00 -> LED 16  (`   )  (1) red             #FF0000
 //   COLOR01 -> LED 31  (TAB )  (5) scarlet         #FF1E00
 //   COLOR02 -> LED 46  (CAPS)  (4) vermilion       #FF4200
 //   COLOR03 -> LED 60  (LSFT)  (5) persimmon       #FF6000
