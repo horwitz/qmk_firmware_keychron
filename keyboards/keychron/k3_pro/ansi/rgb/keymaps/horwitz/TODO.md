@@ -1,4 +1,3 @@
-* make any use of `(RGB|HSV)_(AZURE|BLUE|...)` from `color.h`\?
 * `ccp.c`: do something fancier than `RGB_WHITE` with keycodes 0–15 \(maybe something state dependent\)\?
 * "noeeprom" versions of methods\? \(use\? don't use\? use to replace \(some\) current methods\?\)
     * † `rgb_matrix_mode`                \[CPICK/ECP\] \(when setting color\)
