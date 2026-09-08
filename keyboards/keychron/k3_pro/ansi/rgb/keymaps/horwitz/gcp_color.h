@@ -1,5 +1,4 @@
-#ifndef GCP_COLOR_H_INCLUDED
-#define GCP_COLOR_H_INCLUDED
+#pragma once
 
 #include <stdint.h>
 #include "colorconst.h"
@@ -12,5 +11,3 @@ uint8_t color_hue_for_index(int i);
 
 // Maps a gray palette index [0, GRAY_PALETTE_SIZE) to an intensity value in [0, 255].
 uint8_t gray_intensity_for_index(int i);
-
-#endif

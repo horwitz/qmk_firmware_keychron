@@ -1,5 +1,4 @@
-#ifndef CTRLKEYCODES_H_INCLUDED
-#define CTRLKEYCODES_H_INCLUDED
+#pragma once
 
 enum ctrl_keycodes {
 // [GCP]
@@ -29,5 +28,3 @@ enum ctrl_keycodes {
         RHD, RLD, GHD, GLD, BHD, BLD,
         CCPSET,
 };
-
-#endif

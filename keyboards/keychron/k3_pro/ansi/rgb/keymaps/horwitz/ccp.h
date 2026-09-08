@@ -1,5 +1,4 @@
-#ifndef CCP_H_INCLUDED
-#define CCP_H_INCLUDED
+#pragma once
 
 #include "ctrlkeycodes.h"
 #include "layout.h"
@@ -36,5 +35,3 @@ layer_state_t layer_state_set_user_ccp(layer_state_t state);
 bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record);
 
 void rgb_matrix_indicators_advanced_user_ccp(void);
-
-#endif

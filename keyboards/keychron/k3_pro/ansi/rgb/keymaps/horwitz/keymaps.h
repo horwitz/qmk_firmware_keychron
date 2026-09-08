@@ -1,5 +1,4 @@
-#ifndef KEYMAPS_H_INCLUDED
-#define KEYMAPS_H_INCLUDED
+#pragma once
 
 #include "ctrlkeycodes.h"
 #include "gcp.h" // for TD_GRAY // TODO? put TD_GRAY definition elsewhere?
@@ -23,5 +22,3 @@
      _______,            _______, TD(TD_GRAY),TOCCP,  OSL(GCP),  BAT_LVL,  NK_TOGG,  _______,  _______,  _______,  _______,            _______,  _______,  _______, \
      _______,  _______,  _______,                                _______,                                _______,  _______,  _______,  _______,  _______,  _______ \
 )
-
-#endif

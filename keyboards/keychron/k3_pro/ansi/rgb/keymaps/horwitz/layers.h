@@ -1,5 +1,4 @@
-#ifndef LAYERS_H_INCLUDED
-#define LAYERS_H_INCLUDED
+#pragma once
 
 enum layers {
     MAC_BASE,
@@ -9,5 +8,3 @@ enum layers {
     GCP, // [GCP]
     CCP, // [CCP]
 };
-
-#endif

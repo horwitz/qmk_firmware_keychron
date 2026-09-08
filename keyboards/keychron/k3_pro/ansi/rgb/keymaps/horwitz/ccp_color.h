@@ -1,5 +1,4 @@
-#ifndef CCP_COLOR_H_INCLUDED
-#define CCP_COLOR_H_INCLUDED
+#pragma once
 
 #include "color.h"     // RGB, HSV types
 #include "colorconst.h"
@@ -26,5 +25,3 @@
        sub_lhs_ < sub_rhs_ ? 0 : sub_lhs_ - sub_rhs_; })
 
 HSV rgb_to_hsv(RGB rgb);
-
-#endif
