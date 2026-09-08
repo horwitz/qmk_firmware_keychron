@@ -87,9 +87,9 @@ void rgb_matrix_indicators_advanced_user_fnhi(uint8_t layer) {
     // equally dark and may not stand out against the keyboard background.
     //
     // instead, we use:
-    //   h' = (h + 128) % 256      — opposite hue on the color wheel
-    //   s' = 255                  — fully saturated, regardless of base saturation
-    //   v' = (v > 128) ? COMPLEMENT_DIM_V : 255  — value flip: dim highlight for bright base, bright for dark
+    //   h' = (h + HUE_STEPS/2) % HUE_STEPS  — opposite hue on the color wheel
+    //   s' = MAX_COMPONENT                  — fully saturated, regardless of base saturation
+    //   v' = (v > MAX_COMPONENT/2) ? COMPLEMENT_DIM_V : MAX_COMPONENT  — value flip: dim for bright base, bright for dark
     //
     // the value flip ensures contrast in both directions: a bright base (e.g., white at v=255) gets
     // a dim but visible colored highlight; a dark base gets a bright highlight. always fully saturated
@@ -99,7 +99,7 @@ void rgb_matrix_indicators_advanced_user_fnhi(uint8_t layer) {
     // is the complement of whatever h happens to be stored. when the color was set via CCP or GCP,
     // that stored h is 0, so h'=128 (cyan)--a predictable, vivid result. when set via QMK's
     // built-in RGB controls, the stored h may differ.
-    HSV complement_hsv = { .h = (uint8_t)((hsv.h + 128) % 256), .s = 255, .v = (uint8_t)(hsv.v > 128 ? COMPLEMENT_DIM_V : 255) };
+    HSV complement_hsv = { .h = (uint8_t)((hsv.h + HUE_STEPS / 2) % HUE_STEPS), .s = MAX_COMPONENT, .v = (uint8_t)(hsv.v > MAX_COMPONENT / 2 ? COMPLEMENT_DIM_V : MAX_COMPONENT) };
     RGB complement_rgb = hsv_to_rgb_nocie(complement_hsv);
 
     for (int i = 0; i < layer_used_indices_size[layer]; ++i) {
