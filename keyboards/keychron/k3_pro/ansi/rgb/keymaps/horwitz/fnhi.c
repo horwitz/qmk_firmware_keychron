@@ -16,8 +16,8 @@
 // initialize_layer_used_indices_inner)
 // keycode indices (0–83) are hardcoded throughout this file based on the K3 Pro's 84-key layout
 _Static_assert(RGB_MATRIX_LED_COUNT == 84, "fnhi.c assumes RGB_MATRIX_LED_COUNT == 84 (K3 Pro ANSI layout)");
-uint8_t layers_used_indices[DYNAMIC_KEYMAP_LAYER_COUNT][RGB_MATRIX_LED_COUNT];
-uint8_t layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
+static uint8_t layers_used_indices[DYNAMIC_KEYMAP_LAYER_COUNT][RGB_MATRIX_LED_COUNT];
+static uint8_t layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
 
 /*
  * sets the values in [layer_used_indices] to the indices (in increasing order; a subset of 0-83) that are used in the
