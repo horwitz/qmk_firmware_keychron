@@ -67,6 +67,10 @@ void keyboard_post_init_user_fnhi(void) {
     initialize_layer_used_indices(WIN_FN, winFnLayer);
 }
 
+// v used for the complement highlight when the base color is bright (v > MAX_COMPONENT/2);
+// dim but non-zero so the highlight is visible as a colored light rather than appearing off
+static const uint8_t COMPLEMENT_DIM_V = 64;
+
 // when fn is held down, highlight keys whose behavior changed from the base layer; inspired by
 // https://www.reddit.com/r/olkb/comments/kpro3p/comment/h3nb56h
 void rgb_matrix_indicators_advanced_user_fnhi(uint8_t layer) {
@@ -85,17 +89,17 @@ void rgb_matrix_indicators_advanced_user_fnhi(uint8_t layer) {
     // instead, we use:
     //   h' = (h + 128) % 256      — opposite hue on the color wheel
     //   s' = 255                  — fully saturated, regardless of base saturation
-    //   v' = (v > 128) ? 0 : 255  — binary value flip: dark highlight for bright base, bright for dark
+    //   v' = (v > 128) ? COMPLEMENT_DIM_V : 255  — value flip: dim highlight for bright base, bright for dark
     //
     // the value flip ensures contrast in both directions: a bright base (e.g., white at v=255) gets
-    // dark highlights, clearly visible against bright keys; a dark base gets bright highlights.
-    // always fully saturated means the highlight is never a washed-out near-gray.
+    // a dim but visible colored highlight; a dark base gets a bright highlight. always fully saturated
+    // means the highlight is never a washed-out near-gray.
     //
     // for achromatic bases (s=0: gray, white, black), hue is geometrically undefined in HSV, so h'
     // is the complement of whatever h happens to be stored. when the color was set via CCP or GCP,
     // that stored h is 0, so h'=128 (cyan)--a predictable, vivid result. when set via QMK's
     // built-in RGB controls, the stored h may differ.
-    HSV complement_hsv = { .h = (uint8_t)((hsv.h + 128) % 256), .s = 255, .v = (uint8_t)(hsv.v > 128 ? 0 : 255) };
+    HSV complement_hsv = { .h = (uint8_t)((hsv.h + 128) % 256), .s = 255, .v = (uint8_t)(hsv.v > 128 ? COMPLEMENT_DIM_V : 255) };
     RGB complement_rgb = hsv_to_rgb_nocie(complement_hsv);
 
     for (int i = 0; i < layer_used_indices_size[layer]; ++i) {
