@@ -91,7 +91,11 @@ void rgb_matrix_indicators_advanced_user_fnhi(uint8_t layer) {
     // is the complement of whatever h happens to be stored. when the color was set via CCP or GCP,
     // that stored h is 0, so h'=128 (cyan)--a predictable, vivid result. when set via QMK's
     // built-in RGB controls, the stored h may differ.
-    HSV complement_hsv = { .h = (uint8_t)((hsv.h + HUE_STEPS / 2) % HUE_STEPS), .s = MAX_COMPONENT, .v = (uint8_t)(hsv.v > MAX_COMPONENT / 2 ? COMPLEMENT_DIM_V : MAX_COMPONENT) };
+    HSV complement_hsv = {
+        .h = (uint8_t)((hsv.h + HUE_STEPS / 2) % HUE_STEPS),
+        .s = MAX_COMPONENT,
+        .v = (uint8_t)(hsv.v > MAX_COMPONENT / 2 ? COMPLEMENT_DIM_V : MAX_COMPONENT),
+    };
     RGB complement_rgb = hsv_to_rgb_nocie(complement_hsv);
 
     for (int i = 0; i < layer_used_indices_size[layer]; ++i) {
