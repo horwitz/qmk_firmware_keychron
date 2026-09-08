@@ -26,6 +26,9 @@ static const uint16_t MAX_COLOR_KEYCODE = GRAY11;
 uint8_t color_picker_color_hues[COLOR_PALETTE_SIZE];
 RGB color_picker_color_rgbs[COLOR_PALETTE_SIZE];
 uint8_t color_picker_gray_intensities[GRAY_PALETTE_SIZE];
+// LED indices for each palette entry; populated at init time by scanning LAYOUT_gcp (see gcp.h for the mapping)
+uint8_t color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE];
+uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE];
 
 bool cPickGrayscaleAvailable = false;
 
@@ -41,7 +44,44 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_GRAY] = ACTION_TAP_DANCE_FN(dance_grayscale)
 };
 
+// ansi_84_hole_map[row][col] = 1 if it represents an actual key, 0 if it's a hole
+// (84 keys, 12 holes)
+//
+// expanding LAYOUT_ansi_84 with 84 identical non-KC_NO arguments (1 is the simplest choice
+// since KC_NO == 0) yields an array where the 12 hardware matrix holes appear as KC_NO.
+// those KC_NO values come from the macro body itself--not from our arguments--so
+// LAYOUT_ansi_84 (in default_keyboard.h) is the single source of truth for hole positions.
+// row argument counts match LAYOUT_ansi_84's parameter list (84 total, holes excluded).
+static const uint16_t ansi_84_hole_map[MATRIX_ROWS][MATRIX_COLS] = LAYOUT_ansi_84(
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,  // row 0: 16 keys, 0 holes
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,    // row 1: 15 keys, 1 hole  (col 14)
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,    // row 2: 15 keys, 1 hole  (col 14)
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,      // row 3: 14 keys, 2 holes (cols 12, 14)
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,      // row 4: 14 keys, 2 holes (cols 1, 12)
+    1,1,1,1,1,1,1,1,1,1               // row 5: 10 keys, 6 holes (cols 3, 4, 5, 7, 8, 9)
+);
+
+static void initialize_gcp_palette_keycodes(const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
+    uint8_t led_index = 0;
+    for (int row = 0; row < MATRIX_ROWS; ++row) {
+        for (int col = 0; col < MATRIX_COLS; ++col) {
+            if (ansi_84_hole_map[row][col] != KC_NO) {
+                uint16_t kc = keymap[row][col];
+                if (kc >= COLOR00 && kc <= COLOR47) {
+                    color_picker_color_palette_keycodes[kc - COLOR00] = led_index;
+                } else if (kc >= GRAY00 && kc <= GRAY11) {
+                    color_picker_gray_palette_keycodes[kc - GRAY00] = led_index;
+                }
+                ++led_index;
+            }
+        }
+    }
+}
+
 void keyboard_post_init_user_gcp(void) {
+    const uint16_t gcpLayer[MATRIX_ROWS][MATRIX_COLS] = LAYOUT_gcp;
+    initialize_gcp_palette_keycodes(gcpLayer);
+
     /*
       hues:
       0,   5,  11,  16,  21,  27,  32,  37,  43,  48,  53,  59,
@@ -58,61 +98,6 @@ void keyboard_post_init_user_gcp(void) {
         color_picker_gray_intensities[i] = gray_intensity_for_index(i);
     }
 }
-
-uint8_t color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE] = {
-    16, // `    (COLOR00: (1) red)
-    31, // TAB  (COLOR01: (5) scarlet)
-    46, // CAPS (COLOR02: (4) vermilion)
-    60, // LSFT (COLOR03: (5) persimmon)
-    17, // 1    (COLOR04: (3) orange)
-    32, // Q    (COLOR05: (5) orange peel)
-    47, // A    (COLOR06: (4) amber)
-    61, // Z    (COLOR07: (5) golden yellow)
-    18, // 2    (COLOR08: (2) yellow)
-    33, // W    (COLOR09: (5) lemon)
-    48, // S    (COLOR10: (4) lime)
-    62, // X    (COLOR11: (5) spring bud)
-    19, // 3    (COLOR12: (3) chartreuse)
-    34, // E    (COLOR13: (5) bright green)
-    49, // D    (COLOR14: (4) harlequin)
-    63, // C    (COLOR15: (5) neon green)
-    20, // 4    (COLOR16: (1) green)
-    35, // R    (COLOR17: (5) jade)
-    50, // F    (COLOR18: (4) erin)
-    64, // V    (COLOR19: (5) emerald)
-    21, // 5    (COLOR20: (3) spring green)
-    36, // T    (COLOR21: (5) mint)
-    51, // G    (COLOR22: (4) aquamarine)
-    65, // B    (COLOR23: (5) turquoise)
-    22, // 6    (COLOR24: (2) cyan)
-    37, // Y    (COLOR25: (5) sky blue)
-    52, // H    (COLOR26: (4) capri)
-    66, // N    (COLOR27: (5) cornflower)
-    23, // 7    (COLOR28: (3) azure)
-    38, // U    (COLOR29: (5) cobalt)
-    53, // J    (COLOR30: (4) cerulean)
-    67, // M    (COLOR31: (5) sapphire)
-    24, // 8    (COLOR32: (1) blue)
-    39, // I    (COLOR33: (5) iris)
-    54, // K    (COLOR34: (4) indigo)
-    68, // ,    (COLOR35: (5) veronica)
-    25, // 9    (COLOR36: (3) violet)
-    40, // O    (COLOR37: (5) amethyst)
-    55, // L    (COLOR38: (4) purple)
-    69, // .    (COLOR39: (5) phlox)
-    26, // 0    (COLOR40: (2) magenta)
-    41, // P    (COLOR41: (5) fuchsia)
-    56, // ;    (COLOR42: (4) cerise)
-    70, // /    (COLOR43: (5) deep pink)
-    27, // -    (COLOR44: (3) rose)
-    42, // []   (COLOR45: (5) raspberry)
-    57, // '    (COLOR46: (4) crimson)
-    71  // RSFT (COLOR47: (5) amaranth)
-};
-// too many elements -> compile error; too few -> silent trailing zeros, so assert the count explicitly
-_Static_assert(sizeof(color_picker_color_palette_keycodes) / sizeof(color_picker_color_palette_keycodes[0]) == COLOR_PALETTE_SIZE,
-               "color_picker_color_palette_keycodes must have exactly COLOR_PALETTE_SIZE elements");
-uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
 // returns 0 for COLOR00, 1 for COLOR01, ..., 47 for COLOR47
 static uint8_t get_color_picker_color_keycode_index(uint16_t keycode) {
