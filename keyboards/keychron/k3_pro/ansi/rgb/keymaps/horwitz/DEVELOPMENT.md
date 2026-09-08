@@ -77,6 +77,21 @@ qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz
 qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz
 ```
 
+## Flashing the keyboard
+
+```sh
+qmk flash -kb keychron/k3_pro/ansi/rgb -km horwitz
+```
+
+his compiles and then waits for a DFU device; while it waits, trigger the bootloader:
+
+1. unplug USB from K3 Pro
+2. hold Esc on K3 Pro
+3. plug USB back in
+4. release Esc
+
+the flash will complete automatically and the keyboard will reboot
+
 ## Debug builds
 
 Pass `DEBUG=1` to enable console output and `uprintf` statements:
