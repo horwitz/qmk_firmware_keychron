@@ -10,6 +10,7 @@ on:
     paths:
       - 'keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/**'
       - 'tests/horwitz/**'
+      - 'tests/test_common/**'
       - 'builddefs/**'
       - 'quantum/**'
       - 'platforms/**'
