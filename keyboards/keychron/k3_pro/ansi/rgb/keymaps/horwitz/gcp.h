@@ -61,21 +61,22 @@ enum COLOR_SCHEME { RGB_SCHEME, GRAY_SCHEME, UNKNOWN_SCHEME, };
 //   COLOR46 -> LED 57  ('   )  (4) crimson         #FF004B
 //   COLOR47 -> LED 71  (RSFT)  (5) amaranth        #FF0027
 //
-// gray palette (GRAY00–GRAY11 -> F1–F12): exact values, round(i * 255 / 11) per channel:
-//   GRAY00 -> LED  1  (F1 )  #000000
-//   GRAY01 -> LED  2  (F2 )  #171717
-//   GRAY02 -> LED  3  (F3 )  #2E2E2E
-//   GRAY03 -> LED  4  (F4 )  #464646
-//   GRAY04 -> LED  5  (F5 )  #5D5D5D
-//   GRAY05 -> LED  6  (F6 )  #747474
-//   GRAY06 -> LED  7  (F7 )  #8B8B8B
-//   GRAY07 -> LED  8  (F8 )  #A2A2A2
-//   GRAY08 -> LED  9  (F9 )  #B9B9B9
-//   GRAY09 -> LED 10  (F10)  #D1D1D1
-//   GRAY10 -> LED 11  (F11)  #E8E8E8
-//   GRAY11 -> LED 12  (F12)  #FFFFFF
+// gray palette (GRAY00–GRAY12 -> Esc, F1–F12): exact values, round(i * 255 / 12) per channel:
+//   GRAY00 -> LED  0  (Esc)  #000000
+//   GRAY01 -> LED  1  (F1 )  #151515
+//   GRAY02 -> LED  2  (F2 )  #2B2B2B
+//   GRAY03 -> LED  3  (F3 )  #404040
+//   GRAY04 -> LED  4  (F4 )  #555555
+//   GRAY05 -> LED  5  (F5 )  #6A6A6A
+//   GRAY06 -> LED  6  (F6 )  #808080
+//   GRAY07 -> LED  7  (F7 )  #959595
+//   GRAY08 -> LED  8  (F8 )  #AAAAAA
+//   GRAY09 -> LED  9  (F9 )  #BFBFBF
+//   GRAY10 -> LED 10  (F10)  #D5D5D5
+//   GRAY11 -> LED 11  (F11)  #EAEAEA
+//   GRAY12 -> LED 12  (F12)  #FFFFFF
 #define LAYOUT_gcp LAYOUT_ansi_84( \
-    XXXXXXX,  GRAY00,   GRAY01,   GRAY02,   GRAY03,   GRAY04,   GRAY05,   GRAY06,   GRAY07,   GRAY08,   GRAY09,   GRAY10,   GRAY11,   XXXXXXX,  XXXXXXX,  XXXXXXX, \
+    GRAY00,   GRAY01,   GRAY02,   GRAY03,   GRAY04,   GRAY05,   GRAY06,   GRAY07,   GRAY08,   GRAY09,   GRAY10,   GRAY11,   GRAY12,   XXXXXXX,  XXXXXXX,  XXXXXXX, \
     COLOR00,  COLOR04,  COLOR08,  COLOR12,  COLOR16,  COLOR20,  COLOR24,  COLOR28,  COLOR32,  COLOR36,  COLOR40,  COLOR44,  XXXXXXX,  XXXXXXX,            XXXXXXX, \
     COLOR01,  COLOR05,  COLOR09,  COLOR13,  COLOR17,  COLOR21,  COLOR25,  COLOR29,  COLOR33,  COLOR37,  COLOR41,  COLOR45,  XXXXXXX,  XXXXXXX,            XXXXXXX, \
     COLOR02,  COLOR06,  COLOR10,  COLOR14,  COLOR18,  COLOR22,  COLOR26,  COLOR30,  COLOR34,  COLOR38,  COLOR42,  COLOR46,            XXXXXXX,            XXXXXXX, \

@@ -22,7 +22,7 @@
  */
 
 static const uint16_t MIN_COLOR_KEYCODE = COLOR00;
-static const uint16_t MAX_COLOR_KEYCODE = GRAY11;
+static const uint16_t MAX_COLOR_KEYCODE = GRAY12;
 
 uint8_t color_picker_color_hues[COLOR_PALETTE_SIZE];
 RGB color_picker_color_rgbs[COLOR_PALETTE_SIZE];
@@ -91,7 +91,7 @@ static enum COLOR_SCHEME get_color_scheme(uint16_t keycode) {
     enum COLOR_SCHEME retval;
     if (keycode >= COLOR00 && keycode <= COLOR47) {
         retval = RGB_SCHEME;
-    } else if (keycode >= GRAY00 && keycode <= GRAY11) {
+    } else if (keycode >= GRAY00 && keycode <= GRAY12) {
         retval = GRAY_SCHEME;
     } else {
         retval = UNKNOWN_SCHEME;

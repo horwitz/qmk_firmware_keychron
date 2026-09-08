@@ -4,7 +4,7 @@
 #include "colorconst.h"
 
 #define COLOR_PALETTE_SIZE 48
-#define GRAY_PALETTE_SIZE  12
+#define GRAY_PALETTE_SIZE  13
 
 // Maps a color palette index [0, COLOR_PALETTE_SIZE) to a hue value in [0, 255].
 uint8_t color_hue_for_index(int i);

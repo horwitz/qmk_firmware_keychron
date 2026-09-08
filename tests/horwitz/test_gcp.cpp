@@ -82,27 +82,28 @@ TEST(ScanPaletteKeycodes, UnrecognizedKeycodesIgnored) {
 }
 
 // gray_intensity_for_index: round(i * MAX_COMPONENT / (double)(GRAY_PALETTE_SIZE - 1))
+// GRAY_PALETTE_SIZE = 13: divisor = 12, values = round(i * 255 / 12)
 
 TEST(GrayIntensityForIndex, First) {
     EXPECT_EQ(0,   gray_intensity_for_index(0));
 }
 
 TEST(GrayIntensityForIndex, Second) {
-    EXPECT_EQ(23,  gray_intensity_for_index(1));
+    EXPECT_EQ(21,  gray_intensity_for_index(1));
 }
 
 TEST(GrayIntensityForIndex, LowerMid) {
-    EXPECT_EQ(116, gray_intensity_for_index(5));
+    EXPECT_EQ(106, gray_intensity_for_index(5));
 }
 
 TEST(GrayIntensityForIndex, UpperMid) {
-    EXPECT_EQ(139, gray_intensity_for_index(6));
+    EXPECT_EQ(128, gray_intensity_for_index(6));
 }
 
 TEST(GrayIntensityForIndex, SecondToLast) {
-    EXPECT_EQ(232, gray_intensity_for_index(10));
+    EXPECT_EQ(234, gray_intensity_for_index(11));
 }
 
 TEST(GrayIntensityForIndex, Last) {
-    EXPECT_EQ(255, gray_intensity_for_index(11));
+    EXPECT_EQ(255, gray_intensity_for_index(12));
 }

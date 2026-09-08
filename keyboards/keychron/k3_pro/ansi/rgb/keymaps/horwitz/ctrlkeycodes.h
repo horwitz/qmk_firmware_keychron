@@ -19,6 +19,7 @@ enum ctrl_keycodes {
         GRAY00, GRAY01, GRAY02, GRAY03,
         GRAY04, GRAY05, GRAY06, GRAY07,
         GRAY08, GRAY09, GRAY10, GRAY11,
+        GRAY12,
 
 // [CCP] // meta CCP
         TOCCP,
