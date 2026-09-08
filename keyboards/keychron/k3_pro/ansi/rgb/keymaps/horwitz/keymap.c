@@ -33,7 +33,7 @@
  *
  * (3) SHORT NAME: [GCP]
  *     DETAILS: see gcp.c
- *     TO ACTIVATE: The feature is always on; grayscale mode if off by default--its availability is toggled by double
+ *     TO ACTIVATE: The feature is always on; grayscale mode is on by default; its availability is toggled by double
  *                  tapping X while holding Fn.
  *
  * (4) SHORT NAME: [SUS-RGB]

@@ -15,7 +15,7 @@
  * NOTE: The feature creates a fifth layer (layer 4) for the rainbow grid (meant only to be accessed for the purposes
  *       mentioned above). Actual hue values are encoded as integers in [0,255] (scaled from [0,1)).
  *
- * † grayscale mode if off by default--its availability is toggled from the main layer by double tapping X while holding
+ * † grayscale mode is on by default; its availability is toggled from the main layer by double tapping X while holding
  *   Fn
  * ‡ End is set to RGB_RED and, when hit, leaves the layer, making no change to the base layer's color
  */
@@ -30,7 +30,7 @@ uint8_t color_picker_gray_intensities[GRAY_PALETTE_SIZE];
 uint8_t color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE];
 uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE];
 
-bool cPickGrayscaleAvailable = false;
+bool cPickGrayscaleAvailable = true;
 
 static void dance_grayscale(tap_dance_state_t *state, void *user_data) {
     if (state->count == 2) {
