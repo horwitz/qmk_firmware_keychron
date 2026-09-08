@@ -1,5 +1,5 @@
 #include QMK_KEYBOARD_H
-//#include "layers.h"
+#include "layers.h"
 #include "gcp.h"    // transitively includes gcp_color.h (color_hue_for_index, gray_intensity_for_index) and colorconst.h
 #include "layout.h"
 
@@ -53,8 +53,7 @@ static void initialize_gcp_palette_keycodes(const uint16_t keymap[MATRIX_ROWS][M
 }
 
 void keyboard_post_init_user_gcp(void) {
-    const uint16_t gcpLayer[MATRIX_ROWS][MATRIX_COLS] = LAYOUT_gcp;
-    initialize_gcp_palette_keycodes(gcpLayer);
+    initialize_gcp_palette_keycodes(keymaps[GCP]);
 
     /*
       hues:

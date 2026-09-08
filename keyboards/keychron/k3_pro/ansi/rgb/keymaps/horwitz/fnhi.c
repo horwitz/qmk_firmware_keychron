@@ -48,15 +48,9 @@ static void initialize_layer_used_indices(uint8_t layer, const uint16_t keymap[M
     layer_used_indices_size[layer] = initialize_layer_used_indices_inner(layers_used_indices[layer], keymap);
 }
 
-// TODO? derive layout from layer (e.g., LAYOUT_macfn from MAC_FN)
 void keyboard_post_init_user_fnhi(void) {
-    // TODO(?) do this differently
-    // TODO(?) put these in a header file (e.g., keymaps.h)
-    const uint16_t macFnLayer[MATRIX_ROWS][MATRIX_COLS] = LAYOUT_macfn;
-    const uint16_t winFnLayer[MATRIX_ROWS][MATRIX_COLS] = LAYOUT_winfn;
-
-    initialize_layer_used_indices(MAC_FN, macFnLayer);
-    initialize_layer_used_indices(WIN_FN, winFnLayer);
+    initialize_layer_used_indices(MAC_FN, keymaps[MAC_FN]);
+    initialize_layer_used_indices(WIN_FN, keymaps[WIN_FN]);
 }
 
 // v used for the complement highlight when the base color is bright (v > MAX_COMPONENT/2);
