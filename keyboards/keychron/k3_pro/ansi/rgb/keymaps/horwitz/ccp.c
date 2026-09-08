@@ -259,7 +259,6 @@ bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record) {
     return retval;
 }
 
-// TODO bool?
 void rgb_matrix_indicators_advanced_user_ccp(void) {
         // set A,S to R level; D,F to G level; G,H to B level; set ENTER white; set some of top row to white (see
         // below); set QWERTY ZXCVBN as described above; set all else black
