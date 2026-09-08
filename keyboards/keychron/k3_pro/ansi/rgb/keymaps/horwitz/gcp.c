@@ -1,6 +1,7 @@
 #include QMK_KEYBOARD_H
 #include "layers.h"
 #include "gcp.h"    // transitively includes gcp_color.h (color_hue_for_index, gray_intensity_for_index) and colorconst.h
+#include "tap_dance.h"
 #include "layout.h"
 
 /*

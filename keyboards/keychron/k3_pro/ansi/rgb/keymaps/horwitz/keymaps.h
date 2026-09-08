@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ctrlkeycodes.h"
-#include "gcp.h" // for TD_GRAY // TODO? put TD_GRAY definition elsewhere?
+#include "tap_dance.h" // for TD_GRAY
 
 // [CCP] ("TOCCP") // [GCP] ("OSL(GCP)")
 #define LAYOUT_macfn LAYOUT_ansi_84( \

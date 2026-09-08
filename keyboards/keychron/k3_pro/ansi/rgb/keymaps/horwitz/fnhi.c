@@ -3,6 +3,7 @@
 #include "layout.h"
 #include "fnhi.h"
 #include "keymaps.h"
+#include "colorconst.h"
 
 /*
  * When the `fn` key is pressed, the keys with new keycodes (i.e., not `_______`) will light up at the complementary

@@ -3,11 +3,6 @@
 #include "ctrlkeycodes.h"
 #include "gcp_color.h"
 
-// Tap Dance declarations
-enum {
-    TD_GRAY
-};
-
 enum COLOR_SCHEME { RGB_SCHEME, GRAY_SCHEME, UNKNOWN_SCHEME, };
 
 // keycode 73 (End) is lit RED, though pressing any XXXXXXX aborts color choosing
