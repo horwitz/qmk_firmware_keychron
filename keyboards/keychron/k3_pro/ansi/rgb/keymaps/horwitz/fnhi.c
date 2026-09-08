@@ -30,6 +30,12 @@ static uint8_t layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
  * including KC_NO (== XXXXXXX)--there are 96 (=[MATRIX_ROWS] * [MATRIX_COLS]) keycodes in each keymaps[layer], but
  * (apparently) the non-KC_NO keys are indexed 0-83 (and there are 96-84=12 instances of KC_NO (per layer))... see
  * LAYOUT_ansi_84's definition in obj_keychron_k3_pro_ansi_rgb/src/default_keyboard.h
+ *
+ * INVARIANT: the layers passed here (MAC_FN, WIN_FN) must not use XXXXXXX (KC_NO) at non-hole positions.
+ * Those layers use only _______ (KC_TRNS) and real keycodes, so every KC_NO encountered is a hardware
+ * hole -- which is what offset counts. If XXXXXXX were used at a real key position (as LAYOUT_gcp does),
+ * the offset would be over-counted and all subsequent LED indices would be wrong. (gcp.c solves this by
+ * using ansi_84_hole_map as an authoritative hole map instead.)
  */
 static uint8_t initialize_layer_used_indices_inner(uint8_t layer, uint8_t* layer_used_indices, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
     uint8_t lui_i = 0;
