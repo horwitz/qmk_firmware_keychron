@@ -146,7 +146,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 #if DEBUG
-static uint8_t last_layer = -1;
+static uint8_t last_layer = UINT8_MAX;
 #endif
 
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
