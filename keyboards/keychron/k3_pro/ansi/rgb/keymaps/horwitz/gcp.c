@@ -40,7 +40,7 @@ uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE];
 
 bool cPickGrayscaleAvailable = true;
 
-#define GCP_ANIM_FRAME_MS 80
+#define GCP_ANIM_FRAME_MS 39 // 39ms * 13 frames ≈ 0.5s total
 
 static bool     gcp_anim_active;
 static uint8_t  gcp_anim_frame;
@@ -177,14 +177,10 @@ void rgb_matrix_indicators_advanced_user_gcp_anim(void) {
             lit_count = (int)GRAY_PALETTE_SIZE - gcp_anim_frame; // GRAY_PALETTE_SIZE..1
         }
 
-        for (int i = 0; i < GRAY_PALETTE_SIZE; ++i) {
-            uint8_t led = color_picker_gray_palette_keycodes[i];
-            if (i < lit_count) {
-                uint8_t intensity = color_picker_gray_intensities[i];
-                rgb_matrix_set_color(led, intensity, intensity, intensity);
-            } else {
-                rgb_matrix_set_color(led, RGB_OFF);
-            }
+        rgb_matrix_set_color_all(RGB_OFF);
+        for (int i = 0; i < lit_count; ++i) {
+            uint8_t intensity = color_picker_gray_intensities[i];
+            rgb_matrix_set_color(color_picker_gray_palette_keycodes[i], intensity, intensity, intensity);
         }
     }
 }
