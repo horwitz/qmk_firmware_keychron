@@ -40,8 +40,6 @@ uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE];
 
 static bool cPickGrayscaleAvailable = true;
 
-#define GCP_ANIM_FRAME_MS 39 // 39ms * 13 frames ≈ 0.5s total
-
 static bool     gcp_anim_active;
 static uint8_t  gcp_anim_frame;
 static uint16_t gcp_anim_timer;
