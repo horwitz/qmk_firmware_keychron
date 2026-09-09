@@ -5,7 +5,7 @@
 #include "layout.h"
 
 /*
- * `fn+V` presents a 12x4 rainbow grid of keys and 12 grayscale keys† on the top row (with the remaining keys‡
+ * `fn+V` presents a 12x4 rainbow grid of keys and 13 (GRAY_PALETTE_SIZE) grayscale keys† on the top row (with the remaining keys‡
  * dark)--pressing any one of these keys sets the base layer (e.g., layer 0 when `fn` goes to layer 1) to a solid
  * pattern of that color. The top row (of the four color rows) are primary, secondary, and tertiary colors--in standard
  * order: red (1), orange (3), yellow (2), chartreuse (3), green (1), spring green (3), cyan (2), azure (3), blue (1),
