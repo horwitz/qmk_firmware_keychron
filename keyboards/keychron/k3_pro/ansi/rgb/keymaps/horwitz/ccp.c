@@ -310,16 +310,15 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
             uprintf("setting 0-%2u to white\n", index_in_byte);
         }
 #endif
-        // if index_in_byte >= 0, color ESC (in last color edited; 0*17 brightness)
-        // and if index_in_byte >= 1, color F1 (1*17 brightness)
+        // if index_in_byte >= 0, color ESC in the last-edited channel's pure color
+        // and if index_in_byte >= 1, color F1
         // ...
         // and if index_in_byte >= 15, color RGB_MOD (15*17=255 brightness)
         for (int top_row_keycode = 0; top_row_keycode <= index_in_byte; ++top_row_keycode) {
-            uint8_t v = (uint8_t)(top_row_keycode * 17); // top_row_keycode/15 * 255 (exact since 15*17=255)
             switch (last_color_edited) {
-                case RED:   rgb_matrix_set_color(top_row_keycode, v, 0, 0); break;
-                case GREEN: rgb_matrix_set_color(top_row_keycode, 0, v, 0); break;
-                case BLUE:  rgb_matrix_set_color(top_row_keycode, 0, 0, v); break;
+                case RED:   rgb_matrix_set_color(top_row_keycode, 255,   0,   0); break;
+                case GREEN: rgb_matrix_set_color(top_row_keycode,   0, 255,   0); break;
+                case BLUE:  rgb_matrix_set_color(top_row_keycode,   0,   0, 255); break;
             }
         }
 }
