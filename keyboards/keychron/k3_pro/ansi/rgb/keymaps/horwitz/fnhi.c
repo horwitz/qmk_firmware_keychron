@@ -2,6 +2,7 @@
 #include "layers.h"
 #include "layout.h"
 #include "fnhi.h"
+#include "fnhi_color.h"
 #include "keymaps.h"
 #include "colorconst.h"
 
@@ -30,19 +31,7 @@ static uint8_t layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
  * { 0, 5, 83, ... } (followed by 0s) and the function returns 3.
  */
 static uint8_t initialize_layer_used_indices_inner(uint8_t* layer_used_indices, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
-    uint8_t lui_i = 0;
-    uint8_t led_index = 0;
-    for (int row = 0; row < MATRIX_ROWS; ++row) {
-        for (int col = 0; col < MATRIX_COLS; ++col) {
-            if (ansi_84_hole_map[row][col] != KC_NO) {
-                if (keymap[row][col] != _______) {
-                    layer_used_indices[lui_i++] = led_index;
-                }
-                ++led_index;
-            }
-        }
-    }
-    return lui_i;
+    return find_used_led_indices(layer_used_indices, &keymap[0][0], &ansi_84_hole_map[0][0], MATRIX_ROWS, MATRIX_COLS, _______);
 }
 
 static void initialize_layer_used_indices(uint8_t layer, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
