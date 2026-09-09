@@ -38,7 +38,7 @@ uint8_t color_picker_gray_intensities[GRAY_PALETTE_SIZE];
 uint8_t color_picker_color_palette_keycodes[COLOR_PALETTE_SIZE];
 uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE];
 
-bool cPickGrayscaleAvailable = true;
+static bool cPickGrayscaleAvailable = true;
 
 #define GCP_ANIM_FRAME_MS 39 // 39ms * 13 frames ≈ 0.5s total
 
