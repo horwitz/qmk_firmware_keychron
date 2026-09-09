@@ -34,6 +34,7 @@ static bool is_ccp_change_keycode(uint16_t keycode) {
 }
 
 static int8_t index_in_byte = -1; // 0-15 value equal to the last hex value edited (one of RH, RL, GH, GL, BH, BL)
+static enum RGB_COLOR last_color_edited = RED; // only read when index_in_byte >= 0; initial value of RED is (arbitray and) ignored
 
 static RGB ccpRgb;
 
@@ -185,6 +186,7 @@ bool process_record_user_ccp(uint16_t keycode, const keyrecord_t *record) {
                         index_in_byte = (int8_t)(component % HIGH_NIBBLE_DELTA);
                         break;
                 }
+                last_color_edited = ccp_key.color;
 
 #if DEBUG
                 uprintf("before: (%2u,%2u,%2u)\n", ccpRgb.r, ccpRgb.g, ccpRgb.b);
@@ -308,11 +310,16 @@ void rgb_matrix_indicators_advanced_user_ccp(void) {
             uprintf("setting 0-%2u to white\n", index_in_byte);
         }
 #endif
-        // if index_in_byte >= 0, color ESC (white)
-        // and if index_in_byte >= 1, color F1
+        // if index_in_byte >= 0, color ESC (in last color edited; 0*17 brightness)
+        // and if index_in_byte >= 1, color F1 (1*17 brightness)
         // ...
-        // and if index_in_byte >= 15, color RGB_MOD
+        // and if index_in_byte >= 15, color RGB_MOD (15*17=255 brightness)
         for (int top_row_keycode = 0; top_row_keycode <= index_in_byte; ++top_row_keycode) {
-            rgb_matrix_set_color(top_row_keycode, RGB_WHITE); // TODO? some other color than white (perhaps state dependent?)
+            uint8_t v = (uint8_t)(top_row_keycode * 17); // top_row_keycode/15 * 255 (exact since 15*17=255)
+            switch (last_color_edited) {
+                case RED:   rgb_matrix_set_color(top_row_keycode, v, 0, 0); break;
+                case GREEN: rgb_matrix_set_color(top_row_keycode, 0, v, 0); break;
+                case BLUE:  rgb_matrix_set_color(top_row_keycode, 0, 0, v); break;
+            }
         }
 }
