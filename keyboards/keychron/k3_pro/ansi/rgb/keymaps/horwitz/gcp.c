@@ -40,9 +40,18 @@ uint8_t color_picker_gray_palette_keycodes[GRAY_PALETTE_SIZE];
 
 bool cPickGrayscaleAvailable = true;
 
+#define GCP_ANIM_FRAME_MS 80
+
+static bool     gcp_anim_active;
+static uint8_t  gcp_anim_frame;
+static uint16_t gcp_anim_timer;
+
 static void dance_grayscale(tap_dance_state_t *state, void *user_data) {
     if (state->count == 2) {
         cPickGrayscaleAvailable = !cPickGrayscaleAvailable;
+        gcp_anim_active = true;
+        gcp_anim_frame  = 0;
+        gcp_anim_timer  = timer_read();
     }
 }
 
@@ -146,6 +155,36 @@ void rgb_matrix_indicators_advanced_user_gcp(void) {
         for (int i = 0; i < GRAY_PALETTE_SIZE; ++i) {
             uint8_t intensity = color_picker_gray_intensities[i];
             rgb_matrix_set_color(color_picker_gray_palette_keycodes[i], intensity, intensity, intensity);
+        }
+    }
+}
+
+// called every render frame from keymap.c; paints a grayscale-toggle animation on the top row
+void rgb_matrix_indicators_advanced_user_gcp_anim(void) {
+    if (gcp_anim_active) {
+        if (timer_elapsed(gcp_anim_timer) >= GCP_ANIM_FRAME_MS) {
+            ++gcp_anim_frame;
+            gcp_anim_timer = timer_read();
+        }
+
+        int lit_count;
+        if (gcp_anim_frame >= GRAY_PALETTE_SIZE) {
+            gcp_anim_active = false;
+            lit_count = 0;
+        } else if (cPickGrayscaleAvailable) {
+            lit_count = gcp_anim_frame + 1;               // 1..GRAY_PALETTE_SIZE
+        } else {
+            lit_count = (int)GRAY_PALETTE_SIZE - gcp_anim_frame; // GRAY_PALETTE_SIZE..1
+        }
+
+        for (int i = 0; i < GRAY_PALETTE_SIZE; ++i) {
+            uint8_t led = color_picker_gray_palette_keycodes[i];
+            if (i < lit_count) {
+                uint8_t intensity = color_picker_gray_intensities[i];
+                rgb_matrix_set_color(led, intensity, intensity, intensity);
+            } else {
+                rgb_matrix_set_color(led, RGB_OFF);
+            }
         }
     }
 }

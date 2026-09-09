@@ -181,6 +181,8 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
             break;
         }
     }
+    rgb_matrix_indicators_advanced_user_gcp_anim(); // [GCP] overlay: grayscale-toggle animation
+
     // the return value here is effectively meaningless: rgb_matrix_indicators_advanced_kb (the weak default,
     // which just calls this function) is itself called from rgb_matrix_indicators_advanced, which is void and
     // ignores the return value. no Keychron override of rgb_matrix_indicators_advanced_kb exists.
