@@ -41,7 +41,7 @@ bool encoder_update_kb(uint8_t index, bool clockwise) {
         printf("ignoring update on right hand (%d,%s)\n", index, clockwise ? "CW" : "CC");
         return true;
     }
-    updates[updates_array_idx % 32] = {index, clockwise};
+    updates[updates_array_idx % 32] = {static_cast<int8_t>(index), clockwise};
     updates_array_idx++;
     return true;
 }

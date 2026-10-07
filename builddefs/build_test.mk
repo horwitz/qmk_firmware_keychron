@@ -47,6 +47,11 @@ PLATFORM:=TEST
 PLATFORM_KEY:=test
 BOOTLOADER_TYPE:=none
 
+# Apple clang 15+ treats #include_next from a relative/absolute path as an error;
+# suppress it so the QMK platform headers compile cleanly in the test environment.
+CFLAGS += -Wno-include-next-absolute-path
+CXXFLAGS += -Wno-include-next-absolute-path
+
 ifeq ($(strip $(DEBUG)), 1)
 CONSOLE_ENABLE = yes
 endif

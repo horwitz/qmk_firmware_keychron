@@ -1,0 +1,93 @@
+#include QMK_KEYBOARD_H
+#include "layers.h"
+#include "layout.h"
+#include "fnhi.h"
+#include "fnhi_color.h"
+#include "keymaps.h"
+#include "colorconst.h"
+
+/*
+ * When the `fn` key is pressed, the keys with new keycodes (i.e., not `_______`) will light up at the complementary
+ * hue of the keyboard's current global solid color (rgb_matrix_get_hsv()), always at full saturation and brightness;
+ * the remaining keys will retain the lighting behavior from before the `fn` key was pressed.
+ *
+ * See the comment on complement_hsv in rgb_matrix_indicators_advanced_user_fnhi for the rationale.
+*/
+
+// for any given layer, layers_used_indices[layer] should not exceed RGB_MATRIX_LED_COUNT in size, since each index
+// found in the array should represent a key with a distinct light (see also: doc for
+// initialize_layer_used_indices_inner)
+// keycode indices (0–83) are hardcoded throughout this file based on the K3 Pro's 84-key layout
+_Static_assert(RGB_MATRIX_LED_COUNT == 84, "fnhi.c assumes RGB_MATRIX_LED_COUNT == 84 (K3 Pro ANSI layout)");
+static uint8_t layers_used_indices[DYNAMIC_KEYMAP_LAYER_COUNT][RGB_MATRIX_LED_COUNT];
+static uint8_t layer_used_indices_size[DYNAMIC_KEYMAP_LAYER_COUNT];
+
+/*
+ * sets layer_used_indices to the LED indices (0–83, in increasing order) of keys that are non-_______
+ * in the given keymap, and returns how many were found. Uses ansi_84_hole_map (see layout.c) to
+ * identify the 12 hardware holes; a hole position does not consume a LED index.
+ *
+ * e.g., if only the keys at LED indices 0, 5, 83 are non-_______, layer_used_indices will start
+ * { 0, 5, 83, ... } (followed by 0s) and the function returns 3.
+ */
+static uint8_t initialize_layer_used_indices_inner(uint8_t* layer_used_indices, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
+    return find_used_led_indices(layer_used_indices, &keymap[0][0], &ansi_84_hole_map[0][0], MATRIX_ROWS, MATRIX_COLS, _______);
+}
+
+static void initialize_layer_used_indices(uint8_t layer, const uint16_t keymap[MATRIX_ROWS][MATRIX_COLS]) {
+    layer_used_indices_size[layer] = initialize_layer_used_indices_inner(layers_used_indices[layer], keymap);
+}
+
+void keyboard_post_init_user_fnhi(void) {
+    initialize_layer_used_indices(MAC_FN, keymaps[MAC_FN]);
+    initialize_layer_used_indices(WIN_FN, keymaps[WIN_FN]);
+}
+
+// v used for the complement highlight when the base color is bright (v > MAX_COMPONENT/2);
+// dim but non-zero so the highlight is visible as a colored light rather than appearing off
+static const uint8_t COMPLEMENT_DIM_V = 64;
+
+// when fn is held down, highlight keys whose behavior changed from the base layer; inspired by
+// https://www.reddit.com/r/olkb/comments/kpro3p/comment/h3nb56h
+void rgb_matrix_indicators_advanced_user_fnhi(uint8_t layer) {
+//    rgb_matrix_set_color_all(RGB_BLUE); // uncomment to have transparent keys appear solid blue
+    HSV hsv = rgb_matrix_get_hsv();
+
+    // goal: highlight FN keys in a color that is maximally distinguishable from the base color.
+    //
+    // the naive approach of RGB componentwise inversion, (255-r, 255-g, 255-b), fails for
+    // near-gray base colors: e.g., (128,128,128) inverts to (127,127,127)--nearly identical.
+    //
+    // a strict HSV complement—shifting only the hue by 128, keeping s and v the same—avoids that
+    // specific failure but introduces another: for dark base colors (low v), the highlight is
+    // equally dark and may not stand out against the keyboard background.
+    //
+    // instead, we use:
+    //   h' = (h + HUE_STEPS/2) % HUE_STEPS  — opposite hue on the color wheel
+    //   s' = MAX_COMPONENT                  — fully saturated, regardless of base saturation
+    //   v' = (v > MAX_COMPONENT/2) ? COMPLEMENT_DIM_V : MAX_COMPONENT  — value flip: dim for bright base, bright for dark
+    //
+    // the value flip ensures contrast in both directions: a bright base (e.g., white at v=255) gets
+    // a dim but visible colored highlight; a dark base gets a bright highlight. always fully saturated
+    // means the highlight is never a washed-out near-gray.
+    //
+    // for achromatic bases (s=0: gray, white, black), hue is geometrically undefined in HSV, so h'
+    // is the complement of whatever h happens to be stored. when the color was set via CCP or GCP,
+    // that stored h is 0, so h'=128 (cyan)--a predictable, vivid result. when set via QMK's
+    // built-in RGB controls, the stored h may differ.
+    HSV complement_hsv = {
+        .h = (uint8_t)((hsv.h + HUE_STEPS / 2) % HUE_STEPS),
+        .s = MAX_COMPONENT,
+        .v = (uint8_t)(hsv.v > MAX_COMPONENT / 2 ? COMPLEMENT_DIM_V : MAX_COMPONENT),
+    };
+    RGB complement_rgb = hsv_to_rgb_nocie(complement_hsv);
+
+    for (int i = 0; i < layer_used_indices_size[layer]; ++i) {
+        rgb_matrix_set_color(
+            layers_used_indices[layer][i],
+            complement_rgb.r,
+            complement_rgb.g,
+            complement_rgb.b
+        );
+    }
+}
