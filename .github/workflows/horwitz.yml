@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - bluetooth_playground
+      - wireless_playground
     paths:
       - 'keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/**'
       - 'tests/horwitz/**'
