@@ -10,6 +10,8 @@ on:
       - wireless_playground
     paths:
       - 'keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/**'
+      - 'keyboards/keychron/k3_max/ansi/rgb/keymaps/horwitz/**'
+      - 'users/horwitz/**'
       - 'tests/horwitz/**'
       - 'tests/test_common/**'
       - 'builddefs/**'
@@ -35,8 +37,8 @@ jobs:
       - name: Run horwitz unit tests
         run: make test:horwitz
 
-  build:
-    name: Firmware build
+  build-pro:
+    name: Firmware build (K3 Pro)
     runs-on: ubuntu-latest
     container: qmkfm/qmk_cli
 
@@ -48,3 +50,17 @@ jobs:
         run: pip3 install -r requirements-dev.txt
       - name: Build horwitz keymap
         run: make keychron/k3_pro/ansi/rgb:horwitz
+
+  build-max:
+    name: Firmware build (K3 Max)
+    runs-on: ubuntu-latest
+    container: qmkfm/qmk_cli
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: pip3 install -r requirements-dev.txt
+      - name: Build horwitz keymap
+        run: make keychron/k3_max/ansi/rgb:horwitz

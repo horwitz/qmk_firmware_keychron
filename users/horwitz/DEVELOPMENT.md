@@ -113,16 +113,18 @@ Requires `compile_commands.json` — see the "generate the compilation database"
 
 ```sh
 /opt/homebrew/opt/llvm/bin/clang-tidy \
-  --header-filter='keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/.*' \
+  --header-filter='users/horwitz/.*' \
   -p . \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/ccp.c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/gcp.c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/fnhi.c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/keymap.c
+  users/horwitz/ccp.c \
+  users/horwitz/gcp.c \
+  users/horwitz/fnhi.c \
+  users/horwitz/horwitz.c \
+  users/horwitz/horwitz_keymap.c
 ```
 
 `--header-filter` is required; without it, upstream QMK headers flood the output.
-`keymap.c` is not in `compile_commands.json` (QMK inlines it), but clang-tidy still
+`horwitz_keymap.c` is not in `compile_commands.json` (QMK inlines it into
+`quantum/keymap_introspection.c` via `INTROSPECTION_KEYMAP_C`), but clang-tidy still
 analyzes it when listed explicitly.
 
 ### cppcheck
@@ -136,10 +138,11 @@ cppcheck \
   --suppress=missingInclude \
   --inline-suppr \
   --language=c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/keymap.c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/ccp.c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/gcp.c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/fnhi.c \
+  users/horwitz/horwitz.c \
+  users/horwitz/horwitz_keymap.c \
+  users/horwitz/ccp.c \
+  users/horwitz/gcp.c \
+  users/horwitz/fnhi.c \
   2>&1
 ```
 
@@ -151,11 +154,11 @@ Known false positives to ignore:
 
 ### -Wconversion
 
-Add temporarily to `rules.mk`, compile, then remove:
+Add temporarily to `users/horwitz/rules.mk`, compile, then remove:
 
 ```sh
 # 1. Add to rules.mk:
-echo 'EXTRAFLAGS += -Wconversion' >> keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/rules.mk
+echo 'EXTRAFLAGS += -Wconversion' >> users/horwitz/rules.mk
 
 # 2. Compile and filter to horwitz warnings only:
 qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz 2>&1 | grep 'warning:' | grep horwitz
@@ -180,13 +183,13 @@ Prerequisite: `brew install llvm` (binary at `/opt/homebrew/opt/llvm/bin/clang-f
 ```sh
 # Check (no changes written):
 /opt/homebrew/opt/llvm/bin/clang-format --dry-run --Werror \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/*.c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/*.h
+  users/horwitz/*.c \
+  users/horwitz/*.h
 
 # Apply:
 /opt/homebrew/opt/llvm/bin/clang-format -i \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/*.c \
-  keyboards/keychron/k3_pro/ansi/rgb/keymaps/horwitz/*.h
+  users/horwitz/*.c \
+  users/horwitz/*.h
 ```
 
 Note: the repo's `.clang-format` style may conflict with the keymap's formatting

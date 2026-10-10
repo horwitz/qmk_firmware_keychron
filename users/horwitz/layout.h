@@ -38,5 +38,5 @@
 // Defined in layout.c; see there for details.
 extern const uint16_t ansi_84_hole_map[MATRIX_ROWS][MATRIX_COLS];
 
-// The full keymap array defined in keymap.c; keymaps[layer] gives the layer's keycode matrix.
+// The full keymap array defined in horwitz_keymap.c; keymaps[layer] gives the layer's keycode matrix.
 extern const uint16_t keymaps[][MATRIX_ROWS][MATRIX_COLS];

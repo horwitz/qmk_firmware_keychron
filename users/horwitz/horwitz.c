@@ -1,0 +1,178 @@
+/* Copyright 2023 @ Keychron (https://www.keychron.com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Features:
+ * (1) Debugging
+ * (2) Highlighting used fn-layer keys
+ * (3) Granular color picking
+ * (4) Suspend RGB
+ * (5) Complete color picking
+ *
+ * (1) SHORT NAME†: [DEBUG]
+ *     DETAILS: When enabled, outputs the result of `uprintf` statements--these can be seen in the QMK Toolbox console.
+ *     TO ACTIVATE: Compile with `DEBUG=1` (e.g., `qmk compile -kb keychron/k3_pro/ansi/rgb -km horwitz DEBUG=1`, or
+ *                  `-kb keychron/k3_max/ansi/rgb`); rules.mk enables CONSOLE_ENABLE automatically. Then use (e.g.)
+ *                  `uprintf` to print debug output.
+ *
+ * (2) SHORT NAME: [FN-HI]
+ *     DETAILS: see fnhi.c
+ *     TO ACTIVATE: The feature is always on.
+ *
+ * (3) SHORT NAME: [GCP]
+ *     DETAILS: see gcp.c
+ *     TO ACTIVATE: The feature is always on; grayscale mode is on by default; its availability is toggled by double
+ *                  tapping X while holding Fn.
+ *
+ * (4) SHORT NAME: [SUS-RGB]
+ *     DETAILS: Turns off lighting when the laptop sleeps (and for similar(?) behavior).
+ *     TO ACTIVATE: The feature is always on.
+ *
+ * (5) SHORT NAME: [CCP]
+ *     DETAILS: see ccp.c
+ *     TO ACTIVATE: The feature is always on.
+ *
+ * † notation just for documentation (when a comment with the SHORT NAME is found, the code below--continuing until the
+ *   next blank line--is park of the feature with that SHORT NAME (additionally: some single lines have a comment with
+ *   the short name at the end of the line, meaning that that one line should be taken into account, rather than
+ *   continuing on to the next blank line)... also it is (or at least should be) the case that _all_ of the code for the
+ *   feature is commented in that fashion)
+ */
+
+#ifndef DEBUG
+#define DEBUG 0 // [DEBUG]
+#endif
+
+#include QMK_KEYBOARD_H
+#include "layers.h"
+#include "gcp.h"
+#include "ccp.h"
+#include "fnhi.h"
+//#include "ctrlkeycodes.h"
+// [DEBUG]
+#if DEBUG
+    #include "print.h"
+#endif
+
+// [SUS-RGB]
+void suspend_power_down_user(void) {
+    rgb_matrix_set_suspend_state(true);
+}
+void suspend_wakeup_init_user(void) {
+    rgb_matrix_set_suspend_state(false);
+}
+
+void keyboard_post_init_user(void) {
+    // [DEBUG]
+#if DEBUG
+        // Customise these values to desired behaviour
+        debug_enable = true;
+//        debug_matrix = true;
+//        debug_keyboard = true;
+//        debug_mouse = true;
+#endif
+
+    keyboard_post_init_user_gcp(); // [GCP]
+
+    keyboard_post_init_user_fnhi(); // [FN-HI]
+}
+
+// [CCP]
+layer_state_t layer_state_set_user(layer_state_t state) {
+    return layer_state_set_user_ccp(state);
+}
+
+/*
+ * Design note: split between process_record_user and rgb_matrix_indicators_advanced_user
+ *
+ * process_record_user is called on each key press/release event. It owns:
+ *   - one-shot state changes triggered by a keypress: updating ccpRgb, index_in_byte, etc.
+ *   - persistent RGB state changes: rgb_matrix_mode(), rgb_matrix_sethsv() (both write to EEPROM)
+ *   - layer transitions: layer_on(), layer_off()
+ *
+ * rgb_matrix_indicators_advanced_user is called on every render frame. It owns:
+ *   - per-frame LED display: clearing the buffer (rgb_matrix_set_color_all) and repainting the
+ *     current state each frame (GCP palette, CCP color preview and nibble readout, FN-HI highlights)
+ *
+ * The split is: key-event-driven state changes go in process_record_user; per-frame display of
+ * that state goes in rgb_matrix_indicators_advanced_user. Nothing appears to be in the wrong place.
+ */
+
+// note potential short circuit
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    return (bool)(process_record_user_gcp(keycode, record) && // [GCP]
+        process_record_user_ccp(keycode, record)); // [CCP]
+}
+
+#if DEBUG
+static uint8_t last_layer = UINT8_MAX;
+#endif
+
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    uint8_t layer = biton32(layer_state);
+
+#if DEBUG
+    if (layer != last_layer) {
+        uprintf("layer: %d\n", layer);
+        last_layer = layer;
+    }
+#endif
+
+    switch (layer) {
+        case MAC_BASE:
+        case WIN_BASE:
+            break;
+
+        // [FN-HI]
+        case MAC_FN:
+        case WIN_FN: {
+            rgb_matrix_indicators_advanced_user_fnhi(layer);
+            break;
+        }
+
+        // [GCP]
+        case GCP: {
+            rgb_matrix_indicators_advanced_user_gcp();
+            break;
+        }
+
+        // [CCP]
+        case CCP: {
+            rgb_matrix_indicators_advanced_user_ccp();
+            break;
+        }
+    }
+    rgb_matrix_indicators_advanced_user_gcp_anim(); // [GCP] overlay: grayscale-toggle animation
+
+    // the return value here is effectively meaningless: rgb_matrix_indicators_advanced_kb (the weak default,
+    // which just calls this function) is itself called from rgb_matrix_indicators_advanced, which is void and
+    // ignores the return value. no Keychron override of rgb_matrix_indicators_advanced_kb exists (K3 Pro or K3 Max).
+    //
+    // K3 Pro: the red CAPS LOCK indicator visible on the keyboard is also not controlled here. it is a dedicated
+    // hardware LED driven by LED_CAPS_LOCK_PIN via writePin() in k3_pro.c's matrix_scan_kb, entirely separate
+    // from the RGB matrix pipeline. the RGB matrix CAPS key (index 46) is actually dimmed to black when
+    // CAPS LOCK is active, via DIM_CAPS_LOCK in config.h → os_state_indicate() → SET_LED_OFF(CAPS_LOCK_INDEX),
+    // called from rgb_matrix_indicators_kb (the bluetooth indicator path), which runs before this function.
+    //
+    // K3 Max: the red CAPS LOCK indicator is likewise a dedicated hardware LED on LED_CAPS_LOCK_PIN, but nothing in
+    // k3_max.c drives it; QMK core does: led_update_kb (common/wireless/indicator.c) → led_update_ports
+    // (quantum/led.c) → writePin(). the RGB matrix CAPS key (index 46) is dimmed the same way as on the K3 Pro
+    // (DIM_CAPS_LOCK → os_state_indicate() → SET_LED_OFF(CAPS_LOCK_INDEX)), reached via rgb_matrix_indicators_kb
+    // (common/keychron_task.c) → rgb_matrix_indicators_keychron → rgb_matrix_indicators_bt
+    // (common/wireless/indicator.c), which also runs before this function. in wireless mode os_state_indicate() is
+    // skipped while a Bluetooth/2.4 GHz host indicator is showing.
+    return true;
+}

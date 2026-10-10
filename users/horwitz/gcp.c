@@ -157,7 +157,7 @@ void rgb_matrix_indicators_advanced_user_gcp(void) {
     }
 }
 
-// called every render frame from keymap.c; paints a grayscale-toggle animation on the top row
+// called every render frame from horwitz.c; paints a grayscale-toggle animation on the top row
 void rgb_matrix_indicators_advanced_user_gcp_anim(void) {
     if (gcp_anim_active) {
         if (timer_elapsed(gcp_anim_timer) >= GCP_ANIM_FRAME_MS) {

@@ -1,5 +1,11 @@
 #pragma once
 
+// The K3 Pro gets Keychron's keycodes (NEW_SAFE_RANGE etc.) via QMK_KEYBOARD_H → k3_pro.h;
+// the K3 Max has no keyboard header, so its keymaps include keychron_common.h directly.
+#ifdef KEYBOARD_keychron_k3_max
+#    include "keychron_common.h"
+#endif
+
 enum ctrl_keycodes {
 // [GCP]
     // if COLOR00 were set to SAFE_RANGE (instead of NEW_SAFE_RANGE), collisions would occur (e.g.,
