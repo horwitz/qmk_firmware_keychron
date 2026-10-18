@@ -28,6 +28,12 @@ HSV rgb_to_hsv(RGB rgb) {
     } else { // impossible case
         unscaledSextupledH = 0;
     }
+    // hue is circular: when red is max and blue > green (magenta-to-red, e.g., #FF00FF), the value above is negative
+    // (e.g., -1 sextant == 5 sextants). Wrap it into [0, HUE_SEXTANTS); converting a negative double to uint8_t is
+    // undefined behavior, which the ARM firmware clamps to 0 (red).
+    if (unscaledSextupledH < 0) {
+        unscaledSextupledH += HUE_SEXTANTS;
+    }
     hsv.h = (uint8_t)round(unscaledSextupledH * MAX_COMPONENT / HUE_SEXTANTS);
 
     return hsv;

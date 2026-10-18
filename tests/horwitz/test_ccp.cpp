@@ -76,6 +76,24 @@ TEST(RgbToHsv, Magenta) {
     EXPECT_EQ(255, hsv.v);
 }
 
+// red max, blue > green: the raw hue is negative and must wrap (see rgb_to_hsv); on the keyboard these committed as red
+TEST(RgbToHsv, Rose) {
+    RGB rgb = make_rgb(255, 0, 128);
+    HSV hsv = rgb_to_hsv(rgb);
+    EXPECT_EQ(234, hsv.h);
+    EXPECT_EQ(255, hsv.s);
+    EXPECT_EQ(255, hsv.v);
+}
+
+// nearly pure red, just past the wrap point: hue must be at the top of the range, not 0
+TEST(RgbToHsv, RedTingedBlue) {
+    RGB rgb = make_rgb(255, 0, 1);
+    HSV hsv = rgb_to_hsv(rgb);
+    EXPECT_EQ(255, hsv.h);
+    EXPECT_EQ(255, hsv.s);
+    EXPECT_EQ(255, hsv.v);
+}
+
 TEST(RgbToHsv, DarkRed) {
     RGB rgb = make_rgb(128, 0, 0);
     HSV hsv = rgb_to_hsv(rgb);
