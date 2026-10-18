@@ -92,6 +92,38 @@ his compiles and then waits for a DFU device; while it waits, trigger the bootlo
 
 the flash will complete automatically and the keyboard will reboot
 
+## Supporting another keyboard
+
+The keymap is shared: everything lives in `users/horwitz/` except one small `keymap.c` per keyboard
+(`keyboards/<keyboard>/keymaps/horwitz/keymap.c`) holding only that keyboard's specific code. Currently supported:
+`keychron/k3_pro/ansi/rgb` and `keychron/k3_max/ansi/rgb`.
+
+To add a keyboard:
+
+1. Create `keyboards/<keyboard>/keymaps/horwitz/` with:
+   - `rules.mk` — a one-line comment only (see the K3 Pro's); `users/horwitz/rules.mk` is included automatically
+     because the keymap is named `horwitz`.
+   - `keymap.c` — must define `process_record_keymap` (declared and documented in `horwitz.h`).
+2. **Find out how the keyboard handles Keychron's keycodes** (`KC_LOPTN`, `KC_LCMMD`, `KC_RCMMD`, `KC_SNAP`, ...),
+   which the Mac base layer uses for Option, Cmd, and Print Screen. Check the keyboard's own **default keymap**, not
+   just its layout:
+   - If its `process_record_user` calls `process_record_keychron_common()` (as Keychron's "Max" boards do), our
+     `process_record_keymap` **must** call it too (see the K3 Max's `keymap.c`).
+   - If the keyboard's own code handles them (e.g., `process_record_kb` in `k3_pro.c`), `process_record_keymap` just
+     returns `true` (see the K3 Pro's `keymap.c`).
+
+   **Getting this wrong does not cause a build error**: if the call is missing, Option, Cmd, and Print Screen silently
+   do nothing on the Mac layer. (Forgetting `process_record_keymap` entirely *does* fail, at link time.) Also compare
+   anything else the default keymap's `keymap.c` does beyond `keymaps[]` (other `_user` hooks).
+3. Check that the keyboard's layout and LED indices match the K3 Pro's 84-key ANSI layout, which `layout.h`
+   (`LED_INDEX_*`) and `layout.c` (`ansi_84_hole_map`) assume.
+4. Check that the keyboard gets Keychron's keycode enum (`NEW_SAFE_RANGE`) in `ctrlkeycodes.h`: via `QMK_KEYBOARD_H`
+   (as on the K3 Pro), or else by including `keychron_common.h` (as on the K3 Max, under
+   `#ifdef KEYBOARD_keychron_k3_max`). If missing, the build fails with `NEW_SAFE_RANGE` undeclared.
+5. Add a build job and path filter for the keyboard to `.github/workflows/horwitz.yml`.
+6. Flash and smoke test, including **Cmd, Option, and Print Screen on the Mac layer** (e.g., Cmd+Space opens
+   Spotlight; Option+e then e gives é).
+
 ## Debug builds
 
 Pass `DEBUG=1` to enable console output and `uprintf` statements:

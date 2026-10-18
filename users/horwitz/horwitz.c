@@ -57,6 +57,7 @@
 #endif
 
 #include QMK_KEYBOARD_H
+#include "horwitz.h"
 #include "layers.h"
 #include "gcp.h"
 #include "ccp.h"
@@ -114,7 +115,8 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 // note potential short circuit
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return (bool)(process_record_user_gcp(keycode, record) && // [GCP]
-        process_record_user_ccp(keycode, record)); // [CCP]
+        process_record_user_ccp(keycode, record) && // [CCP]
+        process_record_keymap(keycode, record)); // keyboard-specific; defined in each keyboard's keymap.c (see horwitz.h)
 }
 
 #if DEBUG
