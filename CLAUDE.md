@@ -63,8 +63,9 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 ## Environment: Windows + QMK MSYS
 
 - `qmk`, `make`, `python` and `arm-none-eabi-gcc` are not on the PATH of PowerShell or Git Bash. They live in
-  `C:\QMK_MSYS` (QMK MSYS 1.7.2: qmk 1.1.1, GCC 10.1.0, make 4.3, `dfu-util`; observed). `qmk.exe` refuses to run outside
-  the MINGW64 shell. Run it from PowerShell like this (observed to work):
+  `C:\QMK_MSYS` (QMK MSYS 1.12.0 since 2026-11-09: qmk 1.2.0, GCC 15.2.0 in `/opt/qmk/bin`, make 4.4.1, Python 3.12.12,
+  `dfu-util` 0.11-dev; observed). `qmk.exe` refuses to run outside the MINGW64 shell. Run it from PowerShell like this
+  (observed to work):
 
   ```powershell
   $env:MSYSTEM='MINGW64'; $env:CHERE_INVOKING='1'
@@ -72,19 +73,29 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   ```
 
 - Docker Desktop is installed too (the `qmkfm/qmk_cli` container is a fallback; unverified for this branch).
-- Updating MSYS (latest stable is 1.12.0, GCC 15.2) is a planned task, **after the baseline flash and before any layout
-  work**. A much newer GCC might break this older tree: unverified.
-- Baseline: `qmk compile -kb keychron/x4/ansi_encoder/red -km default` builds with no warnings; the `.bin` (68,208
-  bytes on disk) is copied to the repo root. QMK's "Size after" line prints 35,902, which is `text` + `data` from the
-  ELF; the `.bin` is larger because the image is contiguous from `0x08000000` and `.text` starts at `0x08008000`, leaving
-  about 32 KB of padding after the vector table. It fits the 256 KB flash. Why Keychron's layout leaves that gap:
-  unverified, where it is gitignored along with `.build/`. (observed) The build banner says
-  `QMK Firmware 0.14.29`; how that string is derived in this fork is unverified.
+- The old MSYS 1.7.2 (qmk 1.1.1, GCC 10.1.0) is kept as a working copy at `C:\QMK_MSYS_1.7.2` (runs standalone; observed),
+  as a fallback or to compare builds. The 1.12.0 installer was run by the owner with all optional boxes unchecked (no
+  USB drivers installed). It is unsigned and has no GitHub attestation, but its SHA-256 matched the release checksum and
+  the assets were uploaded by `github-actions[bot]`. (observed)
+- Baseline: `qmk compile -kb keychron/x4/ansi_encoder/red -km default` builds with no compiler warnings on both
+  toolchains (observed: GCC 10.1 gave a 68,208-byte `.bin`, GCC 15.2 a 67,244-byte one). The `.bin` is copied to the repo
+  root, where it is gitignored along with `.build/`. QMK's "Size after" line prints `text` + `data` from the ELF (35,902
+  with GCC 10.1, 34,940 with GCC 15.2); the `.bin` is larger because the image is contiguous from `0x08000000` and
+  `.text` starts at `0x08008000`, leaving about 32 KB of padding after the vector table. It fits the 256 KB flash. Why
+  Keychron's layout leaves that gap: unverified. The build banner says `QMK Firmware 0.14.29`; how that string is derived
+  in this fork is unverified.
+- With qmk 1.2.0 and Python 3.12, every `qmk` command prints noise from this repo's old CLI code (`SyntaxWarning: invalid
+  escape sequence` in `lib/python/qmk/cli/*.py`, and a `UserWarning` that `cli._subcommand` is deprecated in
+  `lib/python/qmk/decorators.py`). It is harmless and is vendor code; investigating is on `TASKS.md`. A separate,
+  unrelated old QMK checkout exists at `C:\Users\jahor\qmk_firmware` (2023, a `moonlander-j` fork); `qmk` falls back to
+  it outside a repo, so always run `qmk` from this repo. (observed)
 - Flashing works on this machine (observed 2026-11-08: the baseline `default` build on the physical X4, using
   `qmk flash -kb keychron/x4/ansi_encoder/red -km default` through the MSYS command above, with the board already in
   bootloader mode; it ended at "Transitioning to dfuMANIFEST state" and exited normally, with no hang). After flashing,
   all keys, the encoder, the Fn layer (including the Win lock), the backlight and the Caps Lock LED worked, and Esc-hold
-  re-entered the bootloader. Bootloader entry: the board's `readme.md` says hold K00 (Esc) while plugging
+  re-entered the bootloader. The same checks passed again on 2026-11-09 with the GCC 15.2 build, flashed by the upgraded
+  MSYS (its first `dfu-util` status was `dfuERROR … firmware is corrupt`, which `dfu-util` cleared before the flash
+  completed). Bootloader entry: the board's `readme.md` says hold K00 (Esc) while plugging
   in, or press the RESET button under the spacebar. Lemokey's pages (read through a summarizer; verify) say hold Esc
   while plugging in, or remove the spacebar keycap and hold RESET (left of the spacebar switch). Holding Esc while plugging in
   worked (observed); the RESET-button route is untried. No driver install was needed: Windows shows
@@ -94,7 +105,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   `https://www.lemokey.com/pages/firmware-and-json-files-of-the-lemokey-qmk-keyboards`, flashed with the web Launcher
   (`launcher.lemokey.com`, cable mode) or QMK Toolbox. Put any download in its own new directory; it is untrusted data.
 - The `default` build has no VIA, so Launcher/VIA cannot edit its keymap, but the Launcher's firmware update works at
-  bootloader level and can restore the official image. (general)
+  bootloader level and can restore the official image, as could `dfu-util` or QMK Toolbox with the official `.bin`. (general)
 
 ## Pitfalls carried over from the K3 work (observed there; re-check here)
 
