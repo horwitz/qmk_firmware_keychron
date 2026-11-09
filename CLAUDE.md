@@ -74,14 +74,21 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - Docker Desktop is installed too (the `qmkfm/qmk_cli` container is a fallback; unverified for this branch).
 - Updating MSYS (latest stable is 1.12.0, GCC 15.2) is a planned task, **after the baseline flash and before any layout
   work**. A much newer GCC might break this older tree: unverified.
-- Baseline: `qmk compile -kb keychron/x4/ansi_encoder/red -km default` builds with no warnings; the `.bin` (35,902
-  bytes) is copied to the repo root, where it is gitignored along with `.build/`. (observed) The build banner says
+- Baseline: `qmk compile -kb keychron/x4/ansi_encoder/red -km default` builds with no warnings; the `.bin` (68,208
+  bytes on disk) is copied to the repo root. QMK's "Size after" line prints 35,902, which is `text` + `data` from the
+  ELF; the `.bin` is larger because the image is contiguous from `0x08000000` and `.text` starts at `0x08008000`, leaving
+  about 32 KB of padding after the vector table. It fits the 256 KB flash. Why Keychron's layout leaves that gap:
+  unverified, where it is gitignored along with `.build/`. (observed) The build banner says
   `QMK Firmware 0.14.29`; how that string is derived in this fork is unverified.
-- Flashing is **untested** on this machine. Bootloader entry: the board's `readme.md` says hold K00 (Esc) while plugging
+- Flashing works on this machine (observed 2026-11-08: the baseline `default` build on the physical X4, using
+  `qmk flash -kb keychron/x4/ansi_encoder/red -km default` through the MSYS command above, with the board already in
+  bootloader mode; it ended at "Transitioning to dfuMANIFEST state" and exited normally, with no hang). After flashing,
+  all keys, the encoder, the Fn layer (including the Win lock), the backlight and the Caps Lock LED worked, and Esc-hold
+  re-entered the bootloader. Bootloader entry: the board's `readme.md` says hold K00 (Esc) while plugging
   in, or press the RESET button under the spacebar. Lemokey's pages (read through a summarizer; verify) say hold Esc
-  while plugging in, or remove the spacebar keycap and hold RESET (left of the spacebar switch). The Windows USB driver
-  for the STM32 DFU device may be needed (`C:\QMK_MSYS\qmk_driver_installer.exe`, or the Launcher's Toolbox); whether it
-  is installed: unverified.
+  while plugging in, or remove the spacebar keycap and hold RESET (left of the spacebar switch). Holding Esc while plugging in
+  worked (observed); the RESET-button route is untried. No driver install was needed: Windows shows
+  `STM32  BOOTLOADER` (`0483:DF11`) and `dfu-util -l` lists the board.
 - Recovery (Lemokey pages, not yet downloaded or checked): factory reset of settings is Fn + J + Z for 4 seconds
   (backlight flashes red). Official firmware: `x4_ansi_encoder_red_v1.0.2_2404191652.bin` from
   `https://www.lemokey.com/pages/firmware-and-json-files-of-the-lemokey-qmk-keyboards`, flashed with the web Launcher

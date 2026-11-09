@@ -1,11 +1,11 @@
 Agreements: v0.1.0
 
-Items: 13 total — 3 ■ · 10 □
+Items: 13 total — 4 ■ · 9 □
 ```
  ■  1. 🔧 (1/1) Update fork's playground to Keychron's (4a8143cce9); keep the old one as old_playground (verified identical with gh compare)
  ■  2. 🔧 (2/2) Create x4 from playground; qmk git-submodule; build stock keychron/x4/ansi_encoder/red:default as the baseline (MSYS 1.7.2, qmk 1.1.1, GCC 10.1.0: built with no warnings)
  ■  3. 📄 (1/1) Fresh CLAUDE.md for the X4 instance, using the latest origin/wireless_playground; record the gh/fork lessons from the playground sync (claims checked against this branch; docs only, nothing to build)
- □ 13. 🧪 (0/2) Flash the unchanged baseline build to the physical X4 and smoke test it (proves the Windows flash path, bootloader entry and drivers; do before any layout work)
+ ■ 13. 🧪 (2/2) Flash the unchanged baseline build to the physical X4 and smoke test it (verified on the X4: all keys, encoder, Fn layer including Win lock, backlight and Caps Lock LED, and Esc-hold bootloader re-entry; no driver install needed; official .bin download skipped by choice)
  □  4. ⬆️ (0/2) Update wireless_playground (your fork vs keychron/qmk_firmware; how far behind is unverified)
  □  5. 🔧 (0/2) Update QMK MSYS (1.7.2 → 1.12.0), qmk CLI and toolchain, after the baseline builds and before any layout work
  □  6. 🏗️ (0/1) Decide the Mac/Windows selection method (options and recommendation, then the owner's decision)
