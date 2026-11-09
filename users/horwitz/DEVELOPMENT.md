@@ -11,11 +11,23 @@
 
 ### 1. Fix qmk Python dependencies
 
+The repo's Python requirements must be installed into the Python environment that `qmk` runs in. Reinstalling or
+upgrading `qmk` can wipe them. The symptom is every `make`/`qmk` command failing with `Cannot run "qmk hello"` or
+`Could not find module appdirs!`; the error message names the exact command to run. Check afterward with `qmk hello`,
+which should print `Ψ Hello, World!`.
+
+Run from the repo root, using the command for whichever `qmk` runs (`which -a qmk`; the first one on `PATH` wins):
+
 ```sh
+# qmk installed with pipx (~/.local/bin/qmk)
+"$HOME/Library/Application Support/pipx/venvs/qmk/bin/python" -m pip install -r requirements.txt
+
+# qmk installed with Homebrew (/opt/homebrew/bin/qmk); if the qmk version has changed, adjust the path
 /opt/homebrew/Cellar/qmk/1.1.8/libexec/bin/python -m pip install -r requirements.txt
 ```
 
-(Run from the repo root. If the qmk version has changed, adjust the path accordingly.)
+(As of 2026-11, both a pipx copy (1.2.0, first on `PATH`) and a Homebrew copy (1.1.8) are installed; both had lost the
+requirements, and the pipx one has since been fixed.)
 
 ### 2. Install the VS Code `code` CLI
 

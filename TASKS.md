@@ -1,6 +1,6 @@
 Agreements: v0.1.0
 
-Items: 56 total — 3 ✕ · 49 ■ · 1 ⏸ · 3 □
+Items: 57 total — 3 ✕ · 51 ■ · 1 ⏸ · 2 □
 ```
  ✕ 37. 🧹 (0/0) [B3] color_picker_color_hues[] → stack-local (dropped: array also used at keypress; savings trivial on this hardware)
  ✕ 40. 🧪 (0/0) [B6] Tests: get_ccp_key (dropped: static fn, QMK keycode deps make native testing impractical; logic simple enough to verify by inspection)
@@ -54,9 +54,10 @@ Items: 56 total — 3 ✕ · 49 ■ · 1 ⏸ · 3 □
  ■ 49. 🐛 (1/1) [C6] K3 Max: Keychron keycodes (KC_LOPTN/KC_LCMMD/KC_RCMMD/KC_SNAP) unhandled; add required process_record_keymap hook (horwitz.h) + per-board keymap.c + DEVELOPMENT.md "Supporting another keyboard"
  ■ 50. 🐛 (1/1) [C7] CCP: rgb_to_hsv negative hue → uint8_t is UB; ARM clamps to 0 so magenta–red colors (e.g. #FF00FF) commit as red; wrap hue + -fsanitize=float-cast-overflow in tests + 2 new tests
  ■ 54. 🔧 (1/1) Migrate task tracking to working agreements v0.1.0 (TASKS.md; retire memory task list and users/horwitz/TODO.md)
+ ■ 55. 📄 (1/1) Repo-root CLAUDE.md for the Lemokey X4 session (cross-keyboard knowledge only)
+ ■ 57. 📄 (1/1) DEVELOPMENT.md: document the qmk requirements fix for both the pipx and Homebrew installs (replaces the stale Homebrew-only 1.1.8 step)
  ⏸ 23. 🧹 (0/2) clang-format across all horwitz keymap source files (create a .clang-format config first; large diff, so do as a standalone commit) (deferred: tabled for now)
  □ 42. 🧪 (0/3) [B8] Investigate QMK test framework for horwitz keymap; target: process_record_user_ccp (stateful key→RGB logic) and process_record_user_gcp
- □ 55. 📄 (0/1) Repo-root CLAUDE.md for the Lemokey X4 session (cross-keyboard knowledge only)
  □ 56. 📄 (0/1) Kickoff prompt for the Lemokey X4 macOS-support session
 ```
 Key: 💻 dev environment · 🧹 cleanup · 🔍 static analysis · 📄 docs · ⬆️ catch-up · 🔧 tooling · 🧪 testing · 🏗️ refactor · 🐛 bug fix
