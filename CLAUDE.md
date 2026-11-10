@@ -17,7 +17,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   rule, inherited from the K3 work, was to wait until after the flash test.)
 - Prefer the clean, documented fix over a workaround. Do not edit Keychron/Lemokey vendor code. Check claims against the
   repo or by running a command before stating them.
-- Scope for now: Windows and Mac layers plus the selection method. Later (see `TASKS.md`): DEBUG, an on/off variant of
+- Scope: Windows and Mac layers plus the selection method (built; the real-Mac test is task 9). Later (see `TASKS.md`): DEBUG, an on/off variant of
   FN-HI, SUS-RGB, and tooling updates. The K3's per-key RGB features (GCP, CCP) do not apply: the X4's LEDs are single
   color.
 
@@ -57,18 +57,20 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   unverified.
 - The X4 uses `keyboards/keychron/common/`, not `keyboards/lemokey/common/` (which here holds only `common` and `p1`).
   `keychron_common.h` defines `KC_LOPTN`, `KC_LCMMD` etc. starting at `QK_KB_2`, and `keychron_common.c` handles them.
-  **`NEW_SAFE_RANGE` does not exist on this branch** (the K3 userspace uses it); how to add custom keycodes here:
-  unverified. Only the `keychron` keymap calls into the Keychron handlers; `default` has no `process_record_user` at all.
-- Mac modifiers (general, unverified here): plain `KC_LGUI` and `KC_LALT` with swapped bottom-row positions should be
-  enough; the Keychron vendor keycodes may be unnecessary on the X4. Test on hardware.
+  **`NEW_SAFE_RANGE` does not exist on this branch** (the K3 userspace uses it); our custom keycodes use `SAFE_RANGE`,
+  which nothing in the X4 tree uses. Only the `keychron` keymap calls into the Keychron handlers; `default` has no
+  `process_record_user` at all.
+- Mac modifiers: the Mac layer uses plain `KC_LALT` (Option) and `KC_LGUI`/`KC_RGUI` (Command) in the Mac positions, not
+  Keychron's vendor keycodes. From a Windows PC the keys swap as expected (tested); Cmd+Space and Option+e on a real Mac
+  are not yet tested (task 9).
 
 ## Mac/Windows design (decided 2026-11-09; layers and mode keys implemented and tested on the board 2026-11-09, LED display 2026-11-10)
 
 - **Four layers in stock order:** `WIN_BASE` 0, `WIN_FN` 1, `MAC_BASE` 2, `MAC_FN` 3 (taking the two empty `WIN_L2`/`WIN_L3`
   slots). Windows is layer 0, the boot layer of a fresh or erased board, and the stock Windows layers keep their indices.
   The K3 spells every layer out in full (only its two Fn layers are named `LAYOUT_*` macros in `users/horwitz/keymaps.h`;
-  its Mac and Windows bases are duplicated rows in `keymaps[]`). How much to share between layers here is an open design
-  point in task 7.
+  its Mac and Windows bases are duplicated rows in `keymaps[]`). The X4 does the same: all four layers are spelled out in
+  full (decided 2026-11-09; the Mac layers differ from the Windows ones only in the bottom row and three Fn keys).
 - **Selection:** two explicit Fn-layer keys that set the persistent default layer: **Fn + `\` for Windows, Fn + `/` for
   Mac** (the directory separators). Both are free on the stock Fn layer, are at the same positions on both Fn layers,
   and avoid Lemokey's Fn + J + Z factory-reset combo. They need a small custom keycode calling
@@ -96,6 +98,28 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   if that byte is set (so `x4.c` clears its private state and LED), and clears `no_gui` separately. Tested on the board.
 - The Fn layer you are holding stays active after you press a mode key, until you release Fn (normal QMK layer
   behavior); re-press Fn to get the new mode's Fn layer.
+
+## File layout of the X4 keymap
+
+`keyboards/keychron/x4/ansi_encoder/red/keymaps/horwitz/` is self-contained: there is no `users/` directory, and file and
+macro names match the K3's where the roles match. Build it with `-km horwitz`.
+
+- `keymap.c`: `keymaps[]` (the base layers spelled out; the Fn layers are the macros below) and `encoder_map`.
+- `keymaps.h`: `LAYOUT_winfn` and `LAYOUT_macfn`, and the `KC_TASK`/`KC_FLXP` shortcuts.
+- `layers.h`: the layer enum (`WIN_BASE`, `WIN_FN`, `MAC_BASE`, `MAC_FN`, in stock order).
+- `ctrlkeycodes.h`: `MODE_WIN` and `MODE_MAC`.
+- `horwitz.c`: the behavior: `process_record_user` (mode selection and the GUI-lock release) and
+  `led_matrix_indicators_user` (the mode display).
+- `rules.mk`: `ENCODER_MAP_ENABLE = yes` and `SRC += horwitz.c`.
+
+License headers: none of these files carries one for now. The Keychron block was removed from `keymap.c` and `horwitz.c`
+because they are not purely Keychron's code (this repo is private). As a result `qmk lint` reports its license-header
+check as failed for the three `.h` files (it does not flag the `.c` files); that is its only finding. What the headers
+should say is task 18. The lint only runs in CI on pull requests that touch `keyboards/**` (`lint.yml`), not on pushes.
+
+Naming hazard: the keymap is named `horwitz`, and `USER_NAME` defaults to the keymap name, so QMK would also include
+`users/horwitz/rules.mk` and `config.h` if that directory existed (`builddefs/build_keyboard.mk`). It does not on this
+branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NAME` in its `rules.mk`.
 
 ## Environment: Windows + QMK MSYS
 
