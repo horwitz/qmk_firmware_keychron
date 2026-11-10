@@ -70,3 +70,70 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true;
     }
 }
+
+#ifdef LED_MATRIX_ENABLE
+// Returns the index of the LED under the key that holds `keycode` on the Windows Fn layer (NO_LED if there is none).
+//
+// The LED indices are found from the keymap instead of being hard-coded: scan the layer's matrix for the key, then ask
+// QMK's LED layout (g_led_config.matrix_co, built from the led_matrix "layout" list in info.json) which LED sits under
+// that matrix position. If a mode key is ever moved in keymaps.h, its LED follows it. (The mode keys are at the same
+// positions on both Fn layers, so scanning one of them is enough.)
+static uint8_t led_under_key(uint16_t keycode) {
+    for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+        for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+            if (keymap_key_to_keycode(WIN_FN, (keypos_t){.row = row, .col = col}) == keycode) {
+                return g_led_config.matrix_co[row][col];
+            }
+        }
+    }
+    return NO_LED;
+}
+
+// While a Fn layer is active (Fn is held), show the current mode on the two mode keys: the active mode's key is driven to
+// full brightness and the other goes dark. With the backlight on every key is lit, so the dark key stands out; with it
+// off or dimmed, the bright key does. When Fn is released, both keys return to the normal backlight.
+//
+// x4.c calls this first from its led_matrix_indicators_kb, then sets its own indicators (Caps Lock, the Win lock); those
+// use other LEDs.
+bool led_matrix_indicators_user(void) {
+    // The LED lookup is done once, on the first call, when the keymap and the LED layout are certainly ready.
+    static bool    looked_up = false;
+    static uint8_t win_led   = NO_LED;
+    static uint8_t mac_led   = NO_LED;
+    if (!looked_up) {
+        win_led   = led_under_key(MODE_WIN);
+        mac_led   = led_under_key(MODE_MAC);
+        looked_up = true;
+    }
+
+    if (layer_state_cmp(layer_state, WIN_FN) || layer_state_cmp(layer_state, MAC_FN)) {
+        // The mode is the base layer: the (persistent) default layer, which the mode keys set.
+        bool mac_mode = layer_state_cmp(default_layer_state, MAC_BASE);
+        if (win_led != NO_LED) {
+            led_matrix_set_value(win_led, mac_mode ? 0 : 0xFF);
+        }
+        if (mac_led != NO_LED) {
+            led_matrix_set_value(mac_led, mac_mode ? 0xFF : 0);
+        }
+    } else if (!led_matrix_get_flags()) {
+        // Fn is not held and the backlight is off. Keychron's BL_TOGG (x4.c) turns the backlight off by setting the flags
+        // to LED_FLAG_NONE and clearing every LED once; no effect repaints the LEDs after that. So the full-brightness
+        // value set above while Fn was held would stay on after Fn is released. Clear both keys here to prevent that.
+        //
+        // This mirrors what Keychron's x4.c does for the Win-lock LED: it sets that LED to 0 on every frame when the lock
+        // is off and `!led_matrix_get_flags()`, the same check used here.
+        //
+        // ASSUMPTION: "flags == none" means the LEDs are off. That is how x4.c's BL_TOGG defines "backlight off" (it
+        // toggles between LED_FLAG_ALL and LED_FLAG_NONE, and no keymap exposes other values); we do not check anything
+        // else (for example, a brightness of 0 or a different effect mode). With the backlight on, the effect repaints
+        // every key each frame, so nothing stays lit anyway.
+        if (win_led != NO_LED) {
+            led_matrix_set_value(win_led, 0);
+        }
+        if (mac_led != NO_LED) {
+            led_matrix_set_value(mac_led, 0);
+        }
+    }
+    return true;
+}
+#endif // LED_MATRIX_ENABLE

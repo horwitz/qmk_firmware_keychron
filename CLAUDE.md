@@ -62,7 +62,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - Mac modifiers (general, unverified here): plain `KC_LGUI` and `KC_LALT` with swapped bottom-row positions should be
   enough; the Keychron vendor keycodes may be unnecessary on the X4. Test on hardware.
 
-## Mac/Windows design (decided 2026-11-09; layers and mode keys implemented and tested on the board that day, LED display not yet)
+## Mac/Windows design (decided 2026-11-09; layers and mode keys implemented and tested on the board 2026-11-09, LED display 2026-11-10)
 
 - **Four layers in stock order:** `WIN_BASE` 0, `WIN_FN` 1, `MAC_BASE` 2, `MAC_FN` 3 (taking the two empty `WIN_L2`/`WIN_L3`
   slots). Windows is layer 0, the boot layer of a fresh or erased board, and the stock Windows layers keep their indices.
@@ -79,11 +79,16 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   switching, are later tasks (see `TASKS.md`).
 - **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
   Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
-  above the background (the Win-lock LED looks brighter when the backlight is dimmed). Whether one LED can be forced
-  **below** the background while its neighbors stay lit is **unverified**; the Caps Lock key shows purple with the
-  backlight on and blue with it off, which is probably a separate blue indicator LED (`indicators.caps_lock` on C9)
-  plus red light bleeding from neighbors, so it does not settle the question. The first build of the Mac layers tests it.
-  Fallbacks if darkening fails: rely on contrast with a dimmed backlight, or dim the rest of the board while Fn is held.
+  above the background (the Win-lock LED looks brighter when the backlight is dimmed), **and one key's LED can be
+  forced dark while its neighbors stay lit** (tested 2026-11-10). The Caps Lock key shows purple with the backlight on
+  and blue with it off, which is probably a separate blue indicator LED (`indicators.caps_lock` on C9) plus red light
+  bleeding from neighbors.
+  Implemented in `led_matrix_indicators_user` (`horwitz.c`): the two LEDs are found from the keymap (scan the Fn layer for
+  `MODE_WIN`/`MODE_MAC`, then `g_led_config.matrix_co`), not hard-coded; the replay of that lookup gives LED 42 for `\` and
+  68 for `/`. Pitfall found on the board: with the backlight off (`x4.c`'s `BL_TOGG` sets the flags to none and clears
+  every LED once), nothing repaints the LEDs, so a value set while Fn is held stays lit after Fn is released. The code
+  therefore clears both keys when `!led_matrix_get_flags()`, as `x4.c` does for the Win-lock LED; this assumes that
+  "flags == none" means the backlight is off.
 - **Win lock:** `GU_TOGG` (Fn + Left Win) stays on the Windows Fn layer only. That position is transparent on the Mac Fn
   layer, because the lock is one global flag (`keymap_config.no_gui`, saved in EEPROM) that would otherwise stay on after
   switching modes and leave Command dead. `horwitz.c` therefore releases it when Mac mode is selected: it reads

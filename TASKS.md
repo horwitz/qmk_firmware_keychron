@@ -18,19 +18,19 @@ Items: 17 total — 7 ■ · 9 □ · 1 ◧
  □ 15. 💡 (0/3) Add OS auto-detection with a manual override (option C): OS_DETECTION_ENABLE picks the layer at boot and the Fn-layer keys override it (this base has no detection callback, so polling is needed; QMK calls detection a best guess; decide the override semantics)
  □ 16. 💡 (0/1) Add the blink (LED option 4): briefly flash the pressed mode key's LED (once for Windows, twice for Mac) when the mode changes; needs a timer; works in any backlight state
  □ 17. 🔍 (0/1) Decide whether the X4 firmware should support VIA/Launcher (VIA_ENABLE, DYNAMIC_KEYMAP_LAYER_COUNT, a VIA JSON with our four layers and custom keycodes in the QK_KB_* range), weighing the EEPROM-overrides-compiled-keymap pitfall; implement only if the answer is yes
-▾◧  7. 🏗️ (3/5) MAC_BASE and MAC_FN layers (and the selection method) on the X4 (estimate raised from 4 to 5 chunks when the subtasks were created)
+▾◧  7. 🏗️ (4/5) MAC_BASE and MAC_FN layers (and the selection method) on the X4 (estimate raised from 4 to 5 chunks when the subtasks were created)
 ```
 Key: 🔧 tooling · 📄 docs · ⬆️ catch-up · 🏗️ design/refactor · 🧪 testing · 🔍 investigate · 💡 feature · 🧹 cleanup
 
 Subtasks of 7:
 
-Items: 5 total — 3 ■ · 2 □
+Items: 5 total — 4 ■ · 1 □
 ```
-▾◧ 7.   🏗️ (3/5) MAC_BASE and MAC_FN layers (and the selection method) on the X4
+▾◧ 7.   🏗️ (4/5) MAC_BASE and MAC_FN layers (and the selection method) on the X4
    ■ 7-1. 🏗️ (1/1) Skeleton: keymaps/horwitz under keyboards/keychron/x4/ansi_encoder/red/ with layers.h (4-layer enum in stock order), keymaps.h (the Fn layers only, as on the K3: LAYOUT_winfn plus a transparent LAYOUT_macfn placeholder), keymap.c (base layers inline: stock WIN_BASE, transparent MAC_BASE placeholder; stock encoder map) and rules.mk (ENCODER_MAP_ENABLE = yes) (verified: builds with no warnings, and the .bin is byte-identical to a fresh stock default build; not yet flashed)
    ■ 7-2. 🏗️ (1/1) Mac layers: MAC_BASE (bottom row Ctrl, Option, Command with plain QMK keycodes; Fn key to MO(MAC_FN)) and MAC_FN (K3-style F-row: Mission Control, Launchpad; the rest as on WIN_FN; the Win-lock position left transparent, since the lock is released when Mac mode is selected, see 7-3); layers kept spelled out in full, in stock order (verified: builds with no warnings; a text diff shows MAC_BASE differs from WIN_BASE only in the bottom row and LAYOUT_macfn from LAYOUT_winfn only in F3, F4 and the Win-lock position; the Mac layers cannot be selected until 7-3, so Option/Command behavior is not yet tried on the board)
    ■ 7-3. 🏗️ (1/1) Mode keys: Fn+\ (Windows) and Fn+/ (Mac) on both Fn layers, as custom keycodes MODE_WIN and MODE_MAC (SAFE_RANGE, which nothing in the X4 tree uses) that call set_single_persistent_default_layer; selecting Mac first releases any GUI lock (read x4.c's saved lock byte with eeconfig_read_user_datablock, clear it through a synthesized GU_TOGG press to process_record_kb, and clear keymap_config.no_gui); behavior in horwitz.c (verified: builds with no warnings; flashed; on the board, from a Windows PC: Windows mode unchanged, Fn+/ swaps the Alt and Windows keys, the mode persists across unplugging in both directions, and the lock is released on entering Mac mode while still toggling correctly afterward; not yet tried on a Mac)
-   □ 7-4. 💡 (0/1) LED display: while a Fn layer is active, the active mode's key LED stays lit and the other goes dark (first test that one LED can be forced below the background); builds
+   ■ 7-4. 💡 (1/1) LED display: only while a Fn layer is active (Fn held), the active mode's key LED (\ in Windows mode, / in Mac mode) is driven to full brightness and the other mode key's LED goes dark; the LEDs are found from the keymap (scan the Fn layer for MODE_WIN and MODE_MAC, then g_led_config.matrix_co) instead of being hard-coded, so there is no layout.h (verified: builds with no warnings; an off-board replay of the lookup gives LEDs 42 and 68; flashed; on the board, with the backlight on, dimmed and off, the active key is lit and the other dark, the display flips immediately when a mode key is pressed, Caps Lock and the Win-lock LED still work; a bug found on the board, the active key staying lit after Fn was released with the backlight off, was fixed by clearing both keys when the flags are none, as x4.c does for the Win-lock LED; this assumes flags == none means the backlight is off)
    □ 7-5. 🔍 (0/1) Lint (qmk lint), check the build for warnings, and update CLAUDE.md with the final file layout
 ```
 Key: 🏗️ design/refactor · 💡 feature · 🔍 investigate
