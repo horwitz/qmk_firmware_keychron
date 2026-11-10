@@ -60,6 +60,28 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - Mac modifiers (general, unverified here): plain `KC_LGUI` and `KC_LALT` with swapped bottom-row positions should be
   enough; the Keychron vendor keycodes may be unnecessary on the X4. Test on hardware.
 
+## Mac/Windows design (decided 2026-11-09; not yet implemented)
+
+- **Four layers in stock order:** `WIN_BASE` 0, `WIN_FN` 1, `MAC_BASE` 2, `MAC_FN` 3 (taking the two empty `WIN_L2`/`WIN_L3`
+  slots). Windows is layer 0, the boot layer of a fresh or erased board, and the stock Windows layers keep their indices.
+  The K3 spells every layer out in full (only its two Fn layers are named `LAYOUT_*` macros in `users/horwitz/keymaps.h`;
+  its Mac and Windows bases are duplicated rows in `keymaps[]`). How much to share between layers here is an open design
+  point in task 7.
+- **Selection:** two explicit Fn-layer keys that set the persistent default layer: **Fn + `\` for Windows, Fn + `/` for
+  Mac** (the directory separators). Both are free on the stock Fn layer, are at the same positions on both Fn layers,
+  and avoid Lemokey's Fn + J + Z factory-reset combo. They need a small custom keycode calling
+  `set_single_persistent_default_layer()` (documented in `docs/feature_layers.md`); a persistent `PDF` keycode was not
+  found on this base, and the safe custom-keycode range is unverified. Auto-detect with an override, and a blink on
+  switching, are later tasks (see `TASKS.md`).
+- **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
+  Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
+  above the background (the Win-lock LED looks brighter when the backlight is dimmed). Whether one LED can be forced
+  **below** the background while its neighbors stay lit is **unverified**; the Caps Lock key shows purple with the
+  backlight on and blue with it off, which is probably a separate blue indicator LED (`indicators.caps_lock` on C9)
+  plus red light bleeding from neighbors, so it does not settle the question. The first build of the Mac layers tests it.
+  Fallbacks if darkening fails: rely on contrast with a dimmed backlight, or dim the rest of the board while Fn is held.
+- The Win-lock key (`GU_TOGG`, Fn + Left Win) needs its own decision on the Mac Fn layer.
+
 ## Environment: Windows + QMK MSYS
 
 - `qmk`, `make`, `python` and `arm-none-eabi-gcc` are not on the PATH of PowerShell or Git Bash. They live in
@@ -130,5 +152,6 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - Avoid: `lib/` (about 1 GB), `.build/`, and listing or searching all of `keyboards/` (over a thousand board
   directories; use `keyboards/keychron/` and `keyboards/lemokey/`). The workflows in `.github/workflows/` are stock QMK
   CI; this branch has no `horwitz.yml`, so an X4 CI job is an open task.
-- Untracked or ignored clutter: `.build/` and the `keychron_x4_*.bin` in the repo root. Stage files by name; never
-  `git add -A`.
+- Ignored clutter: `.build/` and the `keychron_x4_*.bin` in the repo root are gitignored, so nothing needs to be
+  excluded when staging. `git add -A` is fine here as long as `git status` shows nothing else untracked (unlike the K3
+  clone, which has untracked scratch files).
