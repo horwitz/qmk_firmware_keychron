@@ -11,8 +11,10 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - The owner's global working agreements (loaded from `~/.claude/CLAUDE.md`) govern git/commits, task tracking, code
   style and writing. Task list: `TASKS.md` in the repo root (read it at session start). This branch has its own
   `TASKS.md`; the K3 Pro/Max list lives on `wireless_playground` and belongs to a different Claude Code instance.
-- Never commit; the owner does. **Firmware changes are not ready to commit until flashed and smoke tested on the
-  physical X4.** Until then, end with the next hardware test steps, not commit material.
+- Never commit; the owner does. Firmware changes may be committed before they are flashed and smoke tested on the
+  physical X4, but the commit message must say so (a line such as "UNTESTED ON HARDWARE"), and the next hardware test
+  steps must be listed. Once they have been tested, say so in `TASKS.md` and in the next commit. (Before 2026-11-09 the
+  rule, inherited from the K3 work, was to wait until after the flash test.)
 - Prefer the clean, documented fix over a workaround. Do not edit Keychron/Lemokey vendor code. Check claims against the
   repo or by running a command before stating them.
 - Scope for now: Windows and Mac layers plus the selection method. Later (see `TASKS.md`): DEBUG, an on/off variant of
