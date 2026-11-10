@@ -62,7 +62,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - Mac modifiers (general, unverified here): plain `KC_LGUI` and `KC_LALT` with swapped bottom-row positions should be
   enough; the Keychron vendor keycodes may be unnecessary on the X4. Test on hardware.
 
-## Mac/Windows design (decided 2026-11-09; not yet implemented)
+## Mac/Windows design (decided 2026-11-09; layers and mode keys implemented and tested on the board that day, LED display not yet)
 
 - **Four layers in stock order:** `WIN_BASE` 0, `WIN_FN` 1, `MAC_BASE` 2, `MAC_FN` 3 (taking the two empty `WIN_L2`/`WIN_L3`
   slots). Windows is layer 0, the boot layer of a fresh or erased board, and the stock Windows layers keep their indices.
@@ -73,7 +73,9 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   Mac** (the directory separators). Both are free on the stock Fn layer, are at the same positions on both Fn layers,
   and avoid Lemokey's Fn + J + Z factory-reset combo. They need a small custom keycode calling
   `set_single_persistent_default_layer()` (documented in `docs/feature_layers.md`); a persistent `PDF` keycode was not
-  found on this base, and the safe custom-keycode range is unverified. Auto-detect with an override, and a blink on
+  found on this base. The keycodes are `MODE_WIN`/`MODE_MAC` (`ctrlkeycodes.h`, from `SAFE_RANGE`, which nothing in the X4
+  tree uses), handled in `horwitz.c`; the saved layer is restored at every boot by `magic()` in
+  `quantum/bootmagic/magic.c`, so the mode survives unplugging (tested). Auto-detect with an override, and a blink on
   switching, are later tasks (see `TASKS.md`).
 - **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
   Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
@@ -82,7 +84,13 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   backlight on and blue with it off, which is probably a separate blue indicator LED (`indicators.caps_lock` on C9)
   plus red light bleeding from neighbors, so it does not settle the question. The first build of the Mac layers tests it.
   Fallbacks if darkening fails: rely on contrast with a dimmed backlight, or dim the rest of the board while Fn is held.
-- The Win-lock key (`GU_TOGG`, Fn + Left Win) needs its own decision on the Mac Fn layer.
+- **Win lock:** `GU_TOGG` (Fn + Left Win) stays on the Windows Fn layer only. That position is transparent on the Mac Fn
+  layer, because the lock is one global flag (`keymap_config.no_gui`, saved in EEPROM) that would otherwise stay on after
+  switching modes and leave Command dead. `horwitz.c` therefore releases it when Mac mode is selected: it reads
+  `x4.c`'s saved lock byte (`eeconfig_read_user_datablock`), has `process_record_kb` handle a synthesized `GU_TOGG` press
+  if that byte is set (so `x4.c` clears its private state and LED), and clears `no_gui` separately. Tested on the board.
+- The Fn layer you are holding stays active after you press a mode key, until you release Fn (normal QMK layer
+  behavior); re-press Fn to get the new mode's Fn layer.
 
 ## Environment: Windows + QMK MSYS
 
