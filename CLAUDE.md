@@ -192,8 +192,11 @@ on Keychron's fork, because the X4 exists only there and moving to upstream QMK 
 CI is `.github/workflows/horwitz_x4.yml`: it builds `keychron/x4/ansi_encoder/red:horwitz` in the pinned container on every
 push to `x4`, on pull requests and on demand. It omits `qmk lint` until task 18. The container's GCC (15.2.0, the same
 `qmk_toolchains` build) and `qmk` (1.2.0) match MSYS, and its firmware is byte-for-byte identical to MSYS's (67,636 bytes,
-sha256 `67AFA083E17F6AA1…`, observed 2026-11-10). The workflow has not yet run on GitHub: the first push to `x4` is its
-real test, and task 8 stays open until that run is green. To reproduce CI locally (about 12.5 minutes, against 1.7 for
+sha256 `67AFA083E17F6AA1…`, observed 2026-11-10). Its first run on GitHub (2026-11-11, commit `1ed1b1633b`, runner image `ubuntu-24.04`)
+succeeded in about 1 minute 42 seconds in total. The workflow now pins `runs-on: ubuntu-24.04` (the image that run used)
+instead of the floating `ubuntu-latest` label, which GitHub is moving to Ubuntu 26; the build runs inside the pinned
+container, so the effect would have been small, but a pinned runner keeps CI from changing under us. The first run with
+the pin is pending (task 21). To reproduce CI locally (about 12.5 minutes, against 1.7 for
 MSYS, because of the Windows bind mount):
 
 ```powershell

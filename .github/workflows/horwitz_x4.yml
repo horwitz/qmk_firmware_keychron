@@ -22,7 +22,9 @@ on:
 jobs:
   build:
     name: Firmware build (Lemokey X4)
-    runs-on: ubuntu-latest
+    # Pinned like the container below: `ubuntu-latest` is a floating label (GitHub is moving it to Ubuntu 26), and the first
+    # run on 2026-11-11 used the ubuntu-24.04 image.
+    runs-on: ubuntu-24.04
     # Pinned to a version tag, not `latest`, so CI does not change under us. At the 2026-11-10 audit, 1.2.0 was the same image
     # as `latest` (sha256:b7d7fa8fb4432b56...): GCC 15.2.0 and qmk 1.2.0, the same as the local QMK MSYS, and it builds a
     # byte-identical firmware. To move to a newer image, change the tag, rebuild locally in the container and compare it
