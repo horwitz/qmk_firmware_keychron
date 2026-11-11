@@ -1,7 +1,7 @@
 # CLAUDE.md
 
-Personal fork of Keychron's QMK firmware (GitHub: `horwitz/qmk_firmware_keychron`; the `…/qmk_firmware.git` URL in
-`git remote -v` is an old name that redirects). This branch, `x4`, is for the **Lemokey X4** keyboard: Mac and Windows
+Personal fork of Keychron's QMK firmware (GitHub: `horwitz/qmk_firmware_keychron`, which is what `origin` points
+to since 2026-11-10; the fork's old name, `qmk_firmware`, still redirects). This branch, `x4`, is for the **Lemokey X4** keyboard: Mac and Windows
 layers, and a way to choose between them. The owner's keymap name elsewhere in the fork is `horwitz`. Tags: **(observed)** =
 checked in this repo or by running a command; **(general)** = ordinary QMK knowledge, not verified here;
 **(unverified)** = check before relying on it.

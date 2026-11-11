@@ -1,6 +1,6 @@
 Agreements: v0.1.1
 
-Items: 18 total — 9 ■ · 9 □
+Items: 18 total — 10 ■ · 8 □
 ```
  ■  1. 🔧 (1/1) Update fork's playground to Keychron's (4a8143cce9); keep the old one as old_playground (verified identical with gh compare)
  ■  2. 🔧 (2/2) Create x4 from playground; qmk git-submodule; build stock keychron/x4/ansi_encoder/red:default as the baseline (MSYS 1.7.2, qmk 1.1.1, GCC 10.1.0: built with no warnings)
@@ -11,7 +11,7 @@ Items: 18 total — 9 ■ · 9 □
  ■  6. 🏗️ (1/1) Decide the Mac/Windows selection method (decided: four layers in stock order WIN_BASE 0, WIN_FN 1, MAC_BASE 2, MAC_FN 3, Windows is the boot layer; two explicit Fn-layer keys, Fn+\ for Windows and Fn+/ for Mac, calling set_single_persistent_default_layer; LED feedback while a Fn layer is active: the active mode's key stays lit and the other goes dark; auto-detect plus override later as task 15, blink later as task 16; recorded in CLAUDE.md)
 ▾■  7. 🏗️ (5/5) MAC_BASE and MAC_FN layers (and the selection method) on the X4 (all five subtasks completed: Windows and Mac layers, the mode keys and the mode display work on the board when driven from a Windows PC; lint's license-header check deliberately fails until task 18; the real-Mac test passed in task 9; estimate was raised from 4 to 5 chunks when the subtasks were created)
  ■  9. 🧪 (2/2) Flash and smoke test on the X4 (verified on the board with the final firmware: on a real Mac, Mac mode, Cmd+Space, Option+e then e giving é, other Command shortcuts, the right Command, the Mac Fn row, the encoder, persistence across replugging and switching back to Windows mode all passed; on the Windows PC, a full Windows-mode regression passed: all keys, the Fn row, the encoder, the backlight keys, the Win lock, the Caps Lock indicator, the mode display and persistence; the board runs the build flashed in subtask 7-4, whose source has changed since only in comments)
- □ 12. 🧹 (0/1) Update the origin URL to qmk_firmware_keychron (cosmetic; the old name redirects)
+ ■ 12. 🧹 (1/1) Update the origin URL to qmk_firmware_keychron (verified: the new SSH URL authenticated with git ls-remote before the change; after it git remote -v shows the new URL, git fetch and git push --dry-run succeed, and x4 still tracks origin/x4; the stale old-name note in CLAUDE.md is updated; not yet confirmed: that the "This repository moved" notice is gone, which appears only on a real push)
  □  8. 🔧 (0/1) CI build job and docs for the X4 (leave qmk lint out of the job for now, since it fails on the license headers until task 18; task 18 says to add it then, if appropriate)
  □ 14. 🔍 (0/1) Investigate the QMK CLI warnings seen under qmk 1.2.0 / Python 3.12 (SyntaxWarning invalid escape sequences in lib/python/qmk/cli/*.py; UserWarning that cli._subcommand is deprecated in lib/python/qmk/decorators.py): harmless noise from vendor code? Decide whether anything is worth doing (no vendor edits)
  □ 10. 🔍 (0/1) Confirm the MCU (info.json says STM32F401; kickoff prompt said F402RC); low priority
