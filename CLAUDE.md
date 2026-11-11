@@ -169,6 +169,43 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
 - The `default` build has no VIA, so Launcher/VIA cannot edit its keymap, but the Launcher's firmware update works at
   bootloader level and can restore the official image, as could `dfu-util` or QMK Toolbox with the official `.bin`. (general)
 
+## Versions and CI
+
+Audit of 2026-11-10 (task 19). Policy: pin known-good versions and upgrade deliberately (rebuild, retest on the board,
+record it), as in the 2026-11-09 toolchain upgrade; never rely on a floating "latest" in CI. The QMK base of the tree stays
+on Keychron's fork, because the X4 exists only there and moving to upstream QMK (0.34.7) would mean porting vendor code.
+
+| Component | In use | Latest at the audit |
+|---|---|---|
+| QMK MSYS | 1.12.0 | 1.12.0 (stable; a beta exists, not used) |
+| `qmk` CLI | 1.2.0 | 1.2.0 |
+| `arm-none-eabi-gcc` | 15.2.0 (`qmk_toolchains` v15.2.0-1) | v15.2.0-1 |
+| `qmk_flashutils` (`dfu-util`) | 20251130, bundled in MSYS | 20260711 (left alone: flashing works) |
+| Git for Windows | 2.56.0.windows.4 | 2.56.1.windows.1, a security release (the owner updates it) |
+| `git` inside QMK MSYS | 2.52.0 | bundled; not separately updatable, as far as known |
+| `gh` | 2.103.3 | 2.103.3 |
+| Docker Desktop | 4.99.0 | 4.99.0 |
+| `actions/checkout` | v7.0.1 | v7.0.1 |
+| CI container | `qmkfm/qmk_cli:1.2.0` (`sha256:b7d7fa8f…`) | the same image as `latest` |
+| Keychron `playground` | `4a8143cce9` | `4a8143cce9` |
+
+CI is `.github/workflows/horwitz_x4.yml`: it builds `keychron/x4/ansi_encoder/red:horwitz` in the pinned container on every
+push to `x4`, on pull requests and on demand. It omits `qmk lint` until task 18. The container's GCC (15.2.0, the same
+`qmk_toolchains` build) and `qmk` (1.2.0) match MSYS, and its firmware is byte-for-byte identical to MSYS's (67,636 bytes,
+sha256 `67AFA083E17F6AA1…`, observed 2026-11-10). The workflow has not yet run on GitHub: the first push to `x4` is its
+real test, and task 8 stays open until that run is green. To reproduce CI locally (about 12.5 minutes, against 1.7 for
+MSYS, because of the Windows bind mount):
+
+```powershell
+Remove-Item .build -Recurse -Force -ErrorAction SilentlyContinue
+docker run --rm --platform linux/amd64 -v "C:/Users/jahor/Documents/GitHub/qmk_firmware:/qmk_firmware" -w /qmk_firmware qmkfm/qmk_cli:1.2.0 bash -c 'git config --global --add safe.directory "*" && pip3 install -q -r requirements-dev.txt && make keychron/x4/ansi_encoder/red:horwitz'
+```
+
+Pitfall (observed): do not run the container against a `.build` that MSYS made, or the reverse. MSYS-built dependency
+files (`.d`) contain Windows paths (21 of 159 did), and the container's `make` exited with status 2 on such a tree, while
+the same command from a clean `.build` succeeded (the failure's exact message was not captured, so the cause is a
+well-supported explanation, not proven). Delete `.build` (gitignored) before switching; CI starts clean.
+
 ## Pitfalls carried over from the K3 work (observed there; re-check here)
 
 - **Submodules must match the branch.** `lib/chibios`, `lib/chibios-contrib`, `lib/pico-sdk` and others drift after
@@ -191,7 +228,7 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
   `platforms/`) is read-only reference.
 - Avoid: `lib/` (about 1 GB), `.build/`, and listing or searching all of `keyboards/` (over a thousand board
   directories; use `keyboards/keychron/` and `keyboards/lemokey/`). The workflows in `.github/workflows/` are stock QMK
-  CI; this branch has no `horwitz.yml`, so an X4 CI job is an open task.
+  CI, except `horwitz_x4.yml`, which builds the X4 keymap (see "Versions and CI").
 - Ignored clutter: `.build/` and the `keychron_x4_*.bin` in the repo root are gitignored, so nothing needs to be
   excluded when staging. `git add -A` is fine here as long as `git status` shows nothing else untracked (unlike the K3
   clone, which has untracked scratch files).

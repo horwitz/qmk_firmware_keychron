@@ -1,0 +1,39 @@
+name: horwitz keymap (X4)
+
+# Builds the horwitz keymap for the Lemokey X4. Modeled on horwitz.yml on the fork's wireless_playground branch (the K3
+# keymap), but with its own file name so the two never collide.
+#
+# Triggers: every push to x4 (no path filter, so a change anywhere that could break the build is never missed), every
+# pull request, and a manual run from the Actions tab.
+#
+# `qmk lint` is deliberately not run: it fails the license-header check on the three .h files until task 18 in TASKS.md
+# decides what those headers should say. Add it then, if appropriate.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - x4
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Firmware build (Lemokey X4)
+    runs-on: ubuntu-latest
+    # Pinned to a version tag, not `latest`, so CI does not change under us. At the 2026-11-10 audit, 1.2.0 was the same image
+    # as `latest` (sha256:b7d7fa8fb4432b56...): GCC 15.2.0 and qmk 1.2.0, the same as the local QMK MSYS, and it builds a
+    # byte-identical firmware. To move to a newer image, change the tag, rebuild locally in the container and compare it
+    # with the MSYS build, then update the "Versions and CI" section of CLAUDE.md.
+    container: qmkfm/qmk_cli:1.2.0
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: pip3 install -r requirements-dev.txt
+      - name: Build horwitz keymap
+        run: make keychron/x4/ansi_encoder/red:horwitz
