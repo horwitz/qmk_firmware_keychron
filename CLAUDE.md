@@ -17,7 +17,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   rule, inherited from the K3 work, was to wait until after the flash test.)
 - Prefer the clean, documented fix over a workaround. Do not edit Keychron/Lemokey vendor code. Check claims against the
   repo or by running a command before stating them.
-- Scope: Windows and Mac layers plus the selection method (built; the real-Mac test is task 9). Later (see `TASKS.md`): DEBUG, an on/off variant of
+- Scope: Windows and Mac layers plus the selection method (built, and tested on a real Mac). Later (see `TASKS.md`): DEBUG, an on/off variant of
   FN-HI, SUS-RGB, and tooling updates. The K3's per-key RGB features (GCP, CCP) do not apply: the X4's LEDs are single
   color.
 
@@ -61,10 +61,11 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   which nothing in the X4 tree uses. Only the `keychron` keymap calls into the Keychron handlers; `default` has no
   `process_record_user` at all.
 - Mac modifiers: the Mac layer uses plain `KC_LALT` (Option) and `KC_LGUI`/`KC_RGUI` (Command) in the Mac positions, not
-  Keychron's vendor keycodes. From a Windows PC the keys swap as expected (tested); Cmd+Space and Option+e on a real Mac
-  are not yet tested (task 9).
+  Keychron's vendor keycodes. Tested on a real Mac (2026-11-10): Cmd+Space, Option+e then e (é), other Command shortcuts,
+  the right Command, the Mac Fn row (brightness, Mission Control, Launchpad, backlight, media, volume), the encoder,
+  persistence across replugging, and switching back to Windows mode all work, so plain QMK keycodes are enough on the X4.
 
-## Mac/Windows design (decided 2026-11-09; layers and mode keys implemented and tested on the board 2026-11-09, LED display 2026-11-10)
+## Mac/Windows design (decided 2026-11-09; layers and mode keys implemented and tested on the board 2026-11-09, LED display 2026-11-10; the final build passed full tests on a real Mac and on Windows, 2026-11-10)
 
 - **Four layers in stock order:** `WIN_BASE` 0, `WIN_FN` 1, `MAC_BASE` 2, `MAC_FN` 3 (taking the two empty `WIN_L2`/`WIN_L3`
   slots). Windows is layer 0, the boot layer of a fresh or erased board, and the stock Windows layers keep their indices.
