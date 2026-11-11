@@ -196,7 +196,7 @@ sha256 `67AFA083E17F6AA1…`, observed 2026-11-10). Its first run on GitHub (202
 succeeded in about 1 minute 42 seconds in total. The workflow now pins `runs-on: ubuntu-24.04` (the image that run used)
 instead of the floating `ubuntu-latest` label, which GitHub is moving to Ubuntu 26; the build runs inside the pinned
 container, so the effect would have been small, but a pinned runner keeps CI from changing under us. The first run with
-the pin is pending (task 21). To reproduce CI locally (about 12.5 minutes, against 1.7 for
+the pin (2026-11-11, commit `0fdfbd50a0`) succeeded in about 1 minute 47 seconds. To reproduce CI locally (about 12.5 minutes, against 1.7 for
 MSYS, because of the Windows bind mount):
 
 ```powershell
