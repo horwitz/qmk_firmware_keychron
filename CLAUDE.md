@@ -146,9 +146,8 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
   `.text` starts at `0x08008000`, leaving about 32 KB of padding after the vector table. It fits the 256 KB flash. Why
   Keychron's layout leaves that gap: unverified. The build banner says `QMK Firmware 0.14.29`; how that string is derived
   in this fork is unverified.
-- With qmk 1.2.0 and Python 3.12, every `qmk` command prints noise from this repo's old CLI code (`SyntaxWarning: invalid
-  escape sequence` in `lib/python/qmk/cli/*.py`, and a `UserWarning` that `cli._subcommand` is deprecated in
-  `lib/python/qmk/decorators.py`). It is harmless and is vendor code; investigating is on `TASKS.md`. A separate,
+- With qmk 1.2.0 and Python 3.12, this repo's old CLI code prints harmless Python warnings. The decision (owner,
+  2026-11-11) is to leave them visible and filter nothing; the full findings are in "QMK CLI warnings" below. A separate,
   unrelated old QMK checkout exists at `C:\Users\jahor\qmk_firmware` (2023, a `moonlander-j` fork); `qmk` falls back to
   it outside a repo, so always run `qmk` from this repo. (observed)
 - Flashing works on this machine (observed 2026-11-08: the baseline `default` build on the physical X4, using
@@ -208,6 +207,71 @@ Pitfall (observed): do not run the container against a `.build` that MSYS made, 
 files (`.d`) contain Windows paths (21 of 159 did), and the container's `make` exited with status 2 on such a tree, while
 the same command from a clean `.build` succeeded (the failure's exact message was not captured, so the cause is a
 well-supported explanation, not proven). Delete `.build` (gitignored) before switching; CI starts clean.
+
+## QMK CLI warnings (investigated 2026-11-11, task 14; do not repeat this research)
+
+**Decision (owner):** do nothing and filter nothing. The warnings are harmless, and even a message-specific filter could
+hide a new warning the owner would want to see. Pinning an older `milc` was ruled out (`qmk` 1.2.0 needs the newer one).
+Nothing in vendor code is edited.
+
+The two kinds of warning (both come from QMK upstream's Python in `lib/python/`, which Keychron's fork inherited):
+
+1. **`UserWarning: cli._subcommand has been deprecated, please use cli.subcommand_name…`** from
+   `lib/python/qmk/decorators.py`, lines 20 and 40. It appears on **every** command that takes `-kb`/`-km` (`compile`,
+   `flash`, `info`, `lint`), and also in `make` runs, which call `qmk` internally (seen in the CI container's `make`).
+   Cause: `milc` 1.9.1 (installed) deprecated the attribute `cli._subcommand`, but the repo's code uses it in six lines of
+   `decorators.py` (20, 24, 25, 40, 44, 45; it is the only file that does), and the repo's `requirements.txt` only says
+   `milc>=1.4.2`, which allows the newer, deprecating version.
+2. **`SyntaxWarning: invalid escape sequence`**, from `lib/python/qmk/cli/mass_compile.py` (lines 53-54: `'\[ERRORS\]'`
+   and `\e[1;31m` inside the text of a Makefile that the code generates, where the shell needs literal backslashes) and
+   `bux.py` (line 33: a stray `\B` inside the `qmk bux` ASCII-art easter egg). Python 3.12 (October 2023) made invalid
+   escape sequences in non-raw strings a visible `SyntaxWarning` (a hidden `DeprecationWarning` since 3.6), but it is
+   emitted only when Python **compiles** the file. So it appears only when the bytecode cache (`__pycache__`) is missing
+   or stale (a fresh clone, the CI container, after the source changes) and not on later runs; `qmk hello` is silent here
+   once the cache exists. The strings still come out as the authors intended; Python's documentation says invalid escapes
+   will eventually become a `SyntaxError` (general knowledge, no date seen), so keep Python pinned (it comes with MSYS and
+   the CI container, both pinned). The authors, per `git log`, are QMK contributors (Nick Brassel for `mass_compile.py`,
+   Erovia for `bux.py`).
+
+Warnings that name `multibuild.py` do not come from this repo (the file does not exist here); they come from the old
+checkout in the home folder, which `qmk` falls back to when started outside a repo.
+
+**Options considered, and why none was adopted:**
+
+- *A Python warning filter.* It works and was tested: `PYTHONWARNINGS='ignore:invalid escape sequence:SyntaxWarning,
+  ignore:cli._subcommand has been deprecated:UserWarning'` silences exactly those messages, while a different
+  `SyntaxWarning` (`"is" with 'int' literal`) still shows. The broad form `ignore::SyntaxWarning` hides every
+  `SyntaxWarning` and must not be used. Not adopted, because even the narrow form would hide a new occurrence of the same
+  message in another file.
+- *Pinning an older `milc`.* Ruled out by the owner.
+- *The real fix, in vendor code.* Upstream QMK's current `decorators.py` has a helper that tries the public property and
+  falls back for old `milc`, and uses it at every former `cli._subcommand.__name__` (the new property returns the same
+  name; it returns `None` instead of failing when no subcommand runs):
+
+  ```python
+  def _get_subcommand_name():
+      """Handle missing cli.subcommand_name on older versions of milc
+      """
+      try:
+          return cli.subcommand_name
+      except AttributeError:
+          return cli._subcommand.__name__
+  ```
+
+  Not applied, because of the no-vendor-edits rule. If it is ever wanted: apply it, run `qmk info`, `qmk compile` and
+  `qmk lint`, and compare the firmware hash with the known good one (`67AFA083E17F6AA1…`). It would not remove the
+  `SyntaxWarning`s, which would need the backslashes doubled in `mass_compile.py` (carefully: its Makefile text already
+  uses `\\` and `\\n` correctly, so a raw string would break it) and in `bux.py`.
+- *Hiding the "Welcome to QMK MSYS!" banner* (`/etc/post-install/99-qmk.post`; `qmk config user.hide_welcome=True`). Not
+  done: the commands used here drop the banner's first 8 output lines (`Select-Object -Skip 8`), which would then cut
+  real output.
+
+**How to notice a NEW warning.** The expected baseline for `qmk info -kb keychron/x4/ansi_encoder/red` is exactly the two
+`UserWarning`s at `decorators.py:20` and `decorators.py:40`; anything else is new. (A `qmk compile` log shows the same
+messages three times, line 20 twice and line 40 once, because `make` calls `qmk` again; observed in a clean MSYS build log.) List the distinct warning lines of a run
+and compare them with this baseline instead of filtering by category (`grep -v "Warning"` hides new ones too). To pick
+out the **compiler's** diagnostics, match GCC's format with the colon (`grep -E ': (warning|error):'`, case-sensitive),
+which does not match Python's `UserWarning:`. When `qmk`, `milc` or Python change, re-run `qmk info` once and compare.
 
 ## Pitfalls carried over from the K3 work (observed there; re-check here)
 
