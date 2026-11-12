@@ -136,8 +136,13 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
 
 - Docker Desktop (4.99.0) is installed too. It is used only to reproduce CI locally (see "Versions and CI"), not for daily
   builds (see "Why QMK MSYS").
-- The old MSYS 1.7.2 (qmk 1.1.1, GCC 10.1.0) is kept as a working copy at `C:\QMK_MSYS_1.7.2` (runs standalone; observed),
-  as a fallback or to compare builds. The 1.12.0 installer was run by the owner with all optional boxes unchecked (no
+- The old MSYS 1.7.2 (qmk 1.1.1, GCC 10.1.0) was moved to the Windows Recycle Bin on 2026-11-12 (task 22). It stays
+  recoverable until the bin is emptied (Restore puts it back at `C:\QMK_MSYS_1.7.2`; it ran standalone). Its result is
+  recorded here instead: building the unchanged stock `default` keymap with it from a clean `.build` (source commit
+  `4a36d7efd4`, no compiler warnings) gave a 68,208-byte `.bin`, SHA-256
+  `4ea835af9f74df71033806ce6525761c7c0d573c39b2357d834123102362fa88`, with 35,902 bytes of `text` + `data`. That is the
+  same size as the image flashed to the X4 and tested on 2026-11-08 (the flashed file itself was not kept, so byte
+  identity with it is not confirmed). The 1.12.0 installer was run by the owner with all optional boxes unchecked (no
   USB drivers installed). It is unsigned and has no GitHub attestation, but its SHA-256 matched the release checksum and
   the assets were uploaded by `github-actions[bot]`. (observed)
 - Baseline: `qmk compile -kb keychron/x4/ansi_encoder/red -km default` builds with no compiler warnings on both
