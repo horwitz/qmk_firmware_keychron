@@ -134,7 +134,8 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
   & 'C:\QMK_MSYS\usr\bin\bash.exe' -lc 'cd /c/Users/jahor/Documents/GitHub/qmk_firmware && qmk compile -kb keychron/x4/ansi_encoder/red -km default'
   ```
 
-- Docker Desktop is installed too (the `qmkfm/qmk_cli` container is a fallback; unverified for this branch).
+- Docker Desktop (4.99.0) is installed too. It is used only to reproduce CI locally (see "Versions and CI"), not for daily
+  builds (see "Why QMK MSYS").
 - The old MSYS 1.7.2 (qmk 1.1.1, GCC 10.1.0) is kept as a working copy at `C:\QMK_MSYS_1.7.2` (runs standalone; observed),
   as a fallback or to compare builds. The 1.12.0 installer was run by the owner with all optional boxes unchecked (no
   USB drivers installed). It is unsigned and has no GitHub attestation, but its SHA-256 matched the release checksum and
@@ -179,9 +180,9 @@ on Keychron's fork, because the X4 exists only there and moving to upstream QMK 
 | QMK MSYS | 1.12.0 | 1.12.0 (stable; a beta exists, not used) |
 | `qmk` CLI | 1.2.0 | 1.2.0 |
 | `arm-none-eabi-gcc` | 15.2.0 (`qmk_toolchains` v15.2.0-1) | v15.2.0-1 |
-| `qmk_flashutils` (`dfu-util`) | 20251130, bundled in MSYS | 20260711 (left alone: flashing works) |
+| `qmk_flashutils` (`dfu-util`) | 20251130, bundled in MSYS (in `/opt/qmk`, outside `pacman`) | 20260711. Left alone: flashing works, and the 14 commits since (no release notes) are mostly packaging for other platforms and tools (`hidapi`, `picotool`, Linux/macOS), dependency bumps and CI; nothing names `dfu-util` or Windows STM32 flashing. Update only for a named fix or a flashing problem, and try it on a copy first (task 23) |
 | Git for Windows | 2.56.0.windows.4 | 2.56.1.windows.1, a security release (the owner updates it) |
-| `git` inside QMK MSYS | 2.52.0 | bundled; not separately updatable, as far as known |
+| `git` inside QMK MSYS | 2.52.0 (package `git 2.52.0-2`) | MSYS has `pacman` (6.1.0), so it can probably be updated, but a partial update of QMK's pinned MSYS snapshot is untested and may break it; left alone |
 | `gh` | 2.103.3 | 2.103.3 |
 | Docker Desktop | 4.99.0 | 4.99.0 |
 | `actions/checkout` | v7.0.1 | v7.0.1 |
@@ -207,6 +208,42 @@ Pitfall (observed): do not run the container against a `.build` that MSYS made, 
 files (`.d`) contain Windows paths (21 of 159 did), and the container's `make` exited with status 2 on such a tree, while
 the same command from a clean `.build` succeeded (the failure's exact message was not captured, so the cause is a
 well-supported explanation, not proven). Delete `.build` (gitignored) before switching; CI starts clean.
+
+## Why QMK MSYS (decision of 2026-11-12, task 20; do not repeat this research)
+
+**Decision (owner): do not switch.** Keep QMK MSYS for building and flashing, and keep Docker only as the clean-checkout
+check of CI (see "Versions and CI"). Nothing has gone wrong with MSYS in this project: it built every time, `qmk flash`
+reached the X4 directly with no driver installation, and its firmware is byte-for-byte identical to CI's.
+
+What QMK MSYS is made of (observed): ordinary MSYS2 (242 `pacman` packages, including `bash`, `git`, `make`, Python and
+the `qmk` CLI as the package `mingw-w64-x86_64-python-qmk`, which depends only on Python, `python-hid` and `milc`) plus
+`/opt/qmk`, a folder outside `pacman` that holds the ARM and AVR compilers (from `qmk_toolchains`) and the flashers (from
+`qmk_flashutils`). So its parts can already be updated individually:
+
+- *`/opt/qmk`* (compilers, flashers): replace the folder with a newer release. The compilers are current (GCC 15.2.0 from
+  `v15.2.0-1`, the latest). The flashers are four releases behind; left alone (see the audit table).
+- *The `pacman` packages* (`git`, `make`, Python, the `qmk` CLI, `milc`): updatable with `pacman`, but MSYS2 does not
+  support partial updates and QMK ships a pinned, tested snapshot, so treat any update as a migration like task 5: try it
+  on a copy of `C:\QMK_MSYS` first (task 23), then rebuild, compare with CI's binary, and test on the board.
+
+The comparison that decided it:
+
+| | QMK MSYS (kept) | Docker for builds, plus a separate flasher |
+|---|---|---|
+| Clean build on this PC | 1.7 minutes | about 12.5 minutes (the same container takes under 2 minutes on GitHub's Linux runner; the likely cause is the Windows bind mount, untested) |
+| Flashing | `qmk flash`, one command | needs QMK Toolbox, the Launcher or a standalone `dfu-util` |
+| Match with CI | already byte-identical | identical by construction |
+| Extra software | none | Docker Desktop must be running (its engine was not, on 2026-11-12) |
+
+WSL2 was also considered: it needs a new Linux distribution (only Docker's internal one exists here) and USB passthrough
+for flashing, and the repo would have to live inside WSL for speed. Installing plain MSYS2 and the parts by hand (the
+route this tree's `docs/newbs_getting_started.md` calls "advanced users", one `pacman` command for `git` and the `qmk`
+package, plus the compilers and flashers from their release archives) would give the same tools plus a newer `git` and
+flashers, at the cost of QMK's tested combination.
+
+**Revisit if:** QMK MSYS stops being updated or lacks a toolchain a future change needs; the bundled `git` (2.52.0)
+becomes a real exposure; MSYS and CI binaries ever stop matching; or a fast Docker or WSL2 workflow becomes attractive.
+Related tasks: 22 (delete the old MSYS 1.7.2 backup) and 23 (test `pacman` updates on a copy).
 
 ## QMK CLI warnings (investigated 2026-11-11, task 14; do not repeat this research)
 
