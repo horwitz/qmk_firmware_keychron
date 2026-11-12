@@ -187,7 +187,7 @@ on Keychron's fork, because the X4 exists only there and moving to upstream QMK 
 | `arm-none-eabi-gcc` | 15.2.0 (`qmk_toolchains` v15.2.0-1) | v15.2.0-1 |
 | `qmk_flashutils` (`dfu-util`) | 20251130, bundled in MSYS (in `/opt/qmk`, outside `pacman`) | 20260711. Left alone: flashing works, and the 14 commits since (no release notes) are mostly packaging for other platforms and tools (`hidapi`, `picotool`, Linux/macOS), dependency bumps and CI; nothing names `dfu-util` or Windows STM32 flashing. Update only for a named fix or a flashing problem, and try it on a copy first (task 23) |
 | Git for Windows | 2.56.0.windows.4 | 2.56.1.windows.1, a security release (the owner updates it) |
-| `git` inside QMK MSYS | 2.52.0 (package `git 2.52.0-2`) | MSYS has `pacman` (6.1.0), so it can probably be updated, but a partial update of QMK's pinned MSYS snapshot is untested and may break it; left alone |
+| `git` inside QMK MSYS | 2.52.0 (package `git 2.52.0-2`) | MSYS has `pacman` (6.1.0), but a full `pacman -Syu` breaks QMK MSYS (task 23, below); a git-only update is untested; left alone |
 | `gh` | 2.103.3 | 2.103.3 |
 | Docker Desktop | 4.99.0 | 4.99.0 |
 | `actions/checkout` | v7.0.1 | v7.0.1 |
@@ -227,9 +227,19 @@ the `qmk` CLI as the package `mingw-w64-x86_64-python-qmk`, which depends only o
 
 - *`/opt/qmk`* (compilers, flashers): replace the folder with a newer release. The compilers are current (GCC 15.2.0 from
   `v15.2.0-1`, the latest). The flashers are four releases behind; left alone (see the audit table).
-- *The `pacman` packages* (`git`, `make`, Python, the `qmk` CLI, `milc`): updatable with `pacman`, but MSYS2 does not
-  support partial updates and QMK ships a pinned, tested snapshot, so treat any update as a migration like task 5: try it
-  on a copy of `C:\QMK_MSYS` first (task 23), then rebuild, compare with CI's binary, and test on the board.
+- *The `pacman` packages* (`git`, `make`, Python, the `qmk` CLI, `milc`): **do not run `pacman -Syu` on the live install.**
+  Tested on a copy (task 23, 2026-11-12; the copy was deleted afterwards): the full upgrade (249 packages; `git` 2.56.1,
+  `bash` 5.3, Python 3.12 to 3.14) finished without errors but left `qmk` unusable, for three reasons. (1) `python-qmk`
+  1.2.0 and `python-milc` 1.9.1 stay installed under `python3.12/site-packages`, so Python 3.14 reports
+  `ModuleNotFoundError: No module named 'qmk_cli'` and the build exits 1. (2) `pacman -Qm` lists 19 foreign packages
+  (`python-qmk`, `python-milc`, `python-hid`, `hidapi`, `libusb`, `jq`, `python-hjson`, `python-jsonschema`, and more) that
+  are no longer in the MSYS2 repositories (the live install has 0), so `pacman` cannot supply newer versions. (3) The new
+  `/etc/profile` sources `/etc/post-install/*.post` only when `MAYBE_FIRST_START=true` (the old one always did), so QMK's
+  `99-qmk.post` line 31, `export PATH=/opt/qmk/bin:/opt/uv/tools/bin:$PATH`, no longer runs in a plain `bash -l`, and
+  `arm-none-eabi-gcc` and `dfu-util` were not found. The live install gets `/opt/qmk/bin` on `PATH` from that line.
+  Not tried: updating only `git` (a partial upgrade, which MSYS2 does not support; it also pulled in new Perl
+  dependencies). The bundled `git` therefore stays at 2.52.0 until QMK publishes a newer MSYS bundle (a beta dated
+  2026-10-19 exists; not examined).
 
 The comparison that decided it:
 
@@ -246,9 +256,9 @@ route this tree's `docs/newbs_getting_started.md` calls "advanced users", one `p
 package, plus the compilers and flashers from their release archives) would give the same tools plus a newer `git` and
 flashers, at the cost of QMK's tested combination.
 
-**Revisit if:** QMK MSYS stops being updated or lacks a toolchain a future change needs; the bundled `git` (2.52.0)
-becomes a real exposure; MSYS and CI binaries ever stop matching; or a fast Docker or WSL2 workflow becomes attractive.
-Related tasks: 22 (delete the old MSYS 1.7.2 backup) and 23 (test `pacman` updates on a copy).
+**Revisit if:** QMK MSYS stops being updated or lacks a toolchain a future change needs; a new QMK MSYS release (or the
+2026-10-19 beta) appears, which could carry a newer `git`; the bundled `git` (2.52.0) becomes a real exposure; MSYS and CI binaries ever stop matching; or a fast Docker or WSL2 workflow becomes attractive.
+Related tasks: 22 (delete the old MSYS 1.7.2 backup) and 23 (test `pacman` updates on a copy; done, see above).
 
 ## QMK CLI warnings (investigated 2026-11-11, task 14; do not repeat this research)
 
