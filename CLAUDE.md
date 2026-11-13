@@ -44,7 +44,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - Path: `keyboards/keychron/x4/` (Keychron's name for the board; Lemokey is a sub-brand and the box says "Keychron X4").
   Build target: `keychron/x4/ansi_encoder/red`. Only the red-backlight ANSI variant is in the tree; the owner's board
   is red-backlight. An RGB `.bin` is on Lemokey's site, but no RGB source is in this tree.
-- `info.json`: `Lemokey X4`, **STM32F401** (the kickoff prompt said F402RC: unresolved, low priority), `stm32-dfu`
+- `info.json`: `Lemokey X4`, **STM32F401** (the kickoff prompt said F402RC; resolved in task 10, 2026-11-12: the board's DFU bootloader reports 256 KB of flash, 4x16 KB + 64 KB + 128 KB, which is the F401xC size and matches the build's `GENERIC_STM32_F401XC` board; the bootloader does not name the part, so "F402" is probably Keychron's label, since its C2 Pro readme says rev2 is "STM32F402" while that board's `info.json` also says `STM32F401`; observed with `dfu-util -l`, nothing flashed), `stm32-dfu`
   bootloader, VID `0x362D`, PID `0x0240`, `LAYOUT_82_ansi` (75%, 82 keys, one rotary encoder on B14/B15). Wired only.
 - Lighting: single-color LED matrix (CKLED2001, 81 LEDs), `LED_DISABLE_WHEN_USB_SUSPENDED` already set. Caps Lock LED
   index 44, Win-lock LED index 72.
