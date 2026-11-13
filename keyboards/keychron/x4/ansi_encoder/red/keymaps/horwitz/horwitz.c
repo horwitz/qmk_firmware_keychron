@@ -1,9 +1,12 @@
 // Behavior of the horwitz keymap for the Lemokey X4 (named as on the K3, where the shared behavior is horwitz.c):
-// the keys that choose between Windows mode and Mac mode.
+// the keys that choose between Windows mode and Mac mode, and the automatic choice of the mode when the keyboard is
+// connected to a host.
 
 #include QMK_KEYBOARD_H
 #include "layers.h"
 #include "ctrlkeycodes.h"
+#include "os_detection.h"
+#include "usb_device_state.h"
 
 // x4.c keeps the state of its GUI ("Win") lock in a private variable, which it also saves to the EEPROM user datablock
 // (eeconfig_update_user_datablock) on every toggle and reloads at boot. We rely on that to read the lock state.
@@ -33,13 +36,62 @@ static void release_gui_lock(void) {
 // Starts the blink that confirms a mode key press (defined with the LED code below; does nothing without an LED matrix).
 static void start_mode_blink(uint8_t base_layer);
 
-// Sets the base layer and saves it to the EEPROM; keyboard_init() restores it at every boot (quantum/bootmagic/magic.c).
-static void select_mode(uint8_t base_layer) {
+// Automatic mode selection (task 15). The EEPROM holds the mode the owner last chose with a mode key; keyboard_init()
+// restores it at every boot (quantum/bootmagic/magic.c). Each time the keyboard is connected to a host, QMK's OS detection
+// (quantum/os_detection.c) guesses the host's OS from its USB setup requests, which takes a few hundred milliseconds, and
+// if it says Windows or macOS that mode is applied WITHOUT saving it, so the saved mode stays the owner's own choice and is
+// what is used whenever detection cannot tell (unsure, Linux or iOS). A mode key pressed meanwhile or afterwards wins until
+// the next connection.
+//
+// "Armed" means a connection has started and its detected OS has not been applied yet. It starts true because a boot is a
+// connection. This base has no callback for a finished detection, so housekeeping_task_user() polls.
+static volatile bool autodetect_armed = true;
+
+// Switches to a mode, optionally saving it. Selecting Mac first releases the GUI lock, for any way of getting there.
+static void set_mode(uint8_t base_layer, bool save) {
     if (base_layer == MAC_BASE) {
         release_gui_lock();
     }
-    set_single_persistent_default_layer(base_layer);
+    if (save) {
+        set_single_persistent_default_layer(base_layer);
+    } else {
+        default_layer_set((layer_state_t)1 << base_layer);
+    }
+}
+
+// A mode key press: saved, blinked, and it cancels a pending automatic choice.
+static void select_mode(uint8_t base_layer) {
+    autodetect_armed = false;
+    set_mode(base_layer, true);
     start_mode_blink(base_layer);
+}
+
+// A new connection starts when the USB state goes to INIT (a boot, a bus reset, being unconfigured). QMK's detection
+// counters add up and nothing in this base ever clears them, so clear them here; stale counts would break its exact-count
+// patterns (e.g., macOS is recognized only at exactly 5 requests) after a re-enumeration without a power cycle.
+void notify_usb_device_state_change_user(enum usb_device_state state) {
+    if (state == USB_DEVICE_STATE_INIT) {
+        erase_wlength_data();
+        autodetect_armed = true;
+    }
+}
+
+void housekeeping_task_user(void) {
+    if (!autodetect_armed) {
+        return;
+    }
+    switch (detected_host_os()) {
+        case OS_WINDOWS:
+            autodetect_armed = false;
+            set_mode(WIN_BASE, false);
+            break;
+        case OS_MACOS:
+            autodetect_armed = false;
+            set_mode(MAC_BASE, false);
+            break;
+        default:
+            break; // not known (yet), or not an OS with a mode of its own: keep the saved mode
+    }
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {

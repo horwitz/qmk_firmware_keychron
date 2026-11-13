@@ -91,6 +91,21 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   the backlight on; 3 pulses at 120 ms judged right (fewer felt wrong, more was expected to); also passed with the backlight off,
   with Fn released mid-blink and on a repeat press of the active mode; the Win-lock release on entering Mac mode still works
   (checked by pressing the Win key afterward, not by the LED, which is hard to read with a bright backlight).
+- **Auto-detect (task 15, in progress; the mechanism is verified on the Windows PC, not yet on a Mac):** `OS_DETECTION_ENABLE`
+  guesses the host's OS from its USB setup requests. Each connection (the USB state going to INIT: a boot, a bus reset)
+  clears QMK's detection counters (nothing in this base ever does) and arms a one-shot; `housekeeping_task_user` polls
+  `detected_host_os()` (this base has no callback) and, for Windows or macOS, applies that mode with `default_layer_set()`
+  **without saving it**, so the EEPROM keeps the owner's last manual choice, which is also the fallback when detection says
+  unsure, Linux or iOS. A mode key pressed meanwhile or later wins until the next connection. Observed on the Windows PC:
+  Windows is recognized 133-205 ms after the connection (18 requests, 14 of length 0xFF and 2 of length 4; the USB state
+  goes INIT, SUSPEND, INIT, INIT, CONFIGURED, so the counters are cleared several times, which is correct), and a saved Mac
+  mode (EEPROM default layer `4`) is left alone. Reading the Fn display: with the backlight on, the inactive mode's key is
+  the one *dark* key, and the active mode's key looks like all the others, which is easy to misread. Still to do: the
+  blink at every connection and a timeout for the unsure case (15-2), and a test on a Mac (15-3). If Mac detection
+  misbehaves, a typed-out diagnostic (3 s after a connection it types the counters, the detected OS, the live and saved
+  layers) is a quick way to see inside; the diagnostic version was kept outside the repo and can be recreated from this
+  description: `send_string` of an `snprintf` of `detected_host_os()`, a local copy of `struct setups_data_t` from
+  `quantum/os_detection.c` and its `setups_data`, `default_layer_state`, `layer_state` and `eeconfig_read_default_layer()`.
 - **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
   Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
   above the background (the Win-lock LED looks brighter when the backlight is dimmed), **and one key's LED can be
