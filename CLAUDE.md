@@ -100,6 +100,30 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - The Fn layer you are holding stays active after you press a mode key, until you release Fn (normal QMK layer
   behavior); re-press Fn to get the new mode's Fn layer.
 
+## VIA/Launcher: decided not to support (owner, 2026-11-12, task 17; do not repeat this research)
+
+**Decision:** the `horwitz` keymap does not enable VIA. The keymap in git stays the only source of truth, and `qmk flash`
+is the way to change the board. Nothing is lost for the Mac/Windows work: it does not need VIA.
+
+Findings behind it (observed in this tree, 2026-11-12):
+
+- *What "yes" would take.* `VIA_ENABLE = yes` in the keymap's `rules.mk` (the stock `via` keymap does this); the layer
+  count already matches (`DYNAMIC_KEYMAP_LAYER_COUNT` defaults to 4, `quantum/action_layer.h:27`). `MODE_WIN` and
+  `MODE_MAC` sit at `SAFE_RANGE` (= `QK_USER_0`); VIA's custom keycodes start at `QK_KB_0`, and Keychron's JSON already
+  uses `QK_KB_0` to `QK_KB_10` for its 11 custom keys, so ours would move to `QK_KB_11` and `QK_KB_12`. It would also need a
+  VIA JSON of our own, because the stock one does not know our keys (whether Lemokey's Launcher loads a sideloaded JSON is
+  unverified). The mode-key LED lookup reads the live keymap and the saved default layer is a separate EEPROM area, so
+  the existing code should keep working.
+- *The cost that decided it.* `via_init()` (`quantum/via.c:93-112`) rewrites the EEPROM keymap from the compiled one only
+  when the VIA EEPROM magic bytes are invalid. A normal reflash leaves them valid, so edits to `keymap.c` would silently
+  stop taking effect on the board, and the git keymap would no longer be what is on the board after a Launcher edit. The
+  reset path (Fn + J + Z, or a VIA EEPROM clear) runs `x4.c`'s `eeconfig_init_kb`, which also clears the saved Win-lock
+  byte. It would also add a second file (the JSON) to keep in sync with `keymap.c`.
+- *What it would buy:* remapping keys in a browser without reflashing; not wanted for now.
+
+**Revisit if:** live remapping is wanted, or someone else will use the keyboard without `qmk flash`. Then add an
+implementation task (rules, the keycode move to `QK_KB_11`/`QK_KB_12`, the JSON, an EEPROM-reset test on the board).
+
 ## File layout of the X4 keymap
 
 `keyboards/keychron/x4/ansi_encoder/red/keymaps/horwitz/` is self-contained: there is no `users/` directory, and file and
@@ -335,7 +359,7 @@ which does not match Python's `UserWarning:`. When `qmk`, `milc` or Python chang
   the keymap called the Keychron handler; there was no build error. Check how this board's keymap and `x4.c` handle them
   before using any vendor keycode.
 - **Every keymap directory needs a `keymap.c`**, even if it holds only a comment.
-- **VIA/Launcher and EEPROM.** With VIA or dynamic keymap enabled, EEPROM-stored keymap data can override the compiled
+- **VIA/Launcher and EEPROM** (not used on the X4: see "VIA/Launcher: decided not to support"). With VIA or dynamic keymap enabled, EEPROM-stored keymap data can override the compiled
   keymap after a flash, and the VIA JSON must agree with the firmware on layer count and keycodes. (general)
 - **`dfu-util` can hang** at "Transitioning to dfuMANIFEST state" (seen on the K3 on macOS); the flash has usually
   finished. Ctrl+C, unplug, replug.
