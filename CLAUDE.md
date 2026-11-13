@@ -78,8 +78,19 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   `set_single_persistent_default_layer()` (documented in `docs/feature_layers.md`); a persistent `PDF` keycode was not
   found on this base. The keycodes are `MODE_WIN`/`MODE_MAC` (`ctrlkeycodes.h`, from `SAFE_RANGE`, which nothing in the X4
   tree uses), handled in `horwitz.c`; the saved layer is restored at every boot by `magic()` in
-  `quantum/bootmagic/magic.c`, so the mode survives unplugging (tested). Auto-detect with an override, and a blink on
-  switching, are later tasks (see `TASKS.md`).
+  `quantum/bootmagic/magic.c`, so the mode survives unplugging (tested). Auto-detect with an override is a later task (see `TASKS.md`).
+- **Blink (task 16, built and tested on the board 2026-11-12):** pressing a mode key pulses its LED dark three times
+  (`BLINK_PULSES`), the same for both modes: 120 ms steps (`BLINK_STEP_MS`) lit, dark, lit, dark, lit, dark, lit, so it
+  starts and ends lit and every pulse is a visible change from either starting state (the first version, once for Windows
+  and twice for Mac, started dark, which showed nothing when switching to the mode whose key was already dark; the owner
+  also saw no need for two behaviors, since the mode display already shows the chosen mode). It is
+  drawn after the mode display and overrides it, so it runs to the end even if Fn is released, in any backlight state
+  (the dark step shows against a lit backlight, the lit step against a dark one). Pressing a mode key again, even the
+  active one, restarts it. Code: `start_mode_blink` and `apply_blink` in `horwitz.c`. Build: 67,756 bytes, no compiler warnings, sha256 `EE8932B549637F52…` (the tested image; an earlier version that kept
+  the mode as a `bool` instead of the base layer was 67,764 bytes and passed the same tests). Tested on the X4 (owner, 2026-11-12): noticeable with
+  the backlight on; 3 pulses at 120 ms judged right (fewer felt wrong, more was expected to); also passed with the backlight off,
+  with Fn released mid-blink and on a repeat press of the active mode; the Win-lock release on entering Mac mode still works
+  (checked by pressing the Win key afterward, not by the LED, which is hard to read with a bright backlight).
 - **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
   Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
   above the background (the Win-lock LED looks brighter when the backlight is dimmed), **and one key's LED can be
@@ -134,7 +145,7 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
 - `layers.h`: the layer enum (`WIN_BASE`, `WIN_FN`, `MAC_BASE`, `MAC_FN`, in stock order).
 - `ctrlkeycodes.h`: `MODE_WIN` and `MODE_MAC`.
 - `horwitz.c`: the behavior: `process_record_user` (mode selection and the GUI-lock release) and
-  `led_matrix_indicators_user` (the mode display).
+  `led_matrix_indicators_user` (the mode display) with the blink helpers `start_mode_blink` and `apply_blink`.
 - `rules.mk`: `ENCODER_MAP_ENABLE = yes` and `SRC += horwitz.c`.
 
 License headers: none of these files carries one for now. The Keychron block was removed from `keymap.c` and `horwitz.c`

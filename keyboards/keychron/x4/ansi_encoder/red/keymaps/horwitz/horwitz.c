@@ -30,12 +30,16 @@ static void release_gui_lock(void) {
     }
 }
 
+// Starts the blink that confirms a mode key press (defined with the LED code below; does nothing without an LED matrix).
+static void start_mode_blink(uint8_t base_layer);
+
 // Sets the base layer and saves it to the EEPROM; keyboard_init() restores it at every boot (quantum/bootmagic/magic.c).
 static void select_mode(uint8_t base_layer) {
     if (base_layer == MAC_BASE) {
         release_gui_lock();
     }
     set_single_persistent_default_layer(base_layer);
+    start_mode_blink(base_layer);
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -71,6 +75,42 @@ static uint8_t led_under_key(uint16_t keycode) {
         }
     }
     return NO_LED;
+}
+
+// The blink: when a mode key is pressed, its LED pulses dark BLINK_PULSES times, the same for both modes (which mode was
+// chosen is shown by the mode display itself: the active mode's key is lit and the other is dark). The pattern starts and
+// ends lit, so every pulse is a visible change whichever state the key was in before (a pattern that started dark would
+// show nothing when switching from the mode whose key was already dark). Lit and dark both show against any backlight:
+// the dark steps stand out when the backlight is on, the lit steps when it is off. The blink is drawn after the mode
+// display and overrides it, so it runs to the end even if Fn is released meanwhile, and it works whatever the backlight
+// state. Pressing a mode key again (the same one included) restarts it.
+#    define BLINK_STEP_MS 120
+#    define BLINK_PULSES 3
+
+static uint32_t blink_start_time = 0;
+static bool     blink_running    = false;
+static uint8_t  blink_layer      = WIN_BASE; // the base layer (mode) whose key's LED blinks
+
+static void start_mode_blink(uint8_t base_layer) {
+    blink_layer      = base_layer;
+    blink_running    = true;
+    blink_start_time = timer_read32();
+}
+
+// Applies the running blink, if any, to the pressed mode key's LED (`led`, which is NO_LED if that key has none).
+static void apply_blink(uint8_t led) {
+    if (!blink_running) {
+        return;
+    }
+    // Steps alternate lit, dark, lit, ...: 2 * BLINK_PULSES + 1 steps in all, starting and ending lit.
+    uint32_t step = timer_elapsed32(blink_start_time) / BLINK_STEP_MS;
+    if (step > 2u * BLINK_PULSES) {
+        blink_running = false; // done; the normal drawing takes over from the next frame
+        return;
+    }
+    if (led != NO_LED) {
+        led_matrix_set_value(led, (step % 2 == 0) ? 0xFF : 0);
+    }
 }
 
 // While a Fn layer is active (Fn is held), show the current mode on the two mode keys: the active mode's key is driven to
@@ -118,6 +158,12 @@ bool led_matrix_indicators_user(void) {
             led_matrix_set_value(mac_led, 0);
         }
     }
+
+    apply_blink(blink_layer == MAC_BASE ? mac_led : win_led);
     return true;
+}
+#else
+static void start_mode_blink(uint8_t base_layer) {
+    (void)base_layer;
 }
 #endif // LED_MATRIX_ENABLE
