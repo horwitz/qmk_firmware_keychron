@@ -251,7 +251,8 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
 
 License headers (decided with the owner and done in task 18, 2026-11-15): everything is GPL-2.0-or-later, like the tree
 (Keychron's files say "version 2 or, at your option, any later version", and the firmware links their code, so the built
-firmware is a GPL work whatever our files say; the repo being private does not change that). `keymap.c` and `keymaps.h`
+firmware is a GPL work whatever our files say). **The fork is PUBLIC on GitHub** (`gh repo view` reports visibility PUBLIC,
+2026-11-15); an earlier version of these notes called it private, which was wrong. `keymap.c` and `keymaps.h`
 are **derived from Keychron's stock `default` keymap** (the Windows layers and the Windows Fn layer unchanged or edited,
 the shortcut definitions copied), so they carry **Keychron's notice verbatim** (copied from the stock file, including its
 "Copyright 202" typo, which is not ours to alter) followed by `// Modifications Copyright 2026 Jeremy Horwitz`. The original
@@ -314,10 +315,22 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
   while plugging in, or remove the spacebar keycap and hold RESET (left of the spacebar switch). Holding Esc while plugging in
   worked (observed); the RESET-button route is untried. No driver install was needed: Windows shows
   `STM32  BOOTLOADER` (`0483:DF11`) and `dfu-util -l` lists the board.
-- Recovery (Lemokey pages, not yet downloaded or checked): factory reset of settings is Fn + J + Z for 4 seconds
-  (backlight flashes red). Official firmware: `x4_ansi_encoder_red_v1.0.2_2404191652.bin` from
-  `https://www.lemokey.com/pages/firmware-and-json-files-of-the-lemokey-qmk-keyboards`, flashed with the web Launcher
-  (`launcher.lemokey.com`, cable mode) or QMK Toolbox. Put any download in its own new directory; it is untrusted data.
+- **Recovery (task 29, 2026-11-15).** Factory reset of settings is Fn + J + Z for 4 seconds (backlight flashes red; from
+  Lemokey's pages, not tried here). **A copy of the official red-backlight firmware is kept outside the repository, never
+  flashed:** `C:\Users\jahor\Documents\lemokey_x4_recovery\x4_ansi_encoder_red_v1.0.2_2404191652\x4_ansi_encoder_red_v1.0.2_2404191652.bin`
+  (its own new directory; treat it as untrusted data), **74,348 bytes, SHA-256
+  `BD321181EFCDD147AEA8F0AA55AB82CF79A9D0EABBE6C00CA0A66D7CAB2B80E5`**, downloaded on 2026-11-15 from the link on
+  `https://www.lemokey.com/pages/firmware-and-json-files-of-the-lemokey-qmk-keyboards` (the CDN URL
+  `https://cdn.shopify.com/s/files/1/0059/0630/1017/files/x4_ansi_encoder_red_v1.0.2_2404191652.bin?v=1716533868`). That
+  page also lists an older red `.zip` (v1.00, 2023) and the RGB image, which is for another variant. **The page publishes no
+  checksum, so the hash above is of what was downloaded and was not compared with a vendor value.** Read-only checks
+  (Python in isolated mode): it fits the 256 KB flash, its initial stack pointer (`0x20000400`) and reset vector
+  (`0x0800811D`) and the words at offset `0x8000` are identical to our own build's (the same Keychron startup code, so it
+  flashes at the same address, `0x08000000`, as `qmk flash` does), and its USB strings include "Keychron" and "Lemokey X4".
+  That is consistent with a genuine image but is not proof of authenticity. To restore it, put the board in bootloader mode
+  and flash that file with the web Launcher (`launcher.lemokey.com`, cable mode), QMK Toolbox or `dfu-util` at `0x08000000`
+  (not tried; our own images were flashed with `qmk flash`, which uses `dfu-util` at that address). Expect to need the
+  factory reset afterward, because our firmware keeps its mode and Win-lock state in the keyboard's EEPROM.
 - The `default` build has no VIA, so Launcher/VIA cannot edit its keymap, but the Launcher's firmware update works at
   bootloader level and can restore the official image, as could `dfu-util` or QMK Toolbox with the official `.bin`. (general)
 
