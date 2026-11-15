@@ -78,7 +78,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   `set_single_persistent_default_layer()` (documented in `docs/feature_layers.md`); a persistent `PDF` keycode was not
   found on this base. The keycodes are `MODE_WIN`/`MODE_MAC` (`ctrlkeycodes.h`, from `SAFE_RANGE`, which nothing in the X4
   tree uses), handled in `horwitz.c`; the saved layer is restored at every boot by `magic()` in
-  `quantum/bootmagic/magic.c`, so the mode survives unplugging (tested). Auto-detect with an override is a later task (see `TASKS.md`).
+  `quantum/bootmagic/magic.c`, so the mode survives unplugging (tested). Auto-detect with a manual override is built (next bullets).
 - **Blink (task 16, built and tested on the board 2026-11-12):** pressing a mode key pulses its LED dark three times
   (`BLINK_PULSES`), the same for both modes: 120 ms steps (`BLINK_STEP_MS`) lit, dark, lit, dark, lit, dark, lit, so it
   starts and ends lit and every pulse is a visible change from either starting state (the first version, once for Windows
@@ -91,21 +91,32 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   the backlight on; 3 pulses at 120 ms judged right (fewer felt wrong, more was expected to); also passed with the backlight off,
   with Fn released mid-blink and on a repeat press of the active mode; the Win-lock release on entering Mac mode still works
   (checked by pressing the Win key afterward, not by the LED, which is hard to read with a bright backlight).
-- **Auto-detect (task 15, in progress; the mechanism is verified on the Windows PC, not yet on a Mac):** `OS_DETECTION_ENABLE`
+- **Auto-detect (task 15, built and tested on the board 2026-11-14: Windows PC, a power-only charger, and a real Mac):** `OS_DETECTION_ENABLE`
   guesses the host's OS from its USB setup requests. Each connection (the USB state going to INIT: a boot, a bus reset)
   clears QMK's detection counters (nothing in this base ever does) and arms a one-shot; `housekeeping_task_user` polls
-  `detected_host_os()` (this base has no callback) and, for Windows or macOS, applies that mode with `default_layer_set()`
+  `detected_host_os()` (this base has no callback) and, for Windows, macOS or iOS, applies that mode with `default_layer_set()`
   **without saving it**, so the EEPROM keeps the owner's last manual choice, which is also the fallback when detection says
-  unsure, Linux or iOS. A mode key pressed meanwhile or later wins until the next connection. Observed on the Windows PC:
+  unsure or Linux. A mode key pressed meanwhile or later wins until the next connection. Observed on the Windows PC:
   Windows is recognized 133-205 ms after the connection (18 requests, 14 of length 0xFF and 2 of length 4; the USB state
   goes INIT, SUSPEND, INIT, INIT, CONFIGURED, so the counters are cleared several times, which is correct), and a saved Mac
   mode (EEPROM default layer `4`) is left alone. Reading the Fn display: with the backlight on, the inactive mode's key is
-  the one *dark* key, and the active mode's key looks like all the others, which is easy to misread. Still to do: the
-  blink at every connection and a timeout for the unsure case (15-2), and a test on a Mac (15-3). If Mac detection
-  misbehaves, a typed-out diagnostic (3 s after a connection it types the counters, the detected OS, the live and saved
+  the one *dark* key, and the active mode's key looks like all the others, which is easy to misread. Each connection
+  ends with a **settle**: when detection says Windows, macOS or iOS (that mode is applied), or after `AUTODETECT_TIMEOUT_MS`
+  (2000 ms) if it says nothing useful (the saved mode stays), the active mode's key blinks, so every connection shows
+  the mode it ended in. Verified: on the Windows PC the blink comes soon after plug-in; on a power-only phone charger
+  (which never enumerates) the saved mode's key blinks after about 2 s, with Windows and with Mac saved (build 68,148
+  bytes, 2026-11-13). **QMK reports a Mac as iOS, not macOS** (observed 2026-11-13 on the owner's Mac: the setup requests have lengths 2, 0x16,
+  2, 0x12, 0x101, 0xFF, 0xFF, 0xFF; QMK's iOS rule, exactly 4 requests with two of length 2 and none of 0xFF, matches after
+  the first four, its macOS rule wants exactly 5 requests ending in 0xFF and never matches these 8, and QMK never revises a
+  guess within a connection), so `OS_IOS` is treated as Mac: every Apple host wants the Mac layout. Windows sends no
+  requests of length 2, so the iOS rule cannot fire for it. Verified on the Mac (final build 68,148 bytes, sha256
+  `E1E6B326…`): with Windows saved, plug-in gives Mac mode with the blink; the Win lock is released; replugging and a manual
+  Fn+`\` work; with Mac saved, the Windows PC still ends in Windows mode. If detection
+  misbehaves on a future OS version, a typed-out diagnostic (3 s after a connection it types the counters, the detected OS, the live and saved
   layers) is a quick way to see inside; the diagnostic version was kept outside the repo and can be recreated from this
   description: `send_string` of an `snprintf` of `detected_host_os()`, a local copy of `struct setups_data_t` from
-  `quantum/os_detection.c` and its `setups_data`, `default_layer_state`, `layer_state` and `eeconfig_read_default_layer()`.
+  `quantum/os_detection.c` and its `setups_data`, `default_layer_state`, `layer_state` and `eeconfig_read_default_layer()`;
+  with `OS_DETECTION_DEBUG_ENABLE = yes` in `rules.mk`, `extern uint16_t usb_setups[]` gives every request length in order.
 - **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
   Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
   above the background (the Win-lock LED looks brighter when the backlight is dimmed), **and one key's LED can be

@@ -39,13 +39,27 @@ static void start_mode_blink(uint8_t base_layer);
 // Automatic mode selection (task 15). The EEPROM holds the mode the owner last chose with a mode key; keyboard_init()
 // restores it at every boot (quantum/bootmagic/magic.c). Each time the keyboard is connected to a host, QMK's OS detection
 // (quantum/os_detection.c) guesses the host's OS from its USB setup requests, which takes a few hundred milliseconds, and
-// if it says Windows or macOS that mode is applied WITHOUT saving it, so the saved mode stays the owner's own choice and is
-// what is used whenever detection cannot tell (unsure, Linux or iOS). A mode key pressed meanwhile or afterwards wins until
-// the next connection.
+// if it says Windows, macOS or iOS that mode is applied WITHOUT saving it (iOS counts as Mac: every Apple host wants the Mac
+// layout, and QMK's guess says iOS for the owner's Mac, see below), so the saved mode stays the owner's own choice and is
+// what is used whenever detection cannot tell (unsure or Linux). A mode key pressed meanwhile or afterwards wins until the
+// next connection.
 //
-// "Armed" means a connection has started and its detected OS has not been applied yet. It starts true because a boot is a
-// connection. This base has no callback for a finished detection, so housekeeping_task_user() polls.
-static volatile bool autodetect_armed = true;
+// Why iOS is Mac: on the owner's Mac the setup requests have lengths 2, 0x16, 2, 0x12, 0x101, 0xFF, 0xFF, 0xFF. QMK's iOS
+// rule (exactly 4 requests, two of length 2, none of length 0xFF) matches after the first four, and its macOS rule
+// (exactly 5 requests ending in 0xFF) never matches those 8, so the guess stays iOS. QMK never revises a guess within a
+// connection. A Windows host sends no requests of length 2, so the iOS rule cannot fire for it.
+//
+// "Armed" means a connection has started and its mode has not been settled yet. It starts true because a boot is a
+// connection. This base has no callback for a finished detection, so housekeeping_task_user() polls. The mode is settled
+// when detection says Windows, macOS or iOS (that mode is applied) or, if it says nothing useful within
+// AUTODETECT_TIMEOUT_MS (unsure, Linux, or a host that never enumerates us), when the time is up (the saved mode stays).
+// Either way the
+// active mode's key blinks, so every connection shows which mode the keyboard ended up in. Detection takes a fraction of a
+// second on the Windows PC (133-205 ms observed); the timeout leaves room for slower hosts.
+#define AUTODETECT_TIMEOUT_MS 2000
+
+static volatile bool     autodetect_armed   = true;
+static volatile uint32_t autodetect_started = 0; // when the current connection started (set by the USB INIT event)
 
 // Switches to a mode, optionally saving it. Selecting Mac first releases the GUI lock, for any way of getting there.
 static void set_mode(uint8_t base_layer, bool save) {
@@ -72,7 +86,8 @@ static void select_mode(uint8_t base_layer) {
 void notify_usb_device_state_change_user(enum usb_device_state state) {
     if (state == USB_DEVICE_STATE_INIT) {
         erase_wlength_data();
-        autodetect_armed = true;
+        autodetect_started = timer_read32();
+        autodetect_armed   = true;
     }
 }
 
@@ -80,18 +95,29 @@ void housekeeping_task_user(void) {
     if (!autodetect_armed) {
         return;
     }
+    uint8_t layer;
+    bool    apply = true; // false: keep the mode the keyboard is already in (the saved one)
     switch (detected_host_os()) {
         case OS_WINDOWS:
-            autodetect_armed = false;
-            set_mode(WIN_BASE, false);
+            layer = WIN_BASE;
             break;
         case OS_MACOS:
-            autodetect_armed = false;
-            set_mode(MAC_BASE, false);
+        case OS_IOS: // see the comment above: QMK reports the owner's Mac as iOS
+            layer = MAC_BASE;
             break;
         default:
-            break; // not known (yet), or not an OS with a mode of its own: keep the saved mode
+            if (timer_elapsed32(autodetect_started) < AUTODETECT_TIMEOUT_MS) {
+                return; // not known yet: keep waiting
+            }
+            layer = layer_state_cmp(default_layer_state, MAC_BASE) ? MAC_BASE : WIN_BASE;
+            apply = false;
+            break;
     }
+    autodetect_armed = false;
+    if (apply) {
+        set_mode(layer, false);
+    }
+    start_mode_blink(layer);
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
