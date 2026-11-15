@@ -46,7 +46,11 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   is red-backlight. An RGB `.bin` is on Lemokey's site, but no RGB source is in this tree.
 - `info.json`: `Lemokey X4`, **STM32F401** (the kickoff prompt said F402RC; resolved in task 10, 2026-11-12: the board's DFU bootloader reports 256 KB of flash, 4x16 KB + 64 KB + 128 KB, which is the F401xC size and matches the build's `GENERIC_STM32_F401XC` board; the bootloader does not name the part, so "F402" is probably Keychron's label, since its C2 Pro readme says rev2 is "STM32F402" while that board's `info.json` also says `STM32F401`; observed with `dfu-util -l`, nothing flashed), `stm32-dfu`
   bootloader, VID `0x362D`, PID `0x0240`, `LAYOUT_82_ansi` (75%, 82 keys, one rotary encoder on B14/B15). Wired only.
-- Lighting: single-color LED matrix (CKLED2001, 81 LEDs), `LED_DISABLE_WHEN_USB_SUSPENDED` already set. Caps Lock LED
+- Lighting: single-color LED matrix (CKLED2001, 81 LEDs), `LED_DISABLE_WHEN_USB_SUSPENDED` already set. It already works as
+  "SUS-RGB" (the K3 feature name for turning the lighting off when the computer sleeps): `quantum.c` calls
+  `led_matrix_set_suspend_state()` from its suspend and wake hooks, and that macro makes it turn the LEDs off. Verified by the
+  owner on the board (2026-11-14, task 11-1): the LEDs go off when the computer sleeps and come back on wake. No keymap code is
+  needed. Caps Lock LED
   index 44, Win-lock LED index 72.
 - `x4.c`: `process_record_kb` calls `process_record_user` first, then handles `BL_TOGG` and `GU_TOGG` (Win lock,
   persisted in EEPROM user data). **There is no Mac/Windows dip switch and no wireless code.**
