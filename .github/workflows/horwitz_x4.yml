@@ -6,7 +6,8 @@ name: horwitz keymap (X4)
 # Triggers: every push to x4 (no path filter, so a change anywhere that could break the build is never missed), every
 # pull request, and a manual run from the Actions tab.
 #
-# It also runs `qmk lint` on the keymap, after the build so that a lint failure never hides a build result.
+# It also runs `qmk lint` on the keymap, after the build so that a lint failure never hides a build result, and checks that
+# the public-facing files (the keymap folder and this file) contain no internal identifiers.
 
 permissions:
   contents: read
@@ -38,6 +39,15 @@ jobs:
       - uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
+      # Public-facing text must stand on its own: no task numbers, no pointers to the project's two internal notes files, no
+      # personal wording, no names from the fork's other keymap's branch. Each pattern has one letter in square brackets so
+      # that this very step does not match itself. Matching is case-insensitive.
+      - name: Check public-facing text for internal identifiers
+        run: |
+          if grep -rniE '[t]ask [0-9]|claude[.]md|tasks[.]md|\b[o]wner\b|wireless_[p]layground|users/[h]orwitz' keyboards/keychron/x4/ansi_encoder/red/keymaps/horwitz .github/workflows/horwitz_x4.yml; then
+            echo "::error::Internal identifiers found in public-facing files (see the lines above)"
+            exit 1
+          fi
       - name: Install dependencies
         run: pip3 install -r requirements-dev.txt
       - name: Build horwitz keymap

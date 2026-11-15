@@ -20,7 +20,12 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   "the owner's Mac". Refer to the K3 or its branch only with the detail that makes the sentence stand alone: "Fn + Tab turns
   the backlight on and off, as on the K3" is fine, "works like the K3" is not (owner's rule, task 26, 2026-11-15). To check,
   search those files for `task [0-9]`, `CLAUDE.md`, `TASKS.md`, `owner`, `wireless_playground` and `users/horwitz`; the
-  result should be empty.
+  result should be empty. **CI enforces this** (task 30): a step in `horwitz_x4.yml` greps the keymap folder and the workflow
+  itself, case-insensitively, and fails the run on a match. Each pattern has one letter in square brackets (e.g., `[t]ask`)
+  so that the workflow does not match itself; keep that when editing it, and never write those words in the workflow's own
+  comments. `owner` is matched as a whole word, so `ownership` and `owned` are fine. It was tested on the real tree (clean),
+  on a deliberate violation (all caught, exit 1) and on harmless near-misses (not flagged). The rule about K3 references
+  needing their own detail is not machine-checkable and stays a review matter.
 - Prefer the clean, documented fix over a workaround. Do not edit Keychron/Lemokey vendor code. Check claims against the
   repo or by running a command before stating them.
 - Scope: Windows and Mac layers plus the selection method (built, and tested on a real Mac). Later (see `TASKS.md`): the remaining open tasks. The K3's per-key RGB features (GCP, CCP) do not apply: the X4's LEDs are single
