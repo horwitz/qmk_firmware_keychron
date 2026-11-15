@@ -2,11 +2,19 @@
 // the keys that choose between Windows mode and Mac mode, and the automatic choice of the mode when the keyboard is
 // connected to a host.
 
+// DEBUG is 1 only in a build made with DEBUG=1 (see rules.mk), which also turns the console on.
+#ifndef DEBUG
+#    define DEBUG 0
+#endif
+
 #include QMK_KEYBOARD_H
 #include "layers.h"
 #include "ctrlkeycodes.h"
 #include "os_detection.h"
 #include "usb_device_state.h"
+#if DEBUG
+#    include "print.h"
+#endif
 
 // x4.c keeps the state of its GUI ("Win") lock in a private variable, which it also saves to the EEPROM user datablock
 // (eeconfig_update_user_datablock) on every toggle and reloads at boot. We rely on that to read the lock state.
@@ -75,6 +83,9 @@ static void set_mode(uint8_t base_layer, bool save) {
 
 // A mode key press: saved, blinked, and it cancels a pending automatic choice.
 static void select_mode(uint8_t base_layer) {
+#if DEBUG
+    uprintf("mode key: base layer %u\n", base_layer);
+#endif
     autodetect_armed = false;
     set_mode(base_layer, true);
     start_mode_blink(base_layer);
@@ -114,11 +125,24 @@ void housekeeping_task_user(void) {
             break;
     }
     autodetect_armed = false;
+#if DEBUG
+    uprintf("settled: detected os %d, base layer %u, %s, %lu ms after the connection started\n", (int)detected_host_os(), layer, apply ? "applied" : "saved mode kept", (unsigned long)timer_elapsed32(autodetect_started));
+#endif
     if (apply) {
         set_mode(layer, false);
     }
     start_mode_blink(layer);
 }
+
+#if DEBUG
+// Turns debug output on at boot. Customize which of QMK's own messages you get with the flags below.
+void keyboard_post_init_user(void) {
+    debug_enable = true;
+    // debug_matrix = true;
+    // debug_keyboard = true;
+    // debug_mouse = true;
+}
+#endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {

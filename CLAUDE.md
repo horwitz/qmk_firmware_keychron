@@ -121,6 +121,18 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   description: `send_string` of an `snprintf` of `detected_host_os()`, a local copy of `struct setups_data_t` from
   `quantum/os_detection.c` and its `setups_data`, `default_layer_state`, `layer_state` and `eeconfig_read_default_layer()`;
   with `OS_DETECTION_DEBUG_ENABLE = yes` in `rules.mk`, `extern uint16_t usb_setups[]` gives every request length in order.
+- **Debug output (task 11-2, tested on the board 2026-11-14):** a build made with `-e DEBUG=1` has the console on
+  (`CONSOLE_ENABLE`) and `DEBUG` defined; `horwitz.c` then turns `debug_enable` on at boot and prints with `uprintf` at every
+  mode key press (`mode key: base layer N`, 0 = Windows, 2 = Mac) and every auto-detect settle (the detected OS, the layer,
+  whether it was applied, and how many ms after the connection started). A normal build is byte-identical to one without any
+  of this (68,148 bytes, sha256 `E1E6B326…`); the DEBUG build is 74,264 bytes. `DEBUG` is deliberately not given a default
+  in `rules.mk`: the build system also uses it as the compiler's debug-info level (`-g$(DEBUG)`, `builddefs/common_rules.mk`).
+  Build and flash with `qmk compile`/`qmk flash -kb keychron/x4/ansi_encoder/red -km horwitz -e DEBUG=1`, and read the output
+  with `qmk console -t` (run through the MSYS command above, with `PYTHONUNBUFFERED=1` if its output goes to a file, or Python
+  holds it back); `qmk console --list` shows the board as `362D:0240:1`. **QMK Toolbox 0.3.3 showed nothing** when tried (the
+  tool was open, the board replugged); the cause was not investigated. The `settled:` line is usually missed, because it is
+  printed about 0.2 s after a connection and the console tool reconnects about 1 s after the board appears; the mode key lines
+  are reliable. Flash the normal build back afterward: the DEBUG image stays on the board until you do.
 - **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
   Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
   above the background (the Win-lock LED looks brighter when the backlight is dimmed), **and one key's LED can be
@@ -176,7 +188,8 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
 - `ctrlkeycodes.h`: `MODE_WIN` and `MODE_MAC`.
 - `horwitz.c`: the behavior: `process_record_user` (mode selection and the GUI-lock release) and
   `led_matrix_indicators_user` (the mode display) with the blink helpers `start_mode_blink` and `apply_blink`.
-- `rules.mk`: `ENCODER_MAP_ENABLE = yes` and `SRC += horwitz.c`.
+- `rules.mk`: `ENCODER_MAP_ENABLE = yes`, `OS_DETECTION_ENABLE = yes`, `SRC += horwitz.c`, and the `DEBUG=1` switch (see
+  "Debug output").
 
 License headers: none of these files carries one for now. The Keychron block was removed from `keymap.c` and `horwitz.c`
 because they are not purely Keychron's code (this repo is private). As a result `qmk lint` reports its license-header
