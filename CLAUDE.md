@@ -356,11 +356,12 @@ on Keychron's fork, because the X4 exists only there and moving to upstream QMK 
 | `gh` | 2.103.3 | 2.103.3 |
 | Docker Desktop | 4.99.0 | 4.99.0 |
 | `actions/checkout` | v7.0.1 | v7.0.1 |
+| `actions/upload-artifact` | v7.0.2 (pinned 2026-11-15, task 31) | v7.0.2 (released 2026-10-07) |
 | CI container | `qmkfm/qmk_cli:1.2.0` (`sha256:b7d7fa8f…`) | the same image as `latest` |
 | Keychron `playground` | `4a8143cce9` | `4a8143cce9` |
 
 CI is `.github/workflows/horwitz_x4.yml`: it builds `keychron/x4/ansi_encoder/red:horwitz` in the pinned container on every
-push to `x4`, on pull requests and on demand. It also runs `qmk lint` on the keymap after the build (task 18). The container's GCC (15.2.0, the same
+push to `x4`, on pull requests and on demand. It also runs `qmk lint` on the keymap after the build (task 18), checks the public-facing files for internal identifiers (task 30), and uploads the built firmware as the artifact `horwitz-x4-firmware` (task 31: `keychron_x4_ansi_encoder_red_horwitz.bin`, kept 30 days; the run's summary page lists its size and SHA-256; the repository is public, so anyone signed in to GitHub can download it, which is consistent with the GPL because the source for it is this repository at that commit). The container's GCC (15.2.0, the same
 `qmk_toolchains` build) and `qmk` (1.2.0) match MSYS, and its firmware is byte-for-byte identical to MSYS's (67,636 bytes,
 sha256 `67AFA083E17F6AA1…`, observed 2026-11-10). Its first run on GitHub (2026-11-11, commit `1ed1b1633b`, runner image `ubuntu-24.04`)
 succeeded in about 1 minute 42 seconds in total. The workflow now pins `runs-on: ubuntu-24.04` (the image that run used)

@@ -6,8 +6,9 @@ name: horwitz keymap (X4)
 # Triggers: every push to x4 (no path filter, so a change anywhere that could break the build is never missed), every
 # pull request, and a manual run from the Actions tab.
 #
-# It also runs `qmk lint` on the keymap, after the build so that a lint failure never hides a build result, and checks that
-# the public-facing files (the keymap folder and this file) contain no internal identifiers.
+# It also runs `qmk lint` on the keymap, after the build so that a lint failure never hides a build result, checks that
+# the public-facing files (the keymap folder and this file) contain no internal identifiers, and keeps the built firmware
+# as a downloadable artifact.
 
 permissions:
   contents: read
@@ -52,5 +53,26 @@ jobs:
         run: pip3 install -r requirements-dev.txt
       - name: Build horwitz keymap
         run: make keychron/x4/ansi_encoder/red:horwitz
+      # The built firmware is kept as a workflow artifact, so that the image of any commit can be downloaded and flashed from
+      # another computer. Its size and SHA-256 go to the job log and the run's summary page, to check a download against.
+      - name: Record the firmware's size and SHA-256
+        run: |
+          f=keychron_x4_ansi_encoder_red_horwitz.bin
+          sha256sum "$f"
+          {
+            echo "### Firmware"
+            echo
+            echo "| File | Bytes | SHA-256 |"
+            echo "|---|---|---|"
+            echo "| $f | $(stat -c %s "$f") | $(sha256sum "$f" | cut -d' ' -f1) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+      # Pinned to an exact version like the other actions; retention is 30 days, not the 90-day default.
+      - name: Upload the firmware
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: horwitz-x4-firmware
+          path: keychron_x4_ansi_encoder_red_horwitz.bin
+          if-no-files-found: error
+          retention-days: 30
       - name: Lint horwitz keymap
         run: qmk lint -kb keychron/x4/ansi_encoder/red -km horwitz

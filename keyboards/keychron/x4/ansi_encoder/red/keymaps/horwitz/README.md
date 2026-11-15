@@ -91,6 +91,16 @@ keymap then prints a line for each mode key press and each automatic choice. Rea
 separate **HID Console** window of QMK Toolbox (on Windows the main log pane does not show it). A normal build has none of
 this, and the DEBUG build is larger (about 74 KB against 68 KB). Flash a normal build again when you are done.
 
+## A ready-made build
+
+Every push to the repository's `x4` branch builds this keymap on GitHub and keeps the firmware for 30 days, so you can
+get an image without a build setup. Open the repository's **Actions** tab on GitHub, pick a run of "horwitz keymap (X4)",
+and download the artifact **horwitz-x4-firmware** from the bottom of the run's page: a zip holding
+`keychron_x4_ansi_encoder_red_horwitz.bin`. (GitHub asks you to sign in to download it.) The run's summary page lists the
+file's size and SHA-256, so you can check the download. Flash it with the board in its bootloader (see above), using any
+tool that writes a `.bin` to address `0x08000000`, e.g., QMK Toolbox or `dfu-util`; this repository's own builds were
+flashed with `qmk flash`.
+
 ## Files
 
 | File | Purpose |
