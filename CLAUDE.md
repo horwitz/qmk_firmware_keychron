@@ -201,6 +201,8 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
 - `ctrlkeycodes.h`: `MODE_WIN` and `MODE_MAC`.
 - `horwitz.c`: the behavior: `process_record_user` (mode selection and the GUI-lock release) and
   `led_matrix_indicators_user` (the mode display) with the blink helpers `start_mode_blink` and `apply_blink`.
+- `README.md`: the user-facing description: the modes, how the mode is chosen, the Fn layer's keys, and how to build, flash
+  and debug. **Keep it in step with `keymaps.h` and `horwitz.c`** when the Fn layer or the behavior changes.
 - `rules.mk`: `ENCODER_MAP_ENABLE = yes`, `OS_DETECTION_ENABLE = yes`, `SRC += horwitz.c`, and the `DEBUG=1` switch (see
   "Debug output").
 
