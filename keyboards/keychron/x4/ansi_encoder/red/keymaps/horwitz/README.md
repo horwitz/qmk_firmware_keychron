@@ -27,8 +27,12 @@ Everything else, including the F-row and the encoder, is the same in both.
 - **Automatically.** Each time the keyboard is connected to a computer (or plugged in), it guesses the computer's
   operating system from how it talks over USB. A Windows computer gets Windows mode and a Mac gets Mac mode. This takes
   a fraction of a second.
-- **By hand.** **Fn + `\`** selects Windows mode and **Fn + `/`** selects Mac mode. A manual choice wins until the next
-  connection, and it is also saved in the keyboard's memory.
+- **By hand.** **Fn + `\`** selects Windows mode and **Fn + `/`** selects Mac mode. A manual choice wins until you unplug
+  the keyboard or move it to a different kind of computer, and it is also saved in the keyboard's memory.
+- **Sleep and wake keep your choice.** A computer often reconnects the keyboard when it wakes. If it is the same kind of
+  computer as before, the keyboard leaves the mode alone, so a mode you chose by hand survives. (A different kind of
+  computer, e.g., after a USB switch, is followed as usual.) The mode key may blink on a wake: that is the keyboard
+  confirming the mode it is in.
 - **The saved mode is the fallback.** When the guess does not give Windows or Mac (e.g., a Linux computer, or a power-only
   charger that never talks to the keyboard), the keyboard keeps the saved mode, which is the one you last chose by hand.
   The automatic choice is never saved, so it never overwrites your own.

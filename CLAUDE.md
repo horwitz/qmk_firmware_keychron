@@ -105,7 +105,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   clears QMK's detection counters (nothing in this base ever does) and arms a one-shot; `housekeeping_task_user` polls
   `detected_host_os()` (this base has no callback) and, for Windows, macOS or iOS, applies that mode with `default_layer_set()`
   **without saving it**, so the EEPROM keeps the owner's last manual choice, which is also the fallback when detection says
-  unsure or Linux. A mode key pressed meanwhile or later wins until the next connection. Observed on the Windows PC:
+  unsure or Linux. A mode key pressed meanwhile or later wins until the next power cycle or connection to a different kind of host (see Sleep and wake, below). Observed on the Windows PC:
   Windows is recognized 133-205 ms after the connection (18 requests, 14 of length 0xFF and 2 of length 4; the USB state
   goes INIT, SUSPEND, INIT, INIT, CONFIGURED, so the counters are cleared several times, which is correct), and a saved Mac
   mode (EEPROM default layer `4`) is left alone. Reading the Fn display: with the backlight on, the inactive mode's key is
@@ -136,7 +136,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   with `qmk console -t` (run through the MSYS command above, with `PYTHONUNBUFFERED=1` if its output goes to a file, or Python
   holds it back); `qmk console --list` shows the board as `362D:0240:1`. **QMK Toolbox works too, but on Windows it shows
   console output in a separate "HID Console" window** (open it from Toolbox's menus), not in the main log pane, so look
-  there (verified with 0.3.3, the version installed; 0.3.4 is the latest stable as of 2026-11-14 and was not needed). The `settled:` line is usually missed, because it is
+  there (verified with 0.3.3 and again with 0.3.4 on 2026-11-15: with a DEBUG build on the board, its HID Console window lists the X4 and shows the `mode key:` lines; with a normal build the window shows nothing, because a normal build has no console interface). The `settled:` line is usually missed, because it is
   printed about 0.2 s after a connection and the console tool reconnects about 1 s after the board appears; the mode key lines
   are reliable. Flash the normal build back afterward: the DEBUG image stays on the board until you do.
   **Decided (owner, 2026-11-15): DEBUG stays compile-time; no keyboard toggle.** QMK has a keycode for it (`DB_TOGG`,
@@ -147,6 +147,27 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   enumeration, which is what detection reads; it was tested only without it), and would need the `uprintf` calls changed
   to `dprintf` so they respect `debug_enable`. **Revisit if** debugging a host-specific problem (as with the Mac's iOS
   result, which needed a diagnostic build flashed from the Windows PC) becomes frequent.
+- **Sleep and wake (task 28, built and tested on the board 2026-11-15; final build 68,388 bytes, sha256 `1A2D93C3…`):** a
+  manual mode choice survives a computer's sleep and wake. What was found: on the **Windows PC** a wake resets the bus (the
+  USB state goes to INIT, which re-arms detection) but Windows does not repeat its descriptor requests, so detection answers
+  nothing; after the 2 s timeout the live mode is kept and its key blinks, so the choice already survived. On the **Mac** a
+  wake can reset the bus several times (five resets in 1.2 s were seen) and the Mac then repeats the whole enumeration, so
+  detection answers again (`os 4`); before the fix that re-applied Mac mode and undid a manual Windows choice. A wake cannot
+  be told from a host change by the USB states (a KVM or USB switch also looks like suspend, then reset), so the fix compares
+  what the host *is*: `last_detected_layer` remembers the layer detection last decided, a re-detection that decides the
+  **same** layer leaves the live mode alone, and one that decides a **different** layer applies it. A power cycle remembers
+  nothing, which is what ends a manual choice ("until the next connection"). The blink after a same-host wake shows the live
+  mode (`live_mode()`), not the detected one. Also found: when the settle step runs after a bus-reset wake the LED matrix is
+  still held off (it comes back when the USB `CONFIGURED` event is processed, about 13-21 ms later, `usb_main.c`), so the
+  blink's clock now starts at the first frame actually drawn (`blink_clock_started`); at 21 ms that is a robustness measure,
+  and it was NOT shown to be the cause of anything. **Not proven:** some Mac wakes showed no blink; the working theory is a
+  wake that only resumes the bus without a reset, which runs no settle step and so no blink, by design, but no trace of such a
+  wake was captured. **Method, for a future investigation:** a temporary DEBUG-only trace that recorded each
+  `notify_usb_device_state_change_user` state with `timer_read32()`, the moment the settle step ran, `detected_host_os()`,
+  whether it applied, and `led_matrix_get_suspend_state()`, printed with `uprintf` four seconds after the last event so the
+  console reader (which reconnects about a second late) did not miss it; timestamps that start near 0 mean the keyboard
+  rebooted (power was cut), large ones mean it did not. The trace code was removed afterward. Tested (owner): a manual Windows
+  mode on the Mac and a manual Mac mode on the Windows PC both survive a sleep and wake, and a fresh plug-in follows the host.
 - **Navigation keys (task 24, built and tested on the board 2026-11-15):** the X4 has no End key (observed: the right-hand
   column is the encoder, Home, PgUp and PgDn, and `KC_END` was on no layer). On **both** Fn layers, with plain keycodes (the
   owner's decision: plain End on the Mac layer too, not Cmd+Right): Fn + Left = Home, Fn + Up = PgUp, Fn + Down = PgDn,

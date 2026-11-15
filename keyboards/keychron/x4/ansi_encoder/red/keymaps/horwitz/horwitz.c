@@ -59,6 +59,13 @@ static void start_mode_blink(uint8_t base_layer);
 // (exactly 5 requests ending in 0xFF) never matches those 8, so the guess stays iOS. QMK never revises a guess within a
 // connection. A Windows host sends no requests of length 2, so the iOS rule cannot fire for it.
 //
+// A computer waking from sleep often re-enumerates the keyboard (a Mac does, replaying the whole conversation; the Windows
+// PC tested did not repeat its requests, so there detection says nothing and the timeout below applies), and a USB switch
+// moving the keyboard to another computer looks the same to the keyboard. So the layer that detection last decided is
+// remembered, and a re-detection that decides the SAME layer leaves the live mode alone: a mode chosen by hand survives a
+// wake. One that decides a DIFFERENT layer (another computer) is applied as usual. Nothing is remembered across a power
+// cycle, which is the "until the next connection" that ends a manual choice.
+//
 // "Armed" means a connection has started and its mode has not been settled yet. It starts true because a boot is a
 // connection. This base has no callback for a finished detection, so housekeeping_task_user() polls. The mode is settled
 // when detection says Windows, macOS or iOS (that mode is applied) or, if it says nothing useful within
@@ -70,6 +77,14 @@ static void start_mode_blink(uint8_t base_layer);
 
 static volatile bool     autodetect_armed   = true;
 static volatile uint32_t autodetect_started = 0; // when the current connection started (set by the USB INIT event)
+
+#define NO_LAYER 0xFF
+static uint8_t last_detected_layer = NO_LAYER; // the layer detection last decided (WIN_BASE or MAC_BASE), or none since power-up
+
+// The base layer of the mode the keyboard is in right now.
+static uint8_t live_mode(void) {
+    return layer_state_cmp(default_layer_state, MAC_BASE) ? MAC_BASE : WIN_BASE;
+}
 
 // Switches to a mode, optionally saving it. Selecting Mac first releases the GUI lock, for any way of getting there.
 static void set_mode(uint8_t base_layer, bool save) {
@@ -109,7 +124,7 @@ void housekeeping_task_user(void) {
         return;
     }
     uint8_t layer;
-    bool    apply = true; // false: keep the mode the keyboard is already in (the saved one)
+    bool    detected = true; // false: detection said nothing useful, so the mode the keyboard is already in stays
     switch (detected_host_os()) {
         case OS_WINDOWS:
             layer = WIN_BASE;
@@ -122,18 +137,25 @@ void housekeeping_task_user(void) {
             if (timer_elapsed32(autodetect_started) < AUTODETECT_TIMEOUT_MS) {
                 return; // not known yet: keep waiting
             }
-            layer = layer_state_cmp(default_layer_state, MAC_BASE) ? MAC_BASE : WIN_BASE;
-            apply = false;
+            layer    = live_mode();
+            detected = false;
             break;
     }
     autodetect_armed = false;
+
+    // Apply the detected mode only if this is a different host from the last detection (or the first since power-up): the
+    // same host re-enumerating after a wake must not undo a mode chosen by hand.
+    bool apply = detected && layer != last_detected_layer;
+    if (detected) {
+        last_detected_layer = layer;
+    }
 #if DEBUG
-    uprintf("settled: detected os %d, base layer %u, %s, %lu ms after the connection started\n", (int)detected_host_os(), layer, apply ? "applied" : "saved mode kept", (unsigned long)timer_elapsed32(autodetect_started));
+    uprintf("settled: detected os %d, base layer %u, %s, %lu ms after the connection started\n", (int)detected_host_os(), layer, apply ? "applied" : (detected ? "same host as before, mode kept" : "saved mode kept"), (unsigned long)timer_elapsed32(autodetect_started));
 #endif
     if (apply) {
         set_mode(layer, false);
     }
-    start_mode_blink(layer);
+    start_mode_blink(live_mode()); // the mode the keyboard is in, which after a wake may differ from the detected one
 }
 
 #if DEBUG
@@ -191,20 +213,28 @@ static uint8_t led_under_key(uint16_t keycode) {
 #    define BLINK_STEP_MS 120
 #    define BLINK_PULSES 3
 
-static uint32_t blink_start_time = 0;
-static bool     blink_running    = false;
-static uint8_t  blink_layer      = WIN_BASE; // the base layer (mode) whose key's LED blinks
+static uint32_t blink_start_time    = 0;
+static bool     blink_running       = false;
+static bool     blink_clock_started = false; // the clock starts at the first frame actually drawn, see apply_blink()
+static uint8_t  blink_layer         = WIN_BASE; // the base layer (mode) whose key's LED blinks
 
 static void start_mode_blink(uint8_t base_layer) {
-    blink_layer      = base_layer;
-    blink_running    = true;
-    blink_start_time = timer_read32();
+    blink_layer         = base_layer;
+    blink_running       = true;
+    blink_clock_started = false;
 }
 
 // Applies the running blink, if any, to the pressed mode key's LED (`led`, which is NO_LED if that key has none).
 static void apply_blink(uint8_t led) {
     if (!blink_running) {
         return;
+    }
+    // The blink's clock starts at the first frame that is actually drawn, not when the blink was requested: right after a
+    // wake the LEDs are still held off by the suspend when the settle step asks for the blink (about 20 ms on the Mac that
+    // was measured), and a slower host would otherwise lose part of the blink.
+    if (!blink_clock_started) {
+        blink_clock_started = true;
+        blink_start_time    = timer_read32();
     }
     // Steps alternate lit, dark, lit, ...: 2 * BLINK_PULSES + 1 steps in all, starting and ending lit.
     uint32_t step = timer_elapsed32(blink_start_time) / BLINK_STEP_MS;
