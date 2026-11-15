@@ -15,6 +15,12 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   physical X4, but the commit message must say so (a line such as "UNTESTED ON HARDWARE"), and the next hardware test
   steps must be listed. Once they have been tested, say so in `TASKS.md` and in the next commit. (Before 2026-11-09 the
   rule, inherited from the K3 work, was to wait until after the flash test.)
+- **Public-facing text** (everything except `CLAUDE.md` and `TASKS.md`: code comments, the keymap `README.md`, the
+  workflow) must stand on its own: no task numbers, no pointers to `CLAUDE.md` or `TASKS.md`, no personal wording such as
+  "the owner's Mac". Refer to the K3 or its branch only with the detail that makes the sentence stand alone: "Fn + Tab turns
+  the backlight on and off, as on the K3" is fine, "works like the K3" is not (owner's rule, task 26, 2026-11-15). To check,
+  search those files for `task [0-9]`, `CLAUDE.md`, `TASKS.md`, `owner`, `wireless_playground` and `users/horwitz`; the
+  result should be empty.
 - Prefer the clean, documented fix over a workaround. Do not edit Keychron/Lemokey vendor code. Check claims against the
   repo or by running a command before stating them.
 - Scope: Windows and Mac layers plus the selection method (built, and tested on a real Mac). Later (see `TASKS.md`): the remaining open tasks. The K3's per-key RGB features (GCP, CCP) do not apply: the X4's LEDs are single

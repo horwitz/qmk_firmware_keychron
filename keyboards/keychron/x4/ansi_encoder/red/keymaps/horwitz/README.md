@@ -1,8 +1,7 @@
 # horwitz keymap for the Lemokey X4
 
 A Windows layout and a Mac layout in one firmware, with the keyboard choosing between them. Build target:
-`keychron/x4/ansi_encoder/red`, keymap `horwitz`. (For the project's working notes, decisions and environment, see
-`CLAUDE.md` in the repository root.)
+`keychron/x4/ansi_encoder/red`, keymap `horwitz`.
 
 ## Modes
 
@@ -74,7 +73,8 @@ Hold **Fn** and press:
 
 ## Building, flashing and debugging
 
-On Windows these run in the QMK MSYS shell (see `CLAUDE.md`, "Environment: Windows + QMK MSYS", for how to start it).
+On Windows these run in the **QMK MSYS** shell, which QMK's Windows installer provides (open it from the Start menu, then go
+to the folder of this repository).
 
     qmk compile -kb keychron/x4/ansi_encoder/red -km horwitz
     qmk flash   -kb keychron/x4/ansi_encoder/red -km horwitz

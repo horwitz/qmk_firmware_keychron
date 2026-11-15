@@ -16,9 +16,9 @@
 
 // Modifications Copyright 2026 Jeremy Horwitz
 
-// The horwitz keymap for the Lemokey X4 is self-contained in this directory: it uses no users/horwitz userspace
-// (see CLAUDE.md, "Mac/Windows design"). Its Windows layers are the stock `default` keymap's, unchanged; the Mac layers
-// are added after them (WIN_BASE 0, WIN_FN 1, MAC_BASE 2, MAC_FN 3).
+// The horwitz keymap for the Lemokey X4 is self-contained in this directory: it needs nothing from a users/ folder. Its
+// Windows layers are the stock `default` keymap's, unchanged; the Mac layers are added after them (WIN_BASE 0, WIN_FN 1,
+// MAC_BASE 2, MAC_FN 3).
 
 #include QMK_KEYBOARD_H
 #include "layers.h"
@@ -37,8 +37,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [WIN_FN] = LAYOUT_winfn,
 
     // The same as WIN_BASE except the bottom row, which has the Mac order: Control, Option, Command ... Command. Plain
-    // QMK keycodes (KC_LALT is Option, KC_LGUI/KC_RGUI are Command), not Keychron's KC_LOPTN/KC_LCMMD/KC_RCMMD; whether
-    // that is enough on the X4 is to be confirmed on the board (see CLAUDE.md).
+    // QMK keycodes (KC_LALT is Option, KC_LGUI/KC_RGUI are Command), not Keychron's KC_LOPTN/KC_LCMMD/KC_RCMMD, which need
+    // Keychron's common code to work. The plain keycodes are enough on the X4 (tested on a real Mac: Cmd+Space, Option+e,
+    // the right Command and the other Command shortcuts).
     [MAC_BASE] = LAYOUT_82_ansi(
         KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,     KC_F12,   KC_DEL,             KC_MUTE,
         KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,    KC_EQL,   KC_BSPC,            KC_HOME,

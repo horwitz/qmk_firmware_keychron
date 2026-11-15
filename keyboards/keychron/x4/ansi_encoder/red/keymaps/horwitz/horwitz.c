@@ -1,8 +1,7 @@
 // Copyright 2026 Jeremy Horwitz
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-// Behavior of the horwitz keymap for the Lemokey X4 (named as on the K3, where the shared behavior is horwitz.c):
-// the keys that choose between Windows mode and Mac mode, and the automatic choice of the mode when the keyboard is
+// Behavior of the horwitz keymap for the Lemokey X4: the keys that choose between Windows mode and Mac mode, and the automatic choice of the mode when the keyboard is
 // connected to a host.
 
 // DEBUG is 1 only in a build made with DEBUG=1 (see rules.mk), which also turns the console on.
@@ -47,15 +46,15 @@ static void release_gui_lock(void) {
 // Starts the blink that confirms a mode key press (defined with the LED code below; does nothing without an LED matrix).
 static void start_mode_blink(uint8_t base_layer);
 
-// Automatic mode selection (task 15). The EEPROM holds the mode the owner last chose with a mode key; keyboard_init()
+// Automatic mode selection. The EEPROM holds the mode last chosen with a mode key; keyboard_init()
 // restores it at every boot (quantum/bootmagic/magic.c). Each time the keyboard is connected to a host, QMK's OS detection
 // (quantum/os_detection.c) guesses the host's OS from its USB setup requests, which takes a few hundred milliseconds, and
 // if it says Windows, macOS or iOS that mode is applied WITHOUT saving it (iOS counts as Mac: every Apple host wants the Mac
-// layout, and QMK's guess says iOS for the owner's Mac, see below), so the saved mode stays the owner's own choice and is
+// layout, and QMK's guess says iOS for a Mac, see below), so the saved mode stays the user's own choice and is
 // what is used whenever detection cannot tell (unsure or Linux). A mode key pressed meanwhile or afterwards wins until the
 // next connection.
 //
-// Why iOS is Mac: on the owner's Mac the setup requests have lengths 2, 0x16, 2, 0x12, 0x101, 0xFF, 0xFF, 0xFF. QMK's iOS
+// Why iOS is Mac: on the Mac this was tested with, the setup requests have lengths 2, 0x16, 2, 0x12, 0x101, 0xFF, 0xFF, 0xFF. QMK's iOS
 // rule (exactly 4 requests, two of length 2, none of length 0xFF) matches after the first four, and its macOS rule
 // (exactly 5 requests ending in 0xFF) never matches those 8, so the guess stays iOS. QMK never revises a guess within a
 // connection. A Windows host sends no requests of length 2, so the iOS rule cannot fire for it.
@@ -116,7 +115,7 @@ void housekeeping_task_user(void) {
             layer = WIN_BASE;
             break;
         case OS_MACOS:
-        case OS_IOS: // see the comment above: QMK reports the owner's Mac as iOS
+        case OS_IOS: // see the comment above: QMK reports a Mac as iOS
             layer = MAC_BASE;
             break;
         default:

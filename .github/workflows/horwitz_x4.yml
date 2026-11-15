@@ -1,12 +1,12 @@
 name: horwitz keymap (X4)
 
-# Builds the horwitz keymap for the Lemokey X4. Modeled on horwitz.yml on the fork's wireless_playground branch (the K3
-# keymap), but with its own file name so the two never collide.
+# Builds the horwitz keymap for the Lemokey X4. (The fork's keymap for the Keychron K3 has its own workflow file with a
+# different name, so the two never collide when the branches are merged.)
 #
 # Triggers: every push to x4 (no path filter, so a change anywhere that could break the build is never missed), every
 # pull request, and a manual run from the Actions tab.
 #
-# It also runs `qmk lint` on the keymap (task 18), after the build so that a lint failure never hides a build result.
+# It also runs `qmk lint` on the keymap, after the build so that a lint failure never hides a build result.
 
 permissions:
   contents: read
@@ -24,10 +24,10 @@ jobs:
     # Pinned like the container below: `ubuntu-latest` is a floating label (GitHub is moving it to Ubuntu 26), and the first
     # run on 2026-11-11 used the ubuntu-24.04 image.
     runs-on: ubuntu-24.04
-    # Pinned to a version tag, not `latest`, so CI does not change under us. At the 2026-11-10 audit, 1.2.0 was the same image
+    # Pinned to a version tag, not `latest`, so CI does not change under us. As of 2026-11-10, 1.2.0 was the same image
     # as `latest` (sha256:b7d7fa8fb4432b56...): GCC 15.2.0 and qmk 1.2.0, the same as the local QMK MSYS, and it builds a
     # byte-identical firmware. To move to a newer image, change the tag, rebuild locally in the container and compare it
-    # with the MSYS build, then update the "Versions and CI" section of CLAUDE.md.
+    # with a local QMK MSYS build, then record the new versions in the project's notes.
     container: qmkfm/qmk_cli:1.2.0
 
     steps:
