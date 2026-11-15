@@ -17,8 +17,7 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   rule, inherited from the K3 work, was to wait until after the flash test.)
 - Prefer the clean, documented fix over a workaround. Do not edit Keychron/Lemokey vendor code. Check claims against the
   repo or by running a command before stating them.
-- Scope: Windows and Mac layers plus the selection method (built, and tested on a real Mac). Later (see `TASKS.md`): DEBUG, an on/off variant of
-  FN-HI, SUS-RGB, and tooling updates. The K3's per-key RGB features (GCP, CCP) do not apply: the X4's LEDs are single
+- Scope: Windows and Mac layers plus the selection method (built, and tested on a real Mac). Later (see `TASKS.md`): the remaining open tasks. The K3's per-key RGB features (GCP, CCP) do not apply: the X4's LEDs are single
   color.
 
 ## Branches and upstream
@@ -134,18 +133,31 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   there (verified with 0.3.3, the version installed; 0.3.4 is the latest stable as of 2026-11-14 and was not needed). The `settled:` line is usually missed, because it is
   printed about 0.2 s after a connection and the console tool reconnects about 1 s after the board appears; the mode key lines
   are reliable. Flash the normal build back afterward: the DEBUG image stays on the board until you do.
-- **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
+- **LED feedback: FN-HI and the mode display (built and tested on the board 2026-11-10 to 2026-11-15, task 11-3):** while a
+  Fn layer is active (Fn held), every key that does something on that layer is drawn steady at full brightness and every
+  other key is dark: the K3's "FN-HI" (highlight the used Fn keys) in an on/off variant for single-color LEDs, working with
+  the backlight on, dimmed or off. That is 20 keys in Windows mode and 19 in Mac mode: F1-F12, Tab, Q, W, S, N, `\` and `/`,
+  plus Left Win on Windows (the Win-lock key, transparent on the Mac Fn layer). Which keys are "used" is **read from the
+  keymap**, not hard-coded: `find_used_keys` (`horwitz.c`) scans both Fn layers once, at first use, taking each key's LED from
+  `g_led_config.matrix_co` and its keycode from `keymap_key_to_keycode()`, and counts anything but `KC_TRNS` and `KC_NO`, so a
+  key added to an Fn layer lights up with no further code. The two mode keys are both used, so both are lit; the **active**
+  mode's key **breathes** (a triangle wave between `FNHI_BREATHE_MIN`, 64, about 25%, and full, over `FNHI_BREATHE_PERIOD_MS`,
+  2000) and the inactive one stays steady, so the key that moves is the current mode. Both constants are for tuning. The
+  three-pulse confirmation blink (see Blink) is drawn after the display and overrides it, so after a mode key press the
+  breathing moves to the new key only once the blink, about 0.85 s, is over. The first version drove only the two mode
+  keys (active lit, inactive dark), which was easy to misread with the backlight on, since every other key was lit too.
+  Build: 68,348 bytes, no compiler warnings, sha256 `C6340C22…`. Tested on the X4 (owner, 2026-11-15): backlight on and off,
+  Mac mode, the Caps Lock and Win-lock LEDs, both blinks, and switching modes while holding Fn.
   Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
   above the background (the Win-lock LED looks brighter when the backlight is dimmed), **and one key's LED can be
   forced dark while its neighbors stay lit** (tested 2026-11-10). The Caps Lock key shows purple with the backlight on
   and blue with it off, which is probably a separate blue indicator LED (`indicators.caps_lock` on C9) plus red light
-  bleeding from neighbors.
-  Implemented in `led_matrix_indicators_user` (`horwitz.c`): the two LEDs are found from the keymap (scan the Fn layer for
-  `MODE_WIN`/`MODE_MAC`, then `g_led_config.matrix_co`), not hard-coded; the replay of that lookup gives LED 42 for `\` and
-  68 for `/`. Pitfall found on the board: with the backlight off (`x4.c`'s `BL_TOGG` sets the flags to none and clears
-  every LED once), nothing repaints the LEDs, so a value set while Fn is held stays lit after Fn is released. The code
-  therefore clears both keys when `!led_matrix_get_flags()`, as `x4.c` does for the Win-lock LED; this assumes that
-  "flags == none" means the backlight is off.
+  bleeding from neighbors. The LEDs of the mode keys are 42 for `\` and 68 for `/`.
+  Pitfall found on the board: with the backlight off (`x4.c`'s `BL_TOGG` sets the flags to none and clears every LED once),
+  nothing repaints the LEDs, so a value set while Fn is held stays lit after Fn is released. The code therefore clears every
+  LED used on an Fn layer when Fn is not held and `!led_matrix_get_flags()`, as `x4.c` does for the Win-lock LED; this assumes
+  that "flags == none" means the backlight is off. `x4.c` draws its own indicators (Caps Lock, the Win lock) after this code
+  runs, so they win for their own LEDs.
 - **Win lock:** `GU_TOGG` (Fn + Left Win) stays on the Windows Fn layer only. That position is transparent on the Mac Fn
   layer, because the lock is one global flag (`keymap_config.no_gui`, saved in EEPROM) that would otherwise stay on after
   switching modes and leave Command dead. `horwitz.c` therefore releases it when Mac mode is selected: it reads

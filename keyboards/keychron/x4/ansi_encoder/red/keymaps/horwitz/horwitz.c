@@ -215,36 +215,80 @@ static void apply_blink(uint8_t led) {
     }
 }
 
-// While a Fn layer is active (Fn is held), show the current mode on the two mode keys: the active mode's key is driven to
-// full brightness and the other goes dark. With the backlight on every key is lit, so the dark key stands out; with it
-// off or dimmed, the bright key does. When Fn is released, both keys return to the normal backlight.
+// FN-HI (the K3's "highlight the used Fn keys", in an on/off variant for the X4's single-color LEDs): while a Fn layer is
+// active (Fn is held), every key that does something on that layer is drawn steady at full brightness and every other key
+// is dark, so the board shows what Fn can do, with the backlight on, dimmed or off. Which keys are "used" is read from
+// the keymap (any entry that is not transparent or KC_NO), so a key added to an Fn layer lights up with no further code.
 //
-// x4.c calls this first from its led_matrix_indicators_kb, then sets its own indicators (Caps Lock, the Win lock); those
-// use other LEDs.
+// The two mode keys are both used, so both are lit; to still show the mode, the active mode's key BREATHES: it fades
+// smoothly between FNHI_BREATHE_MIN and full brightness, never fully dark so it never looks unused, and the inactive
+// mode's key stays steady. Motion draws the eye, so "the key that moves is the current mode".
+//
+// FNHI_BREATHE_MIN (a brightness, 0-255) and FNHI_BREATHE_PERIOD_MS are for tuning on the board.
+#    define FNHI_BREATHE_MIN 64 // about 25% of full brightness
+#    define FNHI_BREATHE_PERIOD_MS 2000
+
+// fn_used[0] is for WIN_FN and fn_used[1] for MAC_FN: true for an LED that sits under a key that does something there.
+static bool fn_used[2][LED_MATRIX_LED_COUNT];
+
+static void find_used_keys(void) {
+    static const uint8_t fn_layers[2] = {WIN_FN, MAC_FN};
+    for (uint8_t i = 0; i < 2; i++) {
+        for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+            for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+                uint8_t led = g_led_config.matrix_co[row][col];
+                if (led == NO_LED) {
+                    continue; // no key (or no LED) at this matrix position
+                }
+                uint16_t keycode = keymap_key_to_keycode(fn_layers[i], (keypos_t){.row = row, .col = col});
+                fn_used[i][led]  = (keycode != KC_TRNS && keycode != KC_NO);
+            }
+        }
+    }
+}
+
+// A triangle wave from FNHI_BREATHE_MIN up to 255 and back, once per FNHI_BREATHE_PERIOD_MS.
+static uint8_t breathe_level(void) {
+    const uint32_t half  = FNHI_BREATHE_PERIOD_MS / 2;
+    uint32_t       phase = timer_read32() % FNHI_BREATHE_PERIOD_MS;
+    uint32_t       x     = (phase < half) ? phase : (FNHI_BREATHE_PERIOD_MS - phase); // 0 to half and back
+    return (uint8_t)(FNHI_BREATHE_MIN + ((255 - FNHI_BREATHE_MIN) * x) / half);
+}
+
+// Draws the Fn display (FN-HI and the mode display, above) and the blink.
+//
+// x4.c calls this first from its led_matrix_indicators_kb, then sets its own indicators (Caps Lock, the Win lock), which
+// are drawn after it and so win for their own LEDs.
 bool led_matrix_indicators_user(void) {
-    // The LED lookup is done once, on the first call, when the keymap and the LED layout are certainly ready.
+    // The lookups are done once, on the first call, when the keymap and the LED layout are certainly ready.
     static bool    looked_up = false;
     static uint8_t win_led   = NO_LED;
     static uint8_t mac_led   = NO_LED;
     if (!looked_up) {
+        find_used_keys();
         win_led   = led_under_key(MODE_WIN);
         mac_led   = led_under_key(MODE_MAC);
         looked_up = true;
     }
 
-    if (layer_state_cmp(layer_state, WIN_FN) || layer_state_cmp(layer_state, MAC_FN)) {
-        // The mode is the base layer: the (persistent) default layer, which the mode keys set.
-        bool mac_mode = layer_state_cmp(default_layer_state, MAC_BASE);
-        if (win_led != NO_LED) {
-            led_matrix_set_value(win_led, mac_mode ? 0 : 0xFF);
+    bool win_fn = layer_state_cmp(layer_state, WIN_FN);
+    bool mac_fn = layer_state_cmp(layer_state, MAC_FN);
+    if (win_fn || mac_fn) {
+        // FN-HI: used keys full, all others dark. (The mode keys are used on both Fn layers, so they come out full here.)
+        const bool* used = fn_used[win_fn ? 0 : 1];
+        for (uint8_t led = 0; led < LED_MATRIX_LED_COUNT; led++) {
+            led_matrix_set_value(led, used[led] ? 0xFF : 0);
         }
-        if (mac_led != NO_LED) {
-            led_matrix_set_value(mac_led, mac_mode ? 0xFF : 0);
+        // The mode is the base layer: the (persistent) default layer, which the mode keys set. Its key breathes.
+        uint8_t active_led = layer_state_cmp(default_layer_state, MAC_BASE) ? mac_led : win_led;
+        if (active_led != NO_LED) {
+            led_matrix_set_value(active_led, breathe_level());
         }
     } else if (!led_matrix_get_flags()) {
         // Fn is not held and the backlight is off. Keychron's BL_TOGG (x4.c) turns the backlight off by setting the flags
-        // to LED_FLAG_NONE and clearing every LED once; no effect repaints the LEDs after that. So the full-brightness
-        // value set above while Fn was held would stay on after Fn is released. Clear both keys here to prevent that.
+        // to LED_FLAG_NONE and clearing every LED once; no effect repaints the LEDs after that. So the values set above
+        // while Fn was held would stay on after Fn is released. Clear every LED that is used on an Fn layer here to
+        // prevent that.
         //
         // This mirrors what Keychron's x4.c does for the Win-lock LED: it sets that LED to 0 on every frame when the lock
         // is off and `!led_matrix_get_flags()`, the same check used here.
@@ -253,11 +297,10 @@ bool led_matrix_indicators_user(void) {
         // toggles between LED_FLAG_ALL and LED_FLAG_NONE, and no keymap exposes other values); we do not check anything
         // else (for example, a brightness of 0 or a different effect mode). With the backlight on, the effect repaints
         // every key each frame, so nothing stays lit anyway.
-        if (win_led != NO_LED) {
-            led_matrix_set_value(win_led, 0);
-        }
-        if (mac_led != NO_LED) {
-            led_matrix_set_value(mac_led, 0);
+        for (uint8_t led = 0; led < LED_MATRIX_LED_COUNT; led++) {
+            if (fn_used[0][led] || fn_used[1][led]) {
+                led_matrix_set_value(led, 0);
+            }
         }
     }
 
