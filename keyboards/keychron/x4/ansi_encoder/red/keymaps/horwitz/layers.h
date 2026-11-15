@@ -1,3 +1,6 @@
+// Copyright 2026 Jeremy Horwitz
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #pragma once
 
 // Layer order is the stock X4 order (WIN_BASE 0, WIN_FN 1), so the Windows layers keep their stock indices and a fresh

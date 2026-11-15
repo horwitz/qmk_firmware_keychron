@@ -6,8 +6,7 @@ name: horwitz keymap (X4)
 # Triggers: every push to x4 (no path filter, so a change anywhere that could break the build is never missed), every
 # pull request, and a manual run from the Actions tab.
 #
-# `qmk lint` is deliberately not run: it fails the license-header check on the three .h files until task 18 in TASKS.md
-# decides what those headers should say. Add it then, if appropriate.
+# It also runs `qmk lint` on the keymap (task 18), after the build so that a lint failure never hides a build result.
 
 permissions:
   contents: read
@@ -32,6 +31,10 @@ jobs:
     container: qmkfm/qmk_cli:1.2.0
 
     steps:
+      # `qmk lint` runs git inside the container, whose checkout is owned by another user; as in QMK's own lint.yml, tell
+      # git that is fine.
+      - name: Disable safe.directory check
+        run: git config --global --add safe.directory '*'
       - uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
@@ -39,3 +42,5 @@ jobs:
         run: pip3 install -r requirements-dev.txt
       - name: Build horwitz keymap
         run: make keychron/x4/ansi_encoder/red:horwitz
+      - name: Lint horwitz keymap
+        run: qmk lint -kb keychron/x4/ansi_encoder/red -km horwitz

@@ -1,3 +1,6 @@
+// Copyright 2026 Jeremy Horwitz
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #pragma once
 
 // Custom keycodes. SAFE_RANGE (= QK_USER) is safe on the X4: nothing in the X4 tree uses it, and this keymap does not

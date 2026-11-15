@@ -214,10 +214,21 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
 - `rules.mk`: `ENCODER_MAP_ENABLE = yes`, `OS_DETECTION_ENABLE = yes`, `SRC += horwitz.c`, and the `DEBUG=1` switch (see
   "Debug output").
 
-License headers: none of these files carries one for now. The Keychron block was removed from `keymap.c` and `horwitz.c`
-because they are not purely Keychron's code (this repo is private). As a result `qmk lint` reports its license-header
-check as failed for the three `.h` files (it does not flag the `.c` files); that is its only finding. What the headers
-should say is task 18. The lint only runs in CI on pull requests that touch `keyboards/**` (`lint.yml`), not on pushes.
+License headers (decided with the owner and done in task 18, 2026-11-15): everything is GPL-2.0-or-later, like the tree
+(Keychron's files say "version 2 or, at your option, any later version", and the firmware links their code, so the built
+firmware is a GPL work whatever our files say; the repo being private does not change that). `keymap.c` and `keymaps.h`
+are **derived from Keychron's stock `default` keymap** (the Windows layers and the Windows Fn layer unchanged or edited,
+the shortcut definitions copied), so they carry **Keychron's notice verbatim** (copied from the stock file, including its
+"Copyright 202" typo, which is not ours to alter) followed by `// Modifications Copyright 2026 Jeremy Horwitz`. The original
+files, `horwitz.c`, `layers.h` and `ctrlkeycodes.h`, carry the short form used by much of this tree (137 files): `//
+Copyright 2026 Jeremy Horwitz` and `// SPDX-License-Identifier: GPL-2.0-or-later`. `rules.mk` and `README.md` carry none
+(lint reads only code files, and `rules.mk` is one stock line plus ours). An earlier commit had removed the Keychron block
+from `keymap.c` on the grounds that the file was "not purely Keychron's"; that argues for adding our notice next to theirs,
+not for dropping theirs. **How `qmk lint` tests this:** it only checks that a code file's first line starts with `/*` or
+`//` (`lib/python/qmk/cli/lint.py`, `_has_license`), so it cannot tell a license from any other comment, and a new file
+must open with its header. QMK's own `lint.yml` runs only on pull requests that touch `keyboards/**`; our workflow runs it
+on every push (see "Versions and CI"). Verified: `qmk lint -kb keychron/x4/ansi_encoder/red -km horwitz` passes, and the
+firmware is byte-identical to the image tested before the headers were added (sha256 `190C88A9…`, 68,348 bytes).
 
 Naming hazard: the keymap is named `horwitz`, and `USER_NAME` defaults to the keymap name, so QMK would also include
 `users/horwitz/rules.mk` and `config.h` if that directory existed (`builddefs/build_keyboard.mk`). It does not on this
@@ -296,7 +307,7 @@ on Keychron's fork, because the X4 exists only there and moving to upstream QMK 
 | Keychron `playground` | `4a8143cce9` | `4a8143cce9` |
 
 CI is `.github/workflows/horwitz_x4.yml`: it builds `keychron/x4/ansi_encoder/red:horwitz` in the pinned container on every
-push to `x4`, on pull requests and on demand. It omits `qmk lint` until task 18. The container's GCC (15.2.0, the same
+push to `x4`, on pull requests and on demand. It also runs `qmk lint` on the keymap after the build (task 18). The container's GCC (15.2.0, the same
 `qmk_toolchains` build) and `qmk` (1.2.0) match MSYS, and its firmware is byte-for-byte identical to MSYS's (67,636 bytes,
 sha256 `67AFA083E17F6AA1…`, observed 2026-11-10). Its first run on GitHub (2026-11-11, commit `1ed1b1633b`, runner image `ubuntu-24.04`)
 succeeded in about 1 minute 42 seconds in total. The workflow now pins `runs-on: ubuntu-24.04` (the image that run used)

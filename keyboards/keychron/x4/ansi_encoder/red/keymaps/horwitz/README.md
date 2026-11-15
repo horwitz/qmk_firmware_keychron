@@ -98,5 +98,10 @@ this, and the DEBUG build is larger (about 74 KB against 68 KB). Flash a normal 
 | `horwitz.c` | The behavior: choosing the mode, the Win-lock release, the blink, and the Fn display |
 | `rules.mk` | Build options (the encoder map, OS detection and the `DEBUG=1` switch) |
 
+## License
+
+GPL-2.0-or-later, like the rest of the tree. `keymap.c` and `keymaps.h` are derived from Keychron's stock `default`
+keymap and keep Keychron's notice, with a line for the modifications; the other source files carry an SPDX header.
+
 There is no VIA/Launcher support on purpose: the keymap in the repository is the only source of truth, and it changes by
 reflashing.

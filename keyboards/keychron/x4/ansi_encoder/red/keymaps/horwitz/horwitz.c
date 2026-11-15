@@ -1,3 +1,6 @@
+// Copyright 2026 Jeremy Horwitz
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Behavior of the horwitz keymap for the Lemokey X4 (named as on the K3, where the shared behavior is horwitz.c):
 // the keys that choose between Windows mode and Mac mode, and the automatic choice of the mode when the keyboard is
 // connected to a host.
