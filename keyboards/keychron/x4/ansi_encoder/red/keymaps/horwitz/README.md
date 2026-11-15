@@ -45,7 +45,7 @@ Selecting Mac mode also turns off the Win lock (below), so Command can never be 
   dimmed or off.
 - **The Fn display.** While Fn is held, only the keys that do something on the Fn layer are lit, at full brightness, and
   every other key is dark (with the backlight on, dimmed or off). Both mode keys are lit, and **the active mode's key
-  breathes** (fades slowly), so the key that moves is the mode you are in. That is 20 keys in Windows mode and 19 in Mac
+  breathes** (fades slowly), so the key that moves is the mode you are in. That is 25 keys in Windows mode and 24 in Mac
   mode. The display is read from the keymap, so a key added to a Fn layer lights up on its own.
 - **Sleep.** The lighting turns off when the computer sleeps and comes back when it wakes.
 
@@ -67,6 +67,8 @@ Hold **Fn** and press:
 | N | Toggle N-key rollover |
 | `\` | Windows mode |
 | `/` | Mac mode |
+| Arrow keys | Left: Home. Up: PgUp. Down: PgDn. Right: End (the X4 has no End key) |
+| Del | End (a second way to it, for the same reason) |
 | Left Win key (the one next to Left Ctrl) | Windows only: toggle the **Win lock**, which disables the Windows key (the lock LED stays lit while it is on); not available in Mac mode |
 | Encoder: turn / press | Backlight brightness down / up; backlight on/off (without Fn: volume down / up; mute) |
 

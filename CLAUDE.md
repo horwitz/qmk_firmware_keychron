@@ -133,11 +133,19 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   there (verified with 0.3.3, the version installed; 0.3.4 is the latest stable as of 2026-11-14 and was not needed). The `settled:` line is usually missed, because it is
   printed about 0.2 s after a connection and the console tool reconnects about 1 s after the board appears; the mode key lines
   are reliable. Flash the normal build back afterward: the DEBUG image stays on the board until you do.
+- **Navigation keys (task 24, built and tested on the board 2026-11-15):** the X4 has no End key (observed: the right-hand
+  column is the encoder, Home, PgUp and PgDn, and `KC_END` was on no layer). On **both** Fn layers, with plain keycodes (the
+  owner's decision: plain End on the Mac layer too, not Cmd+Right): Fn + Left = Home, Fn + Up = PgUp, Fn + Down = PgDn,
+  Fn + Right = End, and Fn + Del = End as a second way. The arrows duplicate Home, PgUp and PgDn, which keep their own keys.
+  Shifted combos work (Fn + Shift + Right selects to the end of the line). On a Mac, plain End scrolls to the end of a
+  document and does not move the text cursor. Build: 68,348 bytes, sha256 `190C88A9…`, no compiler warnings. The FN-HI
+  display lights these five keys on its own, because it reads the keymap. When editing the Fn layers, keep `README.md`'s
+  table in step.
 - **LED feedback: FN-HI and the mode display (built and tested on the board 2026-11-10 to 2026-11-15, task 11-3):** while a
   Fn layer is active (Fn held), every key that does something on that layer is drawn steady at full brightness and every
   other key is dark: the K3's "FN-HI" (highlight the used Fn keys) in an on/off variant for single-color LEDs, working with
-  the backlight on, dimmed or off. That is 20 keys in Windows mode and 19 in Mac mode: F1-F12, Tab, Q, W, S, N, `\` and `/`,
-  plus Left Win on Windows (the Win-lock key, transparent on the Mac Fn layer). Which keys are "used" is **read from the
+  the backlight on, dimmed or off. That is 25 keys in Windows mode and 24 in Mac mode: F1-F12, Tab, Q, W, S, N, `\` and `/`, the four
+  arrows and Del (navigation, task 24), plus Left Win on Windows (the Win-lock key, transparent on the Mac Fn layer). Which keys are "used" is **read from the
   keymap**, not hard-coded: `find_used_keys` (`horwitz.c`) scans both Fn layers once, at first use, taking each key's LED from
   `g_led_config.matrix_co` and its keycode from `keymap_key_to_keycode()`, and counts anything but `KC_TRNS` and `KC_NO`, so a
   key added to an Fn layer lights up with no further code. The two mode keys are both used, so both are lit; the **active**
