@@ -129,8 +129,9 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   in `rules.mk`: the build system also uses it as the compiler's debug-info level (`-g$(DEBUG)`, `builddefs/common_rules.mk`).
   Build and flash with `qmk compile`/`qmk flash -kb keychron/x4/ansi_encoder/red -km horwitz -e DEBUG=1`, and read the output
   with `qmk console -t` (run through the MSYS command above, with `PYTHONUNBUFFERED=1` if its output goes to a file, or Python
-  holds it back); `qmk console --list` shows the board as `362D:0240:1`. **QMK Toolbox 0.3.3 showed nothing** when tried (the
-  tool was open, the board replugged); the cause was not investigated. The `settled:` line is usually missed, because it is
+  holds it back); `qmk console --list` shows the board as `362D:0240:1`. **QMK Toolbox works too, but on Windows it shows
+  console output in a separate "HID Console" window** (open it from Toolbox's menus), not in the main log pane, so look
+  there (verified with 0.3.3, the version installed; 0.3.4 is the latest stable as of 2026-11-14 and was not needed). The `settled:` line is usually missed, because it is
   printed about 0.2 s after a connection and the console tool reconnects about 1 s after the board appears; the mode key lines
   are reliable. Flash the normal build back afterward: the DEBUG image stays on the board until you do.
 - **LED feedback:** while a Fn layer is active, the active mode's key LED stays lit and the other mode key's goes dark.
