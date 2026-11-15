@@ -139,6 +139,14 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   there (verified with 0.3.3, the version installed; 0.3.4 is the latest stable as of 2026-11-14 and was not needed). The `settled:` line is usually missed, because it is
   printed about 0.2 s after a connection and the console tool reconnects about 1 s after the board appears; the mode key lines
   are reliable. Flash the normal build back afterward: the DEBUG image stays on the board until you do.
+  **Decided (owner, 2026-11-15): DEBUG stays compile-time; no keyboard toggle.** QMK has a keycode for it (`DB_TOGG`,
+  `quantum.c`, which flips `debug_enable`), but it can only switch *printing*: the console is a USB interface that exists
+  only when compiled in, so a runtime toggle would put the console, about 6 KB and an extra interface, into every build.
+  That would end the guarantee that a normal build is byte-identical with or without the DEBUG code, would need the
+  auto-detect results rechecked on the Mac and the Windows PC (the extra interface might change what the host asks during
+  enumeration, which is what detection reads; it was tested only without it), and would need the `uprintf` calls changed
+  to `dprintf` so they respect `debug_enable`. **Revisit if** debugging a host-specific problem (as with the Mac's iOS
+  result, which needed a diagnostic build flashed from the Windows PC) becomes frequent.
 - **Navigation keys (task 24, built and tested on the board 2026-11-15):** the X4 has no End key (observed: the right-hand
   column is the encoder, Home, PgUp and PgDn, and `KC_END` was on no layer). On **both** Fn layers, with plain keycodes (the
   owner's decision: plain End on the Mac layer too, not Cmd+Right): Fn + Left = Home, Fn + Up = PgUp, Fn + Down = PgDn,
