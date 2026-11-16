@@ -1,10 +1,11 @@
 # CLAUDE.md
 
 Personal fork of Keychron's QMK firmware (GitHub: `horwitz/qmk_firmware_keychron`, which is what `origin` points
-to since 2026-11-10; the fork's old name, `qmk_firmware`, still redirects). This branch, `x4`, is for the **Lemokey X4** keyboard: Mac and Windows
-layers, and a way to choose between them. The owner's keymap name elsewhere in the fork is `horwitz`. Tags: **(observed)** =
-checked in this repo or by running a command; **(general)** = ordinary QMK knowledge, not verified here;
-**(unverified)** = check before relying on it.
+to since 2026-11-10; the fork's old name, `qmk_firmware`, still redirects). **The fork is public on GitHub** (`gh repo view`
+reports visibility PUBLIC, 2026-11-15; earlier versions of these notes wrongly called it private; what that means for these
+notes is task 38). This branch, `x4`, is for the **Lemokey X4** keyboard: Mac and Windows layers, and a way to choose
+between them. The owner's keymap name elsewhere in the fork is `horwitz`. Tags: **(observed)** = checked in this repo or by
+running a command; **(general)** = ordinary QMK knowledge, not verified here; **(unverified)** = check before relying on it.
 
 ## Working rules
 
@@ -18,18 +19,13 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - **Public-facing text** (everything except `CLAUDE.md` and `TASKS.md`: code comments, the keymap `README.md`, the
   workflow) must stand on its own: no task numbers, no pointers to `CLAUDE.md` or `TASKS.md`, no personal wording such as
   "the owner's Mac". Refer to the K3 or its branch only with the detail that makes the sentence stand alone: "Fn + Tab turns
-  the backlight on and off, as on the K3" is fine, "works like the K3" is not (owner's rule, task 26, 2026-11-15). To check,
-  search those files for `task [0-9]`, `CLAUDE.md`, `TASKS.md`, `owner`, `wireless_playground` and `users/horwitz`; the
-  result should be empty. **CI enforces this** (task 30): a step in `horwitz_x4.yml` greps the keymap folder and the workflow
-  itself, case-insensitively, and fails the run on a match. Each pattern has one letter in square brackets (e.g., `[t]ask`)
-  so that the workflow does not match itself; keep that when editing it, and never write those words in the workflow's own
-  comments. `owner` is matched as a whole word, so `ownership` and `owned` are fine. It was tested on the real tree (clean),
-  on a deliberate violation (all caught, exit 1) and on harmless near-misses (not flagged). The rule about K3 references
-  needing their own detail is not machine-checkable and stays a review matter.
+  the backlight on and off, as on the K3" is fine, "works like the K3" is not (owner's rule, task 26, 2026-11-15). CI
+  enforces the first part (task 30; the mechanics are under "Versions and CI"). The K3 rule is not machine-checkable and
+  stays a review matter.
 - Prefer the clean, documented fix over a workaround. Do not edit Keychron/Lemokey vendor code. Check claims against the
   repo or by running a command before stating them.
-- Scope: Windows and Mac layers plus the selection method (built, and tested on a real Mac). Later (see `TASKS.md`): the remaining open tasks. The K3's per-key RGB features (GCP, CCP) do not apply: the X4's LEDs are single
-  color.
+- Scope: Windows and Mac layers plus the selection method, and what was built around them (see "Mac/Windows design");
+  open work is in `TASKS.md`. The K3's per-key RGB features (GCP, CCP) do not apply: the X4's LEDs are single color.
 
 ## Branches and upstream
 
@@ -54,14 +50,16 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
 - Path: `keyboards/keychron/x4/` (Keychron's name for the board; Lemokey is a sub-brand and the box says "Keychron X4").
   Build target: `keychron/x4/ansi_encoder/red`. Only the red-backlight ANSI variant is in the tree; the owner's board
   is red-backlight. An RGB `.bin` is on Lemokey's site, but no RGB source is in this tree.
-- `info.json`: `Lemokey X4`, **STM32F401** (the kickoff prompt said F402RC; resolved in task 10, 2026-11-12: the board's DFU bootloader reports 256 KB of flash, 4x16 KB + 64 KB + 128 KB, which is the F401xC size and matches the build's `GENERIC_STM32_F401XC` board; the bootloader does not name the part, so "F402" is probably Keychron's label, since its C2 Pro readme says rev2 is "STM32F402" while that board's `info.json` also says `STM32F401`; observed with `dfu-util -l`, nothing flashed), `stm32-dfu`
-  bootloader, VID `0x362D`, PID `0x0240`, `LAYOUT_82_ansi` (75%, 82 keys, one rotary encoder on B14/B15). Wired only.
-- Lighting: single-color LED matrix (CKLED2001, 81 LEDs), `LED_DISABLE_WHEN_USB_SUSPENDED` already set. It already works as
-  "SUS-RGB" (the K3 feature name for turning the lighting off when the computer sleeps): `quantum.c` calls
+- `info.json`: `Lemokey X4`, **STM32F401**, `stm32-dfu` bootloader, VID `0x362D`, PID `0x0240`, `LAYOUT_82_ansi` (75%, 82 keys,
+  one rotary encoder on B14/B15). Wired only. **The MCU** (task 10, 2026-11-12, observed with `dfu-util -l`, nothing
+  flashed): the kickoff prompt said F402RC, but the board's DFU bootloader reports 256 KB of flash (4x16 KB + 64 KB + 128 KB),
+  the F401xC size, which matches the build's `GENERIC_STM32_F401XC` board. The bootloader does not name the part; "F402" is
+  probably Keychron's label, since its C2 Pro readme says rev2 is "STM32F402" while that board's `info.json` also says
+  `STM32F401`.
+- Lighting: single-color LED matrix (CKLED2001, 81 LEDs), `LED_DISABLE_WHEN_USB_SUSPENDED` already set. Caps Lock LED index
+  44, Win-lock LED index 72. The lighting already turns off when the computer sleeps (the K3's "SUS-RGB"): `quantum.c` calls
   `led_matrix_set_suspend_state()` from its suspend and wake hooks, and that macro makes it turn the LEDs off. Verified by the
-  owner on the board (2026-11-14, task 11-1): the LEDs go off when the computer sleeps and come back on wake. No keymap code is
-  needed. Caps Lock LED
-  index 44, Win-lock LED index 72.
+  owner on the board (2026-11-14, task 11-1): the LEDs go off on sleep and come back on wake. No keymap code is needed.
 - `x4.c`: `process_record_kb` calls `process_record_user` first, then handles `BL_TOGG` and `GU_TOGG` (Win lock,
   persisted in EEPROM user data). **There is no Mac/Windows dip switch and no wireless code.**
 - Stock keymaps (`ansi_encoder/red/keymaps/`): `default` (Windows only; only `ENCODER_MAP_ENABLE`), `keychron`
@@ -79,7 +77,12 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   the right Command, the Mac Fn row (brightness, Mission Control, Launchpad, backlight, media, volume), the encoder,
   persistence across replugging, and switching back to Windows mode all work, so plain QMK keycodes are enough on the X4.
 
-## Mac/Windows design (decided 2026-11-09; layers and mode keys implemented and tested on the board 2026-11-09, LED display 2026-11-10; the final build passed full tests on a real Mac and on Windows, 2026-11-10)
+## Mac/Windows design
+
+Decided 2026-11-09. Everything below was built and tested on the board, on a Windows PC and a real Mac, between 2026-11-09
+and 2026-11-15. The sizes and hashes of earlier images are in `TASKS.md` and git history. The **current firmware** is 68,388
+bytes, SHA-256 `1A2D93C3F90C94048C9676C61E32617F60E5A7D1F5A7A99566DC99E1E4CBCE6E` (the CI artifact and the local QMK MSYS
+build are byte-identical); a DEBUG build is about 6 KB larger.
 
 - **Four layers in stock order:** `WIN_BASE` 0, `WIN_FN` 1, `MAC_BASE` 2, `MAC_FN` 3 (taking the two empty `WIN_L2`/`WIN_L3`
   slots). Windows is layer 0, the boot layer of a fresh or erased board, and the stock Windows layers keep their indices.
@@ -92,120 +95,119 @@ checked in this repo or by running a command; **(general)** = ordinary QMK knowl
   `set_single_persistent_default_layer()` (documented in `docs/feature_layers.md`); a persistent `PDF` keycode was not
   found on this base. The keycodes are `MODE_WIN`/`MODE_MAC` (`ctrlkeycodes.h`, from `SAFE_RANGE`, which nothing in the X4
   tree uses), handled in `horwitz.c`; the saved layer is restored at every boot by `magic()` in
-  `quantum/bootmagic/magic.c`, so the mode survives unplugging (tested). Auto-detect with a manual override is built (next bullets).
-- **Blink (task 16, built and tested on the board 2026-11-12):** pressing a mode key pulses its LED dark three times
-  (`BLINK_PULSES`), the same for both modes: 120 ms steps (`BLINK_STEP_MS`) lit, dark, lit, dark, lit, dark, lit, so it
-  starts and ends lit and every pulse is a visible change from either starting state (the first version, once for Windows
-  and twice for Mac, started dark, which showed nothing when switching to the mode whose key was already dark; the owner
-  also saw no need for two behaviors, since the mode display already shows the chosen mode). It is
-  drawn after the mode display and overrides it, so it runs to the end even if Fn is released, in any backlight state
-  (the dark step shows against a lit backlight, the lit step against a dark one). Pressing a mode key again, even the
-  active one, restarts it. Code: `start_mode_blink` and `apply_blink` in `horwitz.c`. Build: 67,756 bytes, no compiler warnings, sha256 `EE8932B549637F52…` (the tested image; an earlier version that kept
-  the mode as a `bool` instead of the base layer was 67,764 bytes and passed the same tests). Tested on the X4 (owner, 2026-11-12): noticeable with
-  the backlight on; 3 pulses at 120 ms judged right (fewer felt wrong, more was expected to); also passed with the backlight off,
-  with Fn released mid-blink and on a repeat press of the active mode; the Win-lock release on entering Mac mode still works
-  (checked by pressing the Win key afterward, not by the LED, which is hard to read with a bright backlight).
-- **Auto-detect (task 15, built and tested on the board 2026-11-14: Windows PC, a power-only charger, and a real Mac):** `OS_DETECTION_ENABLE`
-  guesses the host's OS from its USB setup requests. Each connection (the USB state going to INIT: a boot, a bus reset)
-  clears QMK's detection counters (nothing in this base ever does) and arms a one-shot; `housekeeping_task_user` polls
-  `detected_host_os()` (this base has no callback) and, for Windows, macOS or iOS, applies that mode with `default_layer_set()`
-  **without saving it**, so the EEPROM keeps the owner's last manual choice, which is also the fallback when detection says
-  unsure or Linux. A mode key pressed meanwhile or later wins until the next power cycle or connection to a different kind of host (see Sleep and wake, below). Observed on the Windows PC:
-  Windows is recognized 133-205 ms after the connection (18 requests, 14 of length 0xFF and 2 of length 4; the USB state
-  goes INIT, SUSPEND, INIT, INIT, CONFIGURED, so the counters are cleared several times, which is correct), and a saved Mac
-  mode (EEPROM default layer `4`) is left alone. Reading the Fn display: with the backlight on, the inactive mode's key is
-  the one *dark* key, and the active mode's key looks like all the others, which is easy to misread. Each connection
-  ends with a **settle**: when detection says Windows, macOS or iOS (that mode is applied), or after `AUTODETECT_TIMEOUT_MS`
-  (2000 ms) if it says nothing useful (the saved mode stays), the active mode's key blinks, so every connection shows
-  the mode it ended in. Verified: on the Windows PC the blink comes soon after plug-in; on a power-only phone charger
-  (which never enumerates) the saved mode's key blinks after about 2 s, with Windows and with Mac saved (build 68,148
-  bytes, 2026-11-13). **QMK reports a Mac as iOS, not macOS** (observed 2026-11-13 on the owner's Mac: the setup requests have lengths 2, 0x16,
-  2, 0x12, 0x101, 0xFF, 0xFF, 0xFF; QMK's iOS rule, exactly 4 requests with two of length 2 and none of 0xFF, matches after
-  the first four, its macOS rule wants exactly 5 requests ending in 0xFF and never matches these 8, and QMK never revises a
+  `quantum/bootmagic/magic.c`, so the mode survives unplugging (tested). Auto-detect on top of this is described below.
+- **Blink (task 16):** pressing a mode key pulses its LED dark three times (`BLINK_PULSES`), the same for both modes: 120 ms
+  steps (`BLINK_STEP_MS`) lit, dark, lit, dark, lit, dark, lit, so it starts and ends lit and every pulse is a visible
+  change from either starting state (the first version, once for Windows and twice for Mac, started dark, which showed
+  nothing when switching to the mode whose key was already dark; the owner also saw no need for two behaviors, since the
+  mode display already shows the chosen mode). It is drawn after the mode display and overrides it, so it runs to the end
+  even if Fn is released, in any backlight state (the dark step shows against a lit backlight, the lit step against a dark
+  one). Pressing a mode key again, even the active one, restarts it. Its clock starts at the first frame actually drawn
+  (`blink_clock_started`, see Sleep and wake). Code: `start_mode_blink` and `apply_blink` in `horwitz.c`. Tested on the X4
+  (owner, 2026-11-12): noticeable with the backlight on; 3 pulses at 120 ms judged right (fewer felt wrong, more was expected
+  to); also passed with the backlight off, with Fn released mid-blink and on a repeat press of the active mode; the Win-lock
+  release on entering Mac mode still works (checked by pressing the Win key afterward, not by the LED, which is hard to read
+  with a bright backlight).
+- **Auto-detect: design (task 15):** `OS_DETECTION_ENABLE` guesses the host's OS from its USB setup requests. Each
+  connection (the USB state going to INIT: a boot, a bus reset) clears QMK's detection counters (nothing in this base ever
+  does) and arms a one-shot; `housekeeping_task_user` polls `detected_host_os()` (this base has no callback) and, for
+  Windows, macOS or iOS, applies that mode with `default_layer_set()` **without saving it**, so the EEPROM keeps the owner's
+  last manual choice, which is also the fallback when detection says unsure or Linux. A mode key pressed meanwhile or later
+  wins until the next power cycle or connection to a different kind of host (see Sleep and wake). Each connection ends with
+  a **settle**: when detection says Windows, macOS or iOS (that mode is applied), or after `AUTODETECT_TIMEOUT_MS` (2000 ms)
+  if it says nothing useful (the saved mode stays), the active mode's key blinks, so every connection shows the mode it
+  ended in. `OS_IOS` is treated as Mac, because QMK reports the owner's Mac as iOS (next bullet).
+- **Auto-detect: what the hosts do (observed):** on the **Windows PC**, Windows is recognized 133-205 ms after the
+  connection (18 requests, 14 of length 0xFF and 2 of length 4; the USB state goes INIT, SUSPEND, INIT, INIT, CONFIGURED, so
+  the counters are cleared several times, which is correct), and a saved Mac mode (EEPROM default layer `4`) is left alone.
+  **QMK reports a Mac as iOS, not macOS** (observed 2026-11-13 on the owner's Mac: the setup requests have lengths 2, 0x16, 2,
+  0x12, 0x101, 0xFF, 0xFF, 0xFF; QMK's iOS rule, exactly 4 requests with two of length 2 and none of 0xFF, matches after the
+  first four, its macOS rule wants exactly 5 requests ending in 0xFF and never matches these 8, and QMK never revises a
   guess within a connection), so `OS_IOS` is treated as Mac: every Apple host wants the Mac layout. Windows sends no
-  requests of length 2, so the iOS rule cannot fire for it. Verified on the Mac (final build 68,148 bytes, sha256
-  `E1E6B326…`): with Windows saved, plug-in gives Mac mode with the blink; the Win lock is released; replugging and a manual
-  Fn+`\` work; with Mac saved, the Windows PC still ends in Windows mode. If detection
-  misbehaves on a future OS version, a typed-out diagnostic (3 s after a connection it types the counters, the detected OS, the live and saved
-  layers) is a quick way to see inside; the diagnostic version was kept outside the repo and can be recreated from this
-  description: `send_string` of an `snprintf` of `detected_host_os()`, a local copy of `struct setups_data_t` from
-  `quantum/os_detection.c` and its `setups_data`, `default_layer_state`, `layer_state` and `eeconfig_read_default_layer()`;
-  with `OS_DETECTION_DEBUG_ENABLE = yes` in `rules.mk`, `extern uint16_t usb_setups[]` gives every request length in order.
-- **Debug output (task 11-2, tested on the board 2026-11-14):** a build made with `-e DEBUG=1` has the console on
-  (`CONSOLE_ENABLE`) and `DEBUG` defined; `horwitz.c` then turns `debug_enable` on at boot and prints with `uprintf` at every
-  mode key press (`mode key: base layer N`, 0 = Windows, 2 = Mac) and every auto-detect settle (the detected OS, the layer,
-  whether it was applied, and how many ms after the connection started). A normal build is byte-identical to one without any
-  of this (68,148 bytes, sha256 `E1E6B326…`); the DEBUG build is 74,264 bytes. `DEBUG` is deliberately not given a default
-  in `rules.mk`: the build system also uses it as the compiler's debug-info level (`-g$(DEBUG)`, `builddefs/common_rules.mk`).
-  Build and flash with `qmk compile`/`qmk flash -kb keychron/x4/ansi_encoder/red -km horwitz -e DEBUG=1`, and read the output
-  with `qmk console -t` (run through the MSYS command above, with `PYTHONUNBUFFERED=1` if its output goes to a file, or Python
-  holds it back); `qmk console --list` shows the board as `362D:0240:1`. **QMK Toolbox works too, but on Windows it shows
-  console output in a separate "HID Console" window** (open it from Toolbox's menus), not in the main log pane, so look
-  there (verified with 0.3.3 and again with 0.3.4 on 2026-11-15: with a DEBUG build on the board, its HID Console window lists the X4 and shows the `mode key:` lines; with a normal build the window shows nothing, because a normal build has no console interface). The `settled:` line is usually missed, because it is
-  printed about 0.2 s after a connection and the console tool reconnects about 1 s after the board appears; the mode key lines
-  are reliable. Flash the normal build back afterward: the DEBUG image stays on the board until you do.
-  **Decided (owner, 2026-11-15): DEBUG stays compile-time; no keyboard toggle.** QMK has a keycode for it (`DB_TOGG`,
-  `quantum.c`, which flips `debug_enable`), but it can only switch *printing*: the console is a USB interface that exists
-  only when compiled in, so a runtime toggle would put the console, about 6 KB and an extra interface, into every build.
-  That would end the guarantee that a normal build is byte-identical with or without the DEBUG code, would need the
-  auto-detect results rechecked on the Mac and the Windows PC (the extra interface might change what the host asks during
-  enumeration, which is what detection reads; it was tested only without it), and would need the `uprintf` calls changed
-  to `dprintf` so they respect `debug_enable`. **Revisit if** debugging a host-specific problem (as with the Mac's iOS
-  result, which needed a diagnostic build flashed from the Windows PC) becomes frequent.
-- **Sleep and wake (task 28, built and tested on the board 2026-11-15; final build 68,388 bytes, sha256 `1A2D93C3…`):** a
-  manual mode choice survives a computer's sleep and wake. What was found: on the **Windows PC** a wake resets the bus (the
-  USB state goes to INIT, which re-arms detection) but Windows does not repeat its descriptor requests, so detection answers
-  nothing; after the 2 s timeout the live mode is kept and its key blinks, so the choice already survived. On the **Mac** a
-  wake can reset the bus several times (five resets in 1.2 s were seen) and the Mac then repeats the whole enumeration, so
-  detection answers again (`os 4`); before the fix that re-applied Mac mode and undid a manual Windows choice. A wake cannot
-  be told from a host change by the USB states (a KVM or USB switch also looks like suspend, then reset), so the fix compares
-  what the host *is*: `last_detected_layer` remembers the layer detection last decided, a re-detection that decides the
-  **same** layer leaves the live mode alone, and one that decides a **different** layer applies it. A power cycle remembers
-  nothing, which is what ends a manual choice ("until the next connection"). The blink after a same-host wake shows the live
-  mode (`live_mode()`), not the detected one. Also found: when the settle step runs after a bus-reset wake the LED matrix is
-  still held off (it comes back when the USB `CONFIGURED` event is processed, about 13-21 ms later, `usb_main.c`), so the
-  blink's clock now starts at the first frame actually drawn (`blink_clock_started`); at 21 ms that is a robustness measure,
-  and it was NOT shown to be the cause of anything. **Not proven:** some Mac wakes showed no blink; the working theory is a
-  wake that only resumes the bus without a reset, which runs no settle step and so no blink, by design, but no trace of such a
-  wake was captured. **Method, for a future investigation:** a temporary DEBUG-only trace that recorded each
-  `notify_usb_device_state_change_user` state with `timer_read32()`, the moment the settle step ran, `detected_host_os()`,
-  whether it applied, and `led_matrix_get_suspend_state()`, printed with `uprintf` four seconds after the last event so the
-  console reader (which reconnects about a second late) did not miss it; timestamps that start near 0 mean the keyboard
-  rebooted (power was cut), large ones mean it did not. The trace code was removed afterward. Tested (owner): a manual Windows
-  mode on the Mac and a manual Mac mode on the Windows PC both survive a sleep and wake, and a fresh plug-in follows the host.
-- **Navigation keys (task 24, built and tested on the board 2026-11-15):** the X4 has no End key (observed: the right-hand
-  column is the encoder, Home, PgUp and PgDn, and `KC_END` was on no layer). On **both** Fn layers, with plain keycodes (the
-  owner's decision: plain End on the Mac layer too, not Cmd+Right): Fn + Left = Home, Fn + Up = PgUp, Fn + Down = PgDn,
-  Fn + Right = End, and Fn + Del = End as a second way. The arrows duplicate Home, PgUp and PgDn, which keep their own keys.
-  Shifted combos work (Fn + Shift + Right selects to the end of the line). On a Mac, plain End scrolls to the end of a
-  document and does not move the text cursor. Build: 68,348 bytes, sha256 `190C88A9…`, no compiler warnings. The FN-HI
-  display lights these five keys on its own, because it reads the keymap. When editing the Fn layers, keep `README.md`'s
-  table in step.
-- **LED feedback: FN-HI and the mode display (built and tested on the board 2026-11-10 to 2026-11-15, task 11-3):** while a
-  Fn layer is active (Fn held), every key that does something on that layer is drawn steady at full brightness and every
-  other key is dark: the K3's "FN-HI" (highlight the used Fn keys) in an on/off variant for single-color LEDs, working with
-  the backlight on, dimmed or off. That is 25 keys in Windows mode and 24 in Mac mode: F1-F12, Tab, Q, W, S, N, `\` and `/`, the four
-  arrows and Del (navigation, task 24), plus Left Win on Windows (the Win-lock key, transparent on the Mac Fn layer). Which keys are "used" is **read from the
-  keymap**, not hard-coded: `find_used_keys` (`horwitz.c`) scans both Fn layers once, at first use, taking each key's LED from
-  `g_led_config.matrix_co` and its keycode from `keymap_key_to_keycode()`, and counts anything but `KC_TRNS` and `KC_NO`, so a
-  key added to an Fn layer lights up with no further code. The two mode keys are both used, so both are lit; the **active**
-  mode's key **breathes** (a triangle wave between `FNHI_BREATHE_MIN`, 64, about 25%, and full, over `FNHI_BREATHE_PERIOD_MS`,
-  2000) and the inactive one stays steady, so the key that moves is the current mode. Both constants are for tuning. The
-  three-pulse confirmation blink (see Blink) is drawn after the display and overrides it, so after a mode key press the
-  breathing moves to the new key only once the blink, about 0.85 s, is over. The first version drove only the two mode
-  keys (active lit, inactive dark), which was easy to misread with the backlight on, since every other key was lit too.
-  Build: 68,348 bytes, no compiler warnings, sha256 `C6340C22…`. Tested on the X4 (owner, 2026-11-15): backlight on and off,
-  Mac mode, the Caps Lock and Win-lock LEDs, both blinks, and switching modes while holding Fn.
+  requests of length 2, so the iOS rule cannot fire for it. A **power-only phone charger** (which never enumerates): the
+  saved mode's key blinks after about 2 s, with Windows and with Mac saved. Verified (2026-11-13 and 14): on the Windows PC
+  the blink comes soon after plug-in; on the Mac, with Windows saved, plug-in gives Mac mode with the blink, the Win lock is
+  released, and replugging and a manual Fn + `\` work; with Mac saved, the Windows PC still ends in Windows mode.
+- **Sleep and wake (task 28, 2026-11-15):** a manual mode choice survives a computer's sleep and wake. What was found: on
+  the **Windows PC** a wake resets the bus (the USB state goes to INIT, which re-arms detection) but Windows does not repeat
+  its descriptor requests, so detection answers nothing; after the 2 s timeout the live mode is kept and its key blinks, so
+  the choice already survived. On the **Mac** a wake can reset the bus several times (five resets in 1.2 s were seen) and
+  the Mac then repeats the whole enumeration, so detection answers again (`os 4`); before the fix that re-applied Mac mode
+  and undid a manual Windows choice. A wake cannot be told from a host change by the USB states (a KVM or USB switch also
+  looks like suspend, then reset), so the fix compares what the host *is*: `last_detected_layer` remembers the layer
+  detection last decided, a re-detection that decides the **same** layer leaves the live mode alone, and one that decides a
+  **different** layer applies it. A power cycle remembers nothing, which is what ends a manual choice ("until the next
+  connection"). The blink after a same-host wake shows the live mode (`live_mode()`), not the detected one. Also found: when
+  the settle step runs after a bus-reset wake the LED matrix is still held off (it comes back when the USB `CONFIGURED`
+  event is processed, about 13-21 ms later, `usb_main.c`), so the blink's clock now starts at the first frame actually drawn
+  (`blink_clock_started`); at 21 ms that is a robustness measure, and it was NOT shown to be the cause of anything. **Not
+  proven:** some Mac wakes showed no blink; the working theory is a wake that only resumes the bus without a reset, which
+  runs no settle step and so no blink, by design, but no trace of such a wake was captured. Tested (owner): a manual
+  Windows mode on the Mac and a manual Mac mode on the Windows PC both survive a sleep and wake, and a fresh plug-in follows
+  the host.
+- **Diagnosing host behavior (two methods that worked; both were temporary and removed afterward):** (1) A **typed-out
+  diagnostic**: 3 s after a connection the keyboard types the counters, the detected OS and the live and saved layers into
+  the focused text editor, with `send_string` of an `snprintf` of `detected_host_os()`, a local copy of `struct
+  setups_data_t` from `quantum/os_detection.c` and its `setups_data`, `default_layer_state`, `layer_state` and
+  `eeconfig_read_default_layer()`; with `OS_DETECTION_DEBUG_ENABLE = yes` in `rules.mk`, `extern uint16_t usb_setups[]` gives
+  every request length in order. (2) A **DEBUG-only USB trace** that recorded each `notify_usb_device_state_change_user`
+  state with `timer_read32()`, the moment the settle step ran, `detected_host_os()`, whether it applied, and
+  `led_matrix_get_suspend_state()`, printed with `uprintf` four seconds after the last event so the console reader (which
+  reconnects about a second late) did not miss it. Timestamps that start near 0 mean the keyboard rebooted (power was cut),
+  large ones mean it did not.
+- **Debug output (task 11-2):** a build made with `-e DEBUG=1` has the console on (`CONSOLE_ENABLE`) and `DEBUG` defined;
+  `horwitz.c` then turns `debug_enable` on at boot and prints with `uprintf` at every mode key press (`mode key: base layer
+  N`, 0 = Windows, 2 = Mac) and every auto-detect settle (the detected OS, the layer, whether it was applied, and how many ms
+  after the connection started). A normal build is byte-identical to one without any of this. `DEBUG` is deliberately not
+  given a default in `rules.mk`: the build system also uses it as the compiler's debug-info level (`-g$(DEBUG)`,
+  `builddefs/common_rules.mk`). Build and flash with `qmk compile`/`qmk flash -kb keychron/x4/ansi_encoder/red -km horwitz -e
+  DEBUG=1`, and read the output with `qmk console -t` (run through the MSYS command above, with `PYTHONUNBUFFERED=1` if its
+  output goes to a file, or Python holds it back); `qmk console --list` shows the board as `362D:0240:1`. **QMK Toolbox works
+  too, but on Windows it shows console output in a separate "HID Console" window** (open it from Toolbox's menus), not in
+  the main log pane, so look there (verified with 0.3.3 and again with 0.3.4 on 2026-11-15: with a DEBUG build on the board,
+  its HID Console window lists the X4 and shows the `mode key:` lines; with a normal build the window shows nothing, because
+  a normal build has no console interface). The `settled:` line is usually missed, because it is printed about 0.2 s after a
+  connection and the console tool reconnects about 1 s after the board appears; the mode key lines are reliable. Flash the
+  normal build back afterward: the DEBUG image stays on the board until you do. **Decided (owner, 2026-11-15): DEBUG stays
+  compile-time; no keyboard toggle.** QMK has a keycode for it (`DB_TOGG`, `quantum.c`, which flips `debug_enable`), but it
+  can only switch *printing*: the console is a USB interface that exists only when compiled in, so a runtime toggle would
+  put the console, about 6 KB and an extra interface, into every build. That would end the guarantee that a normal build is
+  byte-identical with or without the DEBUG code, would need the auto-detect results rechecked on the Mac and the Windows PC
+  (the extra interface might change what the host asks during enumeration, which is what detection reads; it was tested only
+  without it), and would need the `uprintf` calls changed to `dprintf` so they respect `debug_enable`. **Revisit if**
+  debugging a host-specific problem (as with the Mac's iOS result, which needed a diagnostic build flashed from the Windows
+  PC) becomes frequent.
+- **Navigation keys (task 24, 2026-11-15):** the X4 has no End key (observed: the right-hand column is the encoder, Home,
+  PgUp and PgDn, and `KC_END` was on no layer). On **both** Fn layers, with plain keycodes (the owner's decision: plain End on
+  the Mac layer too, not Cmd+Right): Fn + Left = Home, Fn + Up = PgUp, Fn + Down = PgDn, Fn + Right = End, and Fn + Del = End
+  as a second way. The arrows duplicate Home, PgUp and PgDn, which keep their own keys. Shifted combos work (Fn + Shift +
+  Right selects to the end of the line). On a Mac, plain End scrolls to the end of a document and does not move the text
+  cursor. The FN-HI display lights these five keys on its own, because it reads the keymap. When editing the Fn layers, keep
+  `README.md`'s table in step.
+- **LED feedback: FN-HI and the mode display (task 11-3, 2026-11-10 to 2026-11-15):** while a Fn layer is active (Fn held),
+  every key that does something on that layer is drawn steady at full brightness and every other key is dark: the K3's
+  "FN-HI" (highlight the used Fn keys) in an on/off variant for single-color LEDs, working with the backlight on, dimmed or
+  off. That is 25 keys in Windows mode and 24 in Mac mode: F1-F12, Tab, Q, W, S, N, `\` and `/`, the four arrows and Del
+  (navigation, task 24), plus Left Win on Windows (the Win-lock key, transparent on the Mac Fn layer). Which keys are "used"
+  is **read from the keymap**, not hard-coded: `find_used_keys` (`horwitz.c`) scans both Fn layers once, at first use, taking
+  each key's LED from `g_led_config.matrix_co` and its keycode from `keymap_key_to_keycode()`, and counts anything but
+  `KC_TRNS` and `KC_NO`, so a key added to an Fn layer lights up with no further code. The two mode keys are both used, so
+  both are lit; the **active** mode's key **breathes** (a triangle wave between `FNHI_BREATHE_MIN`, 64, about 25%, and full,
+  over `FNHI_BREATHE_PERIOD_MS`, 2000) and the inactive one stays steady, so the key that moves is the current mode. Both
+  constants are for tuning. The three-pulse confirmation blink (see Blink) is drawn after the display and overrides it, so
+  after a mode key press the breathing moves to the new key only once the blink, about 0.85 s, is over. The first version
+  drove only the two mode keys (active lit, inactive dark), which was easy to misread: with the backlight on, the inactive
+  mode's key was the one *dark* key and the active one looked like all the others. Tested on the X4 (owner, 2026-11-15):
+  backlight on and off, Mac mode, the Caps Lock and Win-lock LEDs, both blinks, and switching modes while holding Fn.
   Facts observed on the board: indicator LEDs are drawn even when the backlight is off, and one key's LED can be driven
-  above the background (the Win-lock LED looks brighter when the backlight is dimmed), **and one key's LED can be
-  forced dark while its neighbors stay lit** (tested 2026-11-10). The Caps Lock key shows purple with the backlight on
-  and blue with it off, which is probably a separate blue indicator LED (`indicators.caps_lock` on C9) plus red light
-  bleeding from neighbors. The LEDs of the mode keys are 42 for `\` and 68 for `/`.
-  Pitfall found on the board: with the backlight off (`x4.c`'s `BL_TOGG` sets the flags to none and clears every LED once),
-  nothing repaints the LEDs, so a value set while Fn is held stays lit after Fn is released. The code therefore clears every
-  LED used on an Fn layer when Fn is not held and `!led_matrix_get_flags()`, as `x4.c` does for the Win-lock LED; this assumes
-  that "flags == none" means the backlight is off. `x4.c` draws its own indicators (Caps Lock, the Win lock) after this code
-  runs, so they win for their own LEDs.
+  above the background (the Win-lock LED looks brighter when the backlight is dimmed), **and one key's LED can be forced dark
+  while its neighbors stay lit** (tested 2026-11-10). The Caps Lock key shows purple with the backlight on and blue with it
+  off, which is probably a separate blue indicator LED (`indicators.caps_lock` on C9) plus red light bleeding from
+  neighbors. The LEDs of the mode keys are 42 for `\` and 68 for `/`. Pitfall found on the board: with the backlight off
+  (`x4.c`'s `BL_TOGG` sets the flags to none and clears every LED once), nothing repaints the LEDs, so a value set while Fn
+  is held stays lit after Fn is released. The code therefore clears every LED used on an Fn layer when Fn is not held and
+  `!led_matrix_get_flags()`, as `x4.c` does for the Win-lock LED; this assumes that "flags == none" means the backlight is
+  off. `x4.c` draws its own indicators (Caps Lock, the Win lock) after this code runs, so they win for their own LEDs.
 - **Win lock:** `GU_TOGG` (Fn + Left Win) stays on the Windows Fn layer only. That position is transparent on the Mac Fn
   layer, because the lock is one global flag (`keymap_config.no_gui`, saved in EEPROM) that would otherwise stay on after
   switching modes and leave Command dead. `horwitz.c` therefore releases it when Mac mode is selected: it reads
@@ -247,8 +249,10 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
 - `keymaps.h`: `LAYOUT_winfn` and `LAYOUT_macfn`, and the `KC_TASK`/`KC_FLXP` shortcuts.
 - `layers.h`: the layer enum (`WIN_BASE`, `WIN_FN`, `MAC_BASE`, `MAC_FN`, in stock order).
 - `ctrlkeycodes.h`: `MODE_WIN` and `MODE_MAC`.
-- `horwitz.c`: the behavior: `process_record_user` (mode selection and the GUI-lock release) and
-  `led_matrix_indicators_user` (the mode display) with the blink helpers `start_mode_blink` and `apply_blink`.
+- `horwitz.c`: the behavior. Mode selection and the Win-lock release (`process_record_user`, `select_mode`, `set_mode`);
+  auto-detect (`notify_usb_device_state_change_user`, `housekeeping_task_user`, `last_detected_layer`, `live_mode`); the Fn
+  display (`find_used_keys`, `breathe_level`, `led_matrix_indicators_user`); the blink (`start_mode_blink`, `apply_blink`);
+  and the prints that exist only in a DEBUG build.
 - `README.md`: the user-facing description: the modes, how the mode is chosen, the Fn layer's keys, and how to build, flash
   and debug. **Keep it in step with `keymaps.h` and `horwitz.c`** when the Fn layer or the behavior changes.
 - `rules.mk`: `ENCODER_MAP_ENABLE = yes`, `OS_DETECTION_ENABLE = yes`, `SRC += horwitz.c`, and the `DEBUG=1` switch (see
@@ -256,20 +260,19 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
 
 License headers (decided with the owner and done in task 18, 2026-11-15): everything is GPL-2.0-or-later, like the tree
 (Keychron's files say "version 2 or, at your option, any later version", and the firmware links their code, so the built
-firmware is a GPL work whatever our files say). **The fork is PUBLIC on GitHub** (`gh repo view` reports visibility PUBLIC,
-2026-11-15); an earlier version of these notes called it private, which was wrong. `keymap.c` and `keymaps.h`
-are **derived from Keychron's stock `default` keymap** (the Windows layers and the Windows Fn layer unchanged or edited,
-the shortcut definitions copied), so they carry **Keychron's notice verbatim** (copied from the stock file, including its
-"Copyright 202" typo, which is not ours to alter) followed by `// Modifications Copyright 2026 Jeremy Horwitz`. The original
-files, `horwitz.c`, `layers.h` and `ctrlkeycodes.h`, carry the short form used by much of this tree (137 files): `//
-Copyright 2026 Jeremy Horwitz` and `// SPDX-License-Identifier: GPL-2.0-or-later`. `rules.mk` and `README.md` carry none
-(lint reads only code files, and `rules.mk` is one stock line plus ours). An earlier commit had removed the Keychron block
-from `keymap.c` on the grounds that the file was "not purely Keychron's"; that argues for adding our notice next to theirs,
-not for dropping theirs. **How `qmk lint` tests this:** it only checks that a code file's first line starts with `/*` or
-`//` (`lib/python/qmk/cli/lint.py`, `_has_license`), so it cannot tell a license from any other comment, and a new file
-must open with its header. QMK's own `lint.yml` runs only on pull requests that touch `keyboards/**`; our workflow runs it
-on every push (see "Versions and CI"). Verified: `qmk lint -kb keychron/x4/ansi_encoder/red -km horwitz` passes, and the
-firmware is byte-identical to the image tested before the headers were added (sha256 `190C88A9…`, 68,348 bytes).
+firmware is a GPL work whatever our files say). `keymap.c` and `keymaps.h` are **derived from Keychron's stock `default`
+keymap** (the Windows layers and the Windows Fn layer unchanged or edited, the shortcut definitions copied), so they carry
+**Keychron's notice verbatim** (copied from the stock file, including its "Copyright 202" typo, which is not ours to alter)
+followed by `// Modifications Copyright 2026 Jeremy Horwitz`. The original files, `horwitz.c`, `layers.h` and
+`ctrlkeycodes.h`, carry the short form used by much of this tree (137 files): `// Copyright 2026 Jeremy Horwitz` and `//
+SPDX-License-Identifier: GPL-2.0-or-later`. `rules.mk` and `README.md` carry none (lint reads only code files, and
+`rules.mk` is one stock line plus ours). An earlier commit had removed the Keychron block from `keymap.c` on the grounds that
+the file was "not purely Keychron's"; that argues for adding our notice next to theirs, not for dropping theirs. **How `qmk
+lint` tests this:** it only checks that a code file's first line starts with `/*` or `//` (`lib/python/qmk/cli/lint.py`,
+`_has_license`), so it cannot tell a license from any other comment, and a new file must open with its header. QMK's own
+`lint.yml` runs only on pull requests that touch `keyboards/**`; our workflow runs it on every push (see "Versions and
+CI"). Verified: `qmk lint -kb keychron/x4/ansi_encoder/red -km horwitz` passes, and the firmware was byte-identical before
+and after the headers were added.
 
 Naming hazard: the keymap is named `horwitz`, and `USER_NAME` defaults to the keymap name, so QMK would also include
 `users/horwitz/rules.mk` and `config.h` if that directory existed (`builddefs/build_keyboard.mk`). It does not on this
@@ -280,31 +283,29 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
 - `qmk`, `make`, `python` and `arm-none-eabi-gcc` are not on the PATH of PowerShell or Git Bash. They live in
   `C:\QMK_MSYS` (QMK MSYS 1.12.0 since 2026-11-09: qmk 1.2.0, GCC 15.2.0 in `/opt/qmk/bin`, make 4.4.1, Python 3.12.12,
   `dfu-util` 0.11-dev; observed). `qmk.exe` refuses to run outside the MINGW64 shell. Run it from PowerShell like this
-  (observed to work):
+  (observed to work; `-km default` builds the stock keymap instead):
 
   ```powershell
   $env:MSYSTEM='MINGW64'; $env:CHERE_INVOKING='1'
-  & 'C:\QMK_MSYS\usr\bin\bash.exe' -lc 'cd /c/Users/jahor/Documents/GitHub/qmk_firmware && qmk compile -kb keychron/x4/ansi_encoder/red -km default'
+  & 'C:\QMK_MSYS\usr\bin\bash.exe' -lc 'cd /c/Users/jahor/Documents/GitHub/qmk_firmware && qmk compile -kb keychron/x4/ansi_encoder/red -km horwitz'
   ```
 
 - Docker Desktop (4.99.0) is installed too. It is used only to reproduce CI locally (see "Versions and CI"), not for daily
   builds (see "Why QMK MSYS").
-- The old MSYS 1.7.2 (qmk 1.1.1, GCC 10.1.0) was moved to the Windows Recycle Bin on 2026-11-12 (task 22). It stays
-  recoverable until the bin is emptied (Restore puts it back at `C:\QMK_MSYS_1.7.2`; it ran standalone). Its result is
-  recorded here instead: building the unchanged stock `default` keymap with it from a clean `.build` (source commit
-  `4a36d7efd4`, no compiler warnings) gave a 68,208-byte `.bin`, SHA-256
-  `4ea835af9f74df71033806ce6525761c7c0d573c39b2357d834123102362fa88`, with 35,902 bytes of `text` + `data`. That is the
-  same size as the image flashed to the X4 and tested on 2026-11-08 (the flashed file itself was not kept, so byte
-  identity with it is not confirmed). The 1.12.0 installer was run by the owner with all optional boxes unchecked (no
-  USB drivers installed). It is unsigned and has no GitHub attestation, but its SHA-256 matched the release checksum and
-  the assets were uploaded by `github-actions[bot]`. (observed)
-- Baseline: `qmk compile -kb keychron/x4/ansi_encoder/red -km default` builds with no compiler warnings on both
-  toolchains (observed: GCC 10.1 gave a 68,208-byte `.bin`, GCC 15.2 a 67,244-byte one). The `.bin` is copied to the repo
-  root, where it is gitignored along with `.build/`. QMK's "Size after" line prints `text` + `data` from the ELF (35,902
-  with GCC 10.1, 34,940 with GCC 15.2); the `.bin` is larger because the image is contiguous from `0x08000000` and
-  `.text` starts at `0x08008000`, leaving about 32 KB of padding after the vector table. It fits the 256 KB flash. Why
-  Keychron's layout leaves that gap: unverified. The build banner says `QMK Firmware 0.14.29`; how that string is derived
-  in this fork is unverified.
+- **Baseline and the old MSYS** (observed): building the unchanged stock `default` keymap (`qmk compile -kb
+  keychron/x4/ansi_encoder/red -km default`) gives no compiler warnings on either toolchain. With GCC 10.1 (the old QMK MSYS
+  1.7.2, qmk 1.1.1; source commit `4a36d7efd4`, from a clean `.build`) it gave a 68,208-byte `.bin`, SHA-256
+  `4ea835af9f74df71033806ce6525761c7c0d573c39b2357d834123102362fa88`, with 35,902 bytes of `text` + `data`: the same size as
+  the image flashed to the X4 and tested on 2026-11-08 (the flashed file itself was not kept, so byte identity with it is not
+  confirmed). With GCC 15.2 it gave a 67,244-byte one (34,940 bytes of `text` + `data`). The `.bin` is copied to the repo
+  root, where it is gitignored along with `.build/`. QMK's "Size after" line prints `text` + `data` from the ELF; the `.bin`
+  is larger because the image is contiguous from `0x08000000` and `.text` starts at `0x08008000`, leaving about 32 KB of
+  padding after the vector table. It fits the 256 KB flash. Why Keychron's layout leaves that gap: unverified. The build
+  banner says `QMK Firmware 0.14.29`; how that string is derived in this fork is unverified. The old MSYS 1.7.2 was moved to
+  the Windows Recycle Bin on 2026-11-12 (task 22); it stays recoverable until the bin is emptied (Restore puts it back at
+  `C:\QMK_MSYS_1.7.2`; it ran standalone). The 1.12.0 installer was run by the owner with all optional boxes unchecked (no
+  USB drivers installed). It is unsigned and has no GitHub attestation, but its SHA-256 matched the release checksum and the
+  assets were uploaded by `github-actions[bot]`.
 - With qmk 1.2.0 and Python 3.12, this repo's old CLI code prints harmless Python warnings. The decision (owner,
   2026-11-11) is to leave them visible and filter nothing; the full findings are in "QMK CLI warnings" below. A separate,
   unrelated old QMK checkout exists at `C:\Users\jahor\qmk_firmware` (2023, a `moonlander-j` fork); `qmk` falls back to
@@ -315,11 +316,11 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
   all keys, the encoder, the Fn layer (including the Win lock), the backlight and the Caps Lock LED worked, and Esc-hold
   re-entered the bootloader. The same checks passed again on 2026-11-09 with the GCC 15.2 build, flashed by the upgraded
   MSYS (its first `dfu-util` status was `dfuERROR … firmware is corrupt`, which `dfu-util` cleared before the flash
-  completed). Bootloader entry: the board's `readme.md` says hold K00 (Esc) while plugging
-  in, or press the RESET button under the spacebar. Lemokey's pages (read through a summarizer; verify) say hold Esc
-  while plugging in, or remove the spacebar keycap and hold RESET (left of the spacebar switch). Holding Esc while plugging in
-  worked (observed); the RESET-button route is untried. No driver install was needed: Windows shows
-  `STM32  BOOTLOADER` (`0483:DF11`) and `dfu-util -l` lists the board.
+  completed).
+- **Bootloader entry:** the board's `readme.md` says hold K00 (Esc) while plugging in, or press the RESET button under the
+  spacebar. Lemokey's pages (read through a summarizer; verify) say hold Esc while plugging in, or remove the spacebar keycap
+  and hold RESET (left of the spacebar switch). Holding Esc while plugging in worked (observed); the RESET-button route is
+  untried. No driver install was needed: Windows shows `STM32  BOOTLOADER` (`0483:DF11`) and `dfu-util -l` lists the board.
 - **Recovery (task 29, 2026-11-15).** Factory reset of settings is Fn + J + Z for 4 seconds (backlight flashes red; from
   Lemokey's pages, not tried here). **A copy of the official red-backlight firmware is kept outside the repository, never
   flashed:** `C:\Users\jahor\Documents\lemokey_x4_recovery\x4_ansi_encoder_red_v1.0.2_2404191652\x4_ansi_encoder_red_v1.0.2_2404191652.bin`
@@ -334,20 +335,21 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
   flashes at the same address, `0x08000000`, as `qmk flash` does), and its USB strings include "Keychron" and "Lemokey X4".
   That is consistent with a genuine image but is not proof of authenticity. To restore it, put the board in bootloader mode
   and flash that file with the web Launcher (`launcher.lemokey.com`, cable mode), QMK Toolbox or `dfu-util` at `0x08000000`
-  (not tried; our own images were flashed with `qmk flash`, which uses `dfu-util` at that address). Expect to need the
-  factory reset afterward, because our firmware keeps its mode and Win-lock state in the keyboard's EEPROM.
-- The `default` build has no VIA, so Launcher/VIA cannot edit its keymap, but the Launcher's firmware update works at
-  bootloader level and can restore the official image, as could `dfu-util` or QMK Toolbox with the official `.bin`. (general)
+  (not tried; our own images were flashed with `qmk flash`, which uses `dfu-util` at that address). The Launcher's firmware
+  update works at bootloader level, so it can restore the official image even though the stock `default` build has no VIA
+  and the Launcher cannot edit its keymap (general). Expect to need the factory reset afterward, because our firmware keeps
+  its mode and Win-lock state in the keyboard's EEPROM.
 
 ## Versions and CI
 
-Audit of 2026-11-10 (task 19), refreshed on 2026-11-15 (task 33). Policy: pin known-good versions and upgrade deliberately (rebuild, retest on the board,
-record it), as in the 2026-11-09 toolchain upgrade; never rely on a floating "latest" in CI. The QMK base of the tree stays
-on Keychron's fork, because the X4 exists only there and moving to upstream QMK (0.34.7, from the 2026-11-10 audit; not re-checked on
-2026-11-15, because upstream publishes no GitHub releases) would mean porting vendor code. **Result of the 2026-11-15 refresh: nothing
-needs upgrading.** Every row is at the latest version except `qmk_flashutils` (deliberately left, see its row) and `git` inside
-QMK MSYS (bundled, see task 23); the only watch item is the MSYS beta's switch to `ucrt64`. Checked with: `gh release list`, PyPI,
-Docker Hub's tag list, `winget show`, `git --version`, `gh --version` and the installed `qmk`, GCC and `dfu-util` in QMK MSYS.
+Audit of 2026-11-10 (task 19), refreshed on 2026-11-15 (task 33). Policy: pin known-good versions and upgrade deliberately
+(rebuild, retest on the board, record it), as in the 2026-11-09 toolchain upgrade; never rely on a floating "latest" in CI.
+The QMK base of the tree stays on Keychron's fork, because the X4 exists only there and moving to upstream QMK (0.34.7, from
+the 2026-11-10 audit; not re-checked on 2026-11-15, because upstream publishes no GitHub releases) would mean porting vendor
+code. **Result of the 2026-11-15 refresh: nothing needs upgrading.** Every row is at the latest version except
+`qmk_flashutils` (deliberately left, see its row) and `git` inside QMK MSYS (bundled, see task 23); the only watch item is
+the MSYS beta's switch to `ucrt64`. Checked with: `gh release list`, PyPI, Docker Hub's tag list, `winget show`,
+`git --version`, `gh --version` and the installed `qmk`, GCC and `dfu-util` in QMK MSYS.
 
 | Component | In use | Latest at the audit (2026-11-15) |
 |---|---|---|
@@ -365,15 +367,28 @@ Docker Hub's tag list, `winget show`, `git --version`, `gh --version` and the in
 | CI container | `qmkfm/qmk_cli:1.2.0` (`sha256:b7d7fa8f…`) | the same image as `latest` (Docker Hub shows both rebuilt on 2026-03-28 with that same digest) |
 | Keychron `playground` | `4a8143cce9` | `4a8143cce9` |
 
-CI is `.github/workflows/horwitz_x4.yml`: it builds `keychron/x4/ansi_encoder/red:horwitz` in the pinned container on every
-push to `x4`, on pull requests and on demand. It also runs `qmk lint` on the keymap after the build (task 18), checks the public-facing files for internal identifiers (task 30), and uploads the built firmware as the artifact `horwitz-x4-firmware` (task 31: `keychron_x4_ansi_encoder_red_horwitz.bin`, kept 30 days; the run's summary page lists its size and SHA-256; the repository is public, so anyone signed in to GitHub can download it, which is consistent with the GPL because the source for it is this repository at that commit). The container's GCC (15.2.0, the same
-`qmk_toolchains` build) and `qmk` (1.2.0) match MSYS, and its firmware is byte-for-byte identical to MSYS's (67,636 bytes,
-sha256 `67AFA083E17F6AA1…`, observed 2026-11-10). Its first run on GitHub (2026-11-11, commit `1ed1b1633b`, runner image `ubuntu-24.04`)
-succeeded in about 1 minute 42 seconds in total. The workflow now pins `runs-on: ubuntu-24.04` (the image that run used)
-instead of the floating `ubuntu-latest` label, which GitHub is moving to Ubuntu 26; the build runs inside the pinned
-container, so the effect would have been small, but a pinned runner keeps CI from changing under us. The first run with
-the pin (2026-11-11, commit `0fdfbd50a0`) succeeded in about 1 minute 47 seconds. To reproduce CI locally (about 12.5 minutes, against 1.7 for
-MSYS, because of the Windows bind mount):
+CI is `.github/workflows/horwitz_x4.yml`. It runs on every push to `x4`, on pull requests and on demand, in the pinned
+container, and takes about 1 minute 45 seconds in total (observed 2026-11-11).
+
+- **Steps, in order:** disable git's `safe.directory` check; check out (with submodules); check the public-facing files for
+  internal identifiers (task 30, below); install dependencies; build `keychron/x4/ansi_encoder/red:horwitz`; record the
+  firmware's size and SHA-256 (job log and the run's summary page); upload it as the artifact `horwitz-x4-firmware` (task 31:
+  `keychron_x4_ansi_encoder_red_horwitz.bin`, kept 30 days; the repository is public, so anyone signed in to GitHub can
+  download it, which is consistent with the GPL because the source for it is this repository at that commit); `qmk lint` on
+  the keymap (task 18).
+- **The public-text check (task 30):** a `grep -rniE` over the keymap folder and the workflow itself that fails the run on a
+  match: `task [0-9]`, `CLAUDE.md`, `TASKS.md`, the whole word `owner`, `wireless_playground`, `users/horwitz`, case-
+  insensitively. Each pattern has one letter in square brackets (e.g., `[t]ask`) so that the workflow does not match
+  itself; keep that when editing it, and never write those words in the workflow's own comments. `ownership` and `owned` are
+  fine. Tested on the real tree (clean), on a deliberate violation (all caught, exit 1) and on harmless near-misses (not
+  flagged); it ran green on GitHub (2026-11-15).
+- **Pins:** the container `qmkfm/qmk_cli:1.2.0`; the runner `ubuntu-24.04`, the image the first run used, instead of the
+  floating `ubuntu-latest` label, which GitHub is moving to Ubuntu 26 (the build runs inside the pinned container, so the
+  effect would have been small, but a pinned runner keeps CI from changing under us); actions at exact tags.
+- **CI and QMK MSYS build the same bytes.** The container's GCC (15.2.0, the same `qmk_toolchains` build) and `qmk` (1.2.0)
+  match MSYS. On 2026-11-15 the artifact CI built (68,388 bytes, SHA-256 `1A2D93C3…`) was byte-identical to the local QMK
+  MSYS build; an identical result was first observed on 2026-11-10 with an earlier image.
+- **To reproduce CI locally** (about 12.5 minutes, against 1.7 for MSYS, because of the Windows bind mount):
 
 ```powershell
 Remove-Item .build -Recurse -Force -ErrorAction SilentlyContinue
@@ -482,7 +497,7 @@ checkout in the home folder, which `qmk` falls back to when started outside a re
   ```
 
   Not applied, because of the no-vendor-edits rule. If it is ever wanted: apply it, run `qmk info`, `qmk compile` and
-  `qmk lint`, and compare the firmware hash with the known good one (`67AFA083E17F6AA1…`). It would not remove the
+  `qmk lint`, and compare the firmware hash with the current build's (the CI run's summary page shows it). It would not remove the
   `SyntaxWarning`s, which would need the backslashes doubled in `mass_compile.py` (carefully: its Makefile text already
   uses `\\` and `\\n` correctly, so a raw string would break it) and in `bux.py`.
 - *Hiding the "Welcome to QMK MSYS!" banner* (`/etc/post-install/99-qmk.post`; `qmk config user.hide_welcome=True`). Not
