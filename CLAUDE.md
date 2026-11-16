@@ -204,8 +204,9 @@ about 6 KB larger.
   2026-11-15): Fn + V in a text field on the Windows PC and on the Mac, the key lit under Fn, and nothing else changed; the
   results were not itemized.
 - **Layers picture (task 37, 2026-11-15):** `keymaps/horwitz_layers.svg` shows the four layers on the real X4 layout, in the
-  README. It is **generated, and nothing in CI checks that it is current**: after changing `keymap.c` or `keymaps.h`, run
-  `tools/draw_layers.ps1` (PowerShell, from the keymap folder) and commit the result. The pipeline: `qmk c2json` (through QMK
+  README. It is **generated, and CI checks that it is current** (task 41, below): after changing `keymap.c`, `keymaps.h`, `layers.h`,
+  `ctrlkeycodes.h`, the board's `info.json` or anything in `tools/`, run `tools/draw_layers.ps1` (PowerShell, from the keymap
+  folder) and commit the result. The pipeline: `qmk c2json` (through QMK
   MSYS) writes the keymap as JSON and `qmk info -f json` the key positions; `keymap parse` (keymap-drawer 0.23.0, MIT) makes
   its YAML; `polish_legends.py` renames legends and layer titles; `keymap draw` writes the SVG. Verified: the script, run
   from a clean state with a new environment, took 22 seconds and produced the picture the owner approved, byte for byte. **The
@@ -218,14 +219,32 @@ about 6 KB larger.
   (`--only-binary :all:`), so nothing is compiled. **What was learned:** (1) giving keymap-drawer a `qmk_keycode_map` REPLACES
   its built-in map (the punctuation legends regressed to `MINS`, `LBRC`), so legends are changed by post-processing instead;
   (2) the tool underlines a key whose label equals a layer's title, to mark layer-switch keys, so a title must never equal a
-  label such as "Mac mode"; (3) `qmk c2json` leaves out the `encoder_map`, so the knob's turn actions and the Mac modifier
-  names are written by hand in `polish_legends.py` and must be updated if those change; (4) I (the assistant) cannot view an
+  label such as "Mac mode"; (3) `qmk c2json` leaves out the `encoder_map`, so `polish_legends.py` reads the knob's turn actions from `keymap.c`
+  itself (a regular expression on `ENCODER_CCW_CW`; it prints a warning when a layer's entry cannot be parsed); what stays
+  written by hand there is naming: the legends, the modifier names per platform (chosen by a layer's `WIN_` or `MAC_`
+  prefix), the layer titles, the names of encoder keycode pairs and the knob key's position (`KNOB`, a hardware fact); (4) I (the assistant) cannot view an
   SVG, so I rendered it to a PNG with Edge's headless mode (`msedge --headless=new --screenshot`) and looked at that, and the
   owner judged the look in a browser. **Why the file is one level up:** `qmk lint` runs `git ls-files -c -o -i
   --exclude-from=.gitignore` on the keymap folder, so it uses only the top-level `.gitignore` and also flags TRACKED files,
   and any `*.svg` (or `*.png`) inside a keymap folder fails it (and CI), whatever local `.gitignore` says; the keyboard-level
   check skips paths containing "keymap", and nothing above is checked, so `keymaps/horwitz_layers.svg` passes. Do not move it
-  into the keymap folder. The picture's file ends lines with CRLF (written on Windows), which is harmless.
+  into the keymap folder. Until task 41 the picture's file was written with CRLF line endings (it is LF now, so that the same bytes come out on
+  every system).
+- **Layers picture: staying current (task 41, 2026-11-15):** nothing made the picture follow the keymap, so `draw_layers.ps1`
+  now stamps it, and CI checks the stamp. `tools/layers_fingerprint.py` (standard library only, so CI runs it with the
+  container's `python3`) hashes (SHA-256) the picture's inputs, listed in `INPUTS` there: the board's two `info.json` files,
+  `keymap.c`, `keymaps.h`, `layers.h`, `ctrlkeycodes.h`, `tools/polish_legends.py` and `tools/keymap_drawer.yaml`, with
+  carriage returns removed so Windows and Linux agree, and writes the hash as an XML comment at the end of the SVG
+  (`<!-- layers-fingerprint: ... -->`), which it also writes with LF line endings (the earlier file had CRLF). `check` fails,
+  with a message saying what to run, when the stamp is missing or differs. It proves the picture was regenerated after the
+  last change to its inputs, not that the picture is right. To add an input, add it to `INPUTS`; if the algorithm changes,
+  change `ALGORITHM` and regenerate. Verified: the knob labels read from `keymap.c` give a drawing identical to the
+  hand-labeled one the owner approved; the check passes on the real files with Windows Python and with MSYS's Python, passes
+  with CRLF line endings, and fails for a missing stamp, a tampered stamp, a changed `keymap.c`, a changed `info.json` and a
+  changed legend (tested on a scratch copy of the inputs). Not covered: it does not notice an edit to a file that is not
+  listed, and it cannot tell that the picture is wrong. **A trap:** do not `import` anything from `tools/` (a test that
+  did left a `__pycache__` folder there, and `qmk lint` then failed on the `.pyc` file, which the top-level `.gitignore`
+  ignores); run the scripts as scripts, which leaves nothing behind.
 - **Navigation keys (task 24, 2026-11-15):** the X4 has no End key (observed: the right-hand column is the encoder, Home,
   PgUp and PgDn, and `KC_END` was on no layer). On **both** Fn layers, with plain keycodes (the owner's decision: plain End on
   the Mac layer too, not Cmd+Right): Fn + Left = Home, Fn + Up = PgUp, Fn + Down = PgDn, Fn + Right = End, and Fn + Del = End
@@ -302,7 +321,8 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
   the version key (`SHOW_VER` in `process_record_user`); auto-detect (`notify_usb_device_state_change_user`, `housekeeping_task_user`, `last_detected_layer`, `live_mode`); the Fn
   display (`find_used_keys`, `breathe_level`, `led_matrix_indicators_user`); the blink (`start_mode_blink`, `apply_blink`);
   and the prints that exist only in a DEBUG build.
-- `tools/`: `draw_layers.ps1`, `keymap_drawer.yaml` and `polish_legends.py`, which regenerate the picture of the layers (see
+- `tools/`: `draw_layers.ps1`, `keymap_drawer.yaml`, `polish_legends.py` and `layers_fingerprint.py`, which regenerate and
+  stamp the picture of the layers (see
   "Layers picture"). The picture itself is `keymaps/horwitz_layers.svg`, **one level up, next to this folder and not in it**
   (see the lint note there), with a one-line `keymaps/.gitignore` that re-allows it, since QMK's top-level `.gitignore` ignores
   every `*.svg`.
@@ -424,7 +444,7 @@ CI is `.github/workflows/horwitz_x4.yml`. It runs on every push to `x4`, on pull
 container, and takes about 1 minute 45 seconds in total (observed 2026-11-11).
 
 - **Steps, in order:** disable git's `safe.directory` check; check out (with submodules); check the public-facing files for
-  internal identifiers (task 30, below); install dependencies; build `keychron/x4/ansi_encoder/red:horwitz`; record the
+  internal identifiers (task 30, below); check that the picture of the layers is current (task 41, below); install dependencies; build `keychron/x4/ansi_encoder/red:horwitz`; record the
   firmware's size and SHA-256 (job log and the run's summary page); upload it as the artifact `horwitz-x4-firmware` (task 31:
   `keychron_x4_ansi_encoder_red_horwitz.bin`, kept 30 days; the repository is public, so anyone signed in to GitHub can
   download it, which is consistent with the GPL because the source for it is this repository at that commit); `qmk lint` on

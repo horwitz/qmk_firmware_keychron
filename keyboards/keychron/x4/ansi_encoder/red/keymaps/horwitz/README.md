@@ -30,13 +30,17 @@ A key with a solid outline does something on that layer; a faded key is transpar
 Fn key is pink on the base layers. On the knob's key, the large label is what pressing it does and the small line under it
 is what turning it does.
 
-The picture is **generated**, so it does not follow the keymap by itself. After changing `keymap.c` or `keymaps.h`, regenerate
-it by running `./tools/draw_layers.ps1` from this folder in PowerShell. It needs QMK MSYS and a Python from 3.12 to 3.14 (3.15
-is not supported yet: one of the drawing tool's dependencies has no ready-made package for it). The script creates its own
-environment outside the repository and, the first time, installs the drawing tool (`keymap-drawer`, pinned to one version,
-from ready-made packages only). Two things in the picture are written by hand in `tools/polish_legends.py`: the modifier
-names on the Mac layer (Option, Cmd) and what turning the knob does. The file lives in the `keymaps` folder, next to this one
-and not inside it, because `qmk lint` rejects image files inside a keymap folder.
+The picture is **generated**, so it does not follow the keymap by itself, but CI checks it: the script stamps the picture with
+a hash of everything it is drawn from (the keymap files, the board's key positions and the legends in `tools/`), and a CI
+step fails if the hash no longer matches. If that happens, or after any change to the keymap, regenerate the picture by
+running `./tools/draw_layers.ps1` from this folder in PowerShell, and commit the new `horwitz_layers.svg`. It needs QMK MSYS
+and a Python from 3.12 to 3.14 (3.15 is not supported yet: one of the drawing tool's dependencies has no ready-made package
+for it). The script creates its own environment outside the repository and, the first time, installs the drawing tool
+(`keymap-drawer`, pinned to one version, from ready-made packages only). The keys and the knob's turn actions are read from
+the keymap (the turn actions from the `encoder_map` in `keymap.c`); what is written by hand in `tools/polish_legends.py` is
+only naming: the friendly legends, what the modifiers are called on each platform (Option and Cmd on the Mac layers) and
+the layer titles. The file lives in the `keymaps` folder, next to this one and not inside it, because `qmk lint` rejects
+image files inside a keymap folder.
 
 ## Choosing the mode
 
@@ -127,7 +131,7 @@ flashed with `qmk flash`.
 | `layers.h` | The layer numbers |
 | `ctrlkeycodes.h` | The custom keycodes: choosing the mode, and typing the firmware's identity |
 | `horwitz.c` | The behavior: choosing the mode, the Win-lock release, the blink, and the Fn display |
-| `tools/` | The scripts that regenerate the picture of the layers (`../horwitz_layers.svg`): `draw_layers.ps1`, its settings and `polish_legends.py` |
+| `tools/` | The scripts that regenerate the picture of the layers (`../horwitz_layers.svg`): `draw_layers.ps1`, its settings, `polish_legends.py`, and `layers_fingerprint.py`, which stamps the picture and lets CI check that it is current |
 | `rules.mk` | Build options (the encoder map, OS detection and the `DEBUG=1` switch) |
 
 ## License

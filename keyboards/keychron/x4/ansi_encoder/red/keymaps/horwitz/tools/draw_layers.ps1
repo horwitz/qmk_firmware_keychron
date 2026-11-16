@@ -12,8 +12,12 @@
     every *.svg. The steps are:
       1. QMK's own tools (run through QMK MSYS) write the keymap as JSON and the keyboard's key positions as JSON.
       2. keymap-drawer ("keymap parse") turns the keymap JSON into its YAML form.
-      3. polish_legends.py (next to this script) gives the legends friendlier names.
+      3. polish_legends.py (next to this script) gives the legends friendlier names and reads the encoder's turn actions
+         from keymap.c.
       4. keymap-drawer ("keymap draw") draws the SVG.
+      5. layers_fingerprint.py (next to this script) writes line endings as LF and stamps the SVG with a hash of everything
+         it was drawn from. CI recomputes that hash and fails when it differs, so a picture that was not regenerated after
+         the keymap changed is caught.
     The first run creates a Python environment for keymap-drawer outside the repository (-VenvDir) and installs a pinned
     version of it from ready-made packages only, so nothing is compiled.
 
@@ -96,10 +100,14 @@ try {
     $svg = Join-Path $work 'layers.svg'
     & $keymapExe -c $config parse -q $keymapJson -l $LayerNames -o $rawYaml
     Assert-Success 'keymap parse'
-    & $venvPython (Join-Path $toolsDir 'polish_legends.py') $rawYaml $polishedYaml
+    & $venvPython (Join-Path $toolsDir 'polish_legends.py') $rawYaml $polishedYaml (Join-Path $keymapDir 'keymap.c')
     Assert-Success 'polish_legends.py'
     & $keymapExe -c $config draw -j $infoJson -l $LayoutName $polishedYaml -o $svg
     Assert-Success 'keymap draw'
+
+    # 4. Stamp the picture with the fingerprint of its inputs (and write it with LF line endings).
+    & $venvPython (Join-Path $toolsDir 'layers_fingerprint.py') stamp $svg --root $repo
+    Assert-Success 'layers_fingerprint.py stamp'
 
     $target = Join-Path (Split-Path $keymapDir -Parent) 'horwitz_layers.svg'
     Copy-Item $svg $target -Force

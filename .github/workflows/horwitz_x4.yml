@@ -7,8 +7,8 @@ name: horwitz keymap (X4)
 # pull request, and a manual run from the Actions tab.
 #
 # It also runs `qmk lint` on the keymap, after the build so that a lint failure never hides a build result, checks that
-# the public-facing files (the keymap folder and this file) contain no internal identifiers, and keeps the built firmware
-# as a downloadable artifact.
+# the public-facing files (the keymap folder and this file) contain no internal identifiers, checks that the picture of the
+# layers is current, and keeps the built firmware as a downloadable artifact.
 
 permissions:
   contents: read
@@ -54,6 +54,11 @@ jobs:
             echo "::error::Internal identifiers found in public-facing files (see the lines above)"
             exit 1
           fi
+      # The picture of the layers is generated from the keymap and stamped with a hash of what it was drawn from. This fails
+      # when the keymap, the board's key positions or the picture's legends changed after the picture was drawn; the message
+      # says what to run. It needs only the container's python3.
+      - name: Check that the picture of the layers is current
+        run: python3 keyboards/keychron/x4/ansi_encoder/red/keymaps/horwitz/tools/layers_fingerprint.py check keyboards/keychron/x4/ansi_encoder/red/keymaps/horwitz_layers.svg
       - name: Install dependencies
         run: pip3 install -r requirements-dev.txt
       - name: Build horwitz keymap
