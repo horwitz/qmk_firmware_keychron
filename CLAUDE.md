@@ -341,23 +341,28 @@ branch. If the K3 branch were ever merged in, rename this keymap or set `USER_NA
 
 ## Versions and CI
 
-Audit of 2026-11-10 (task 19). Policy: pin known-good versions and upgrade deliberately (rebuild, retest on the board,
+Audit of 2026-11-10 (task 19), refreshed on 2026-11-15 (task 33). Policy: pin known-good versions and upgrade deliberately (rebuild, retest on the board,
 record it), as in the 2026-11-09 toolchain upgrade; never rely on a floating "latest" in CI. The QMK base of the tree stays
-on Keychron's fork, because the X4 exists only there and moving to upstream QMK (0.34.7) would mean porting vendor code.
+on Keychron's fork, because the X4 exists only there and moving to upstream QMK (0.34.7, from the 2026-11-10 audit; not re-checked on
+2026-11-15, because upstream publishes no GitHub releases) would mean porting vendor code. **Result of the 2026-11-15 refresh: nothing
+needs upgrading.** Every row is at the latest version except `qmk_flashutils` (deliberately left, see its row) and `git` inside
+QMK MSYS (bundled, see task 23); the only watch item is the MSYS beta's switch to `ucrt64`. Checked with: `gh release list`, PyPI,
+Docker Hub's tag list, `winget show`, `git --version`, `gh --version` and the installed `qmk`, GCC and `dfu-util` in QMK MSYS.
 
-| Component | In use | Latest at the audit |
+| Component | In use | Latest at the audit (2026-11-15) |
 |---|---|---|
-| QMK MSYS | 1.12.0 | 1.12.0 (stable; a beta exists, not used) |
-| `qmk` CLI | 1.2.0 | 1.2.0 |
+| QMK MSYS | 1.12.0 | 1.12.0 (stable, 2025-12-06). A beta dated 2026-11-11 exists, not used; its notes say it swaps `mingw64` for `ucrt64` and ConEmu for Microsoft Terminal, so when it becomes stable the launch command in this file (`MSYSTEM='MINGW64'`) will need changing: try it on a copy first, as in task 23 |
+| `qmk` CLI | 1.2.0 | 1.2.0 (PyPI, 2025-11-27) |
 | `arm-none-eabi-gcc` | 15.2.0 (`qmk_toolchains` v15.2.0-1) | v15.2.0-1 |
-| `qmk_flashutils` (`dfu-util`) | 20251130, bundled in MSYS (in `/opt/qmk`, outside `pacman`) | 20260711. Left alone: flashing works, and the 14 commits since (no release notes) are mostly packaging for other platforms and tools (`hidapi`, `picotool`, Linux/macOS), dependency bumps and CI; nothing names `dfu-util` or Windows STM32 flashing. Update only for a named fix or a flashing problem, and try it on a copy first (task 23) |
-| Git for Windows | 2.56.0.windows.4 | 2.56.1.windows.1, a security release (the owner updates it) |
+| `qmk_flashutils` (`dfu-util`) | 20251130, bundled in MSYS (in `/opt/qmk`, outside `pacman`) | 20260711 (still the latest on 2026-11-15). Left alone: flashing works, and the 14 commits since (no release notes) are mostly packaging for other platforms and tools (`hidapi`, `picotool`, Linux/macOS), dependency bumps and CI; nothing names `dfu-util` or Windows STM32 flashing. Update only for a named fix or a flashing problem, and try it on a copy first (task 23) |
+| Git for Windows | 2.56.1.windows.1 (updated by the owner since the last audit) | 2.56.1.windows.1 |
 | `git` inside QMK MSYS | 2.52.0 (package `git 2.52.0-2`) | MSYS has `pacman` (6.1.0), but a full `pacman -Syu` breaks QMK MSYS (task 23, below); a git-only update is untested; left alone |
-| `gh` | 2.103.3 | 2.103.3 |
-| Docker Desktop | 4.99.0 | 4.99.0 |
+| `gh` | 2.104.0 (updated since the last audit) | 2.104.0 |
+| Docker Desktop | 4.99.0 | 4.99.0 (as `winget` reports it) |
 | `actions/checkout` | v7.0.1 | v7.0.1 |
 | `actions/upload-artifact` | v7.0.2 (pinned 2026-11-15, task 31) | v7.0.2 (released 2026-10-07) |
-| CI container | `qmkfm/qmk_cli:1.2.0` (`sha256:b7d7fa8f…`) | the same image as `latest` |
+| QMK Toolbox | 0.3.4 (updated by the owner, 2026-11-15) | 0.3.4 (2026-08-19; a beta from 2026-08-20 exists, not used) |
+| CI container | `qmkfm/qmk_cli:1.2.0` (`sha256:b7d7fa8f…`) | the same image as `latest` (Docker Hub shows both rebuilt on 2026-03-28 with that same digest) |
 | Keychron `playground` | `4a8143cce9` | `4a8143cce9` |
 
 CI is `.github/workflows/horwitz_x4.yml`: it builds `keychron/x4/ansi_encoder/red:horwitz` in the pinned container on every
@@ -405,7 +410,7 @@ the `qmk` CLI as the package `mingw-w64-x86_64-python-qmk`, which depends only o
   `arm-none-eabi-gcc` and `dfu-util` were not found. The live install gets `/opt/qmk/bin` on `PATH` from that line.
   Not tried: updating only `git` (a partial upgrade, which MSYS2 does not support; it also pulled in new Perl
   dependencies). The bundled `git` therefore stays at 2.52.0 until QMK publishes a newer MSYS bundle (a beta dated
-  2026-10-19 exists; not examined).
+  2026-11-11 exists; its notes show a switch to `ucrt64`, see the audit table; not tried).
 
 The comparison that decided it:
 
@@ -423,7 +428,7 @@ package, plus the compilers and flashers from their release archives) would give
 flashers, at the cost of QMK's tested combination.
 
 **Revisit if:** QMK MSYS stops being updated or lacks a toolchain a future change needs; a new QMK MSYS release (or the
-2026-10-19 beta) appears, which could carry a newer `git`; the bundled `git` (2.52.0) becomes a real exposure; MSYS and CI binaries ever stop matching; or a fast Docker or WSL2 workflow becomes attractive.
+2026-11-11 beta) appears, which could carry a newer `git`; the bundled `git` (2.52.0) becomes a real exposure; MSYS and CI binaries ever stop matching; or a fast Docker or WSL2 workflow becomes attractive.
 Related tasks: 22 (delete the old MSYS 1.7.2 backup) and 23 (test `pacman` updates on a copy; done, see above).
 
 ## QMK CLI warnings (investigated 2026-11-11, task 14; do not repeat this research)
