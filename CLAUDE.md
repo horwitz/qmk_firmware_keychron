@@ -192,7 +192,13 @@ about 6 KB larger.
   can no longer be checked by comparing two plain builds. To compare builds of different commits, or to prove that a change
   altered no code, build both with `-e SKIP_VERSION=yes` (QMK's switch: `version.h` then holds constant placeholders, `NA` and
   a 1970 date; verified: the image is 69,108 bytes against 69,120 and the identity reads `horwitz x4 NA`). A committed build
-  in CI and a local build of the same commit from a clean tree are still byte-identical. Typed text uses US-layout key codes,
+  in CI and a local build of the same commit from a clean tree are byte-identical only if the hash has the same length: git
+  (`git rev-parse --short`, what the generator uses) picks the shortest unique prefix, which depends on the clone (observed
+  2026-11-15: 8 characters in CI's shallow clone, 10 in the full local one), so the workflow sets `git config --global
+  core.abbrev 10`, which is what the full local clone gives today. A local setting is not needed: git's automatic length
+  grows by about one character per fourfold growth in the number of objects, so the local length is not expected to change,
+  and the length never matters for what Fn + V does, only for this byte comparison. Verified: a build made by CI from a
+  commit has no `*`. Typed text uses US-layout key codes,
   so on another input source the `*` or `-` could come out differently (hex digits are safe). Tested on the X4 (owner,
   2026-11-15): Fn + V in a text field on the Windows PC and on the Mac, the key lit under Fn, and nothing else changed; the
   results were not itemized.
@@ -407,8 +413,8 @@ container, and takes about 1 minute 45 seconds in total (observed 2026-11-11).
 - **CI and QMK MSYS build the same bytes.** The container's GCC (15.2.0, the same `qmk_toolchains` build) and `qmk` (1.2.0)
   match MSYS. On 2026-11-15 the artifact CI built (68,388 bytes, SHA-256 `1A2D93C3…`) was byte-identical to the local QMK
   MSYS build; an identical result was first observed on 2026-11-10 with an earlier image. Since task 32 the image contains
-  the git commit hash, so this holds only for the same commit built from a clean tree (see "Build identity"; with
-  `-e SKIP_VERSION=yes` on both sides, any commit can be compared).
+  the git commit hash, so this holds only for the same commit built from a clean tree with the same hash length (see
+  "Build identity"; with `-e SKIP_VERSION=yes` on both sides, any commit can be compared).
 - **To reproduce CI locally** (about 12.5 minutes, against 1.7 for MSYS, because of the Windows bind mount):
 
 ```powershell

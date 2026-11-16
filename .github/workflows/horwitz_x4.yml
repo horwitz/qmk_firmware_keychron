@@ -37,6 +37,11 @@ jobs:
       # git that is fine.
       - name: Disable safe.directory check
         run: git config --global --add safe.directory '*'
+      # The firmware types the git commit it was built from, abbreviated by git to the fewest characters that are unique, and a
+      # shallow clone like this one needs fewer than a full one (8 here, against 10 on a full clone). Fix the length so that the
+      # image built here is byte-identical to a local build of the same commit.
+      - name: Fix the length of the abbreviated commit hash
+        run: git config --global core.abbrev 10
       - uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
