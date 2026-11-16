@@ -1,0 +1,17 @@
+# Copyright 2026 Jeremy Horwitz
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# Settings for keymap-drawer, used by draw_layers.ps1. Only the settings that differ from the tool's defaults are listed.
+#
+# Do not add a qmk_keycode_map here: giving the tool one REPLACES its built-in map (the punctuation legends then fall back to
+# names such as MINS and LBRC). Legends are changed in polish_legends.py instead.
+parse_config:
+  # A transparent key (one that falls through to the layer below) shows no legend, and is faded by the style below.
+  trans_legend:
+    t: ""
+    type: trans
+draw_config:
+  svg_extra_style: |
+    svg.keymap { background-color: #ffffff; }
+    g.trans rect.key { fill: #fbfbfc; stroke: #e6e8ea; }
+    g.trans text { fill: #c4c8cc; }

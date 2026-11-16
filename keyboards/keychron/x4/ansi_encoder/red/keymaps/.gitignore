@@ -1,0 +1,4 @@
+# QMK's top-level .gitignore ignores every *.svg. Keep the generated picture of the horwitz keymap's layers
+# (see horwitz/tools/draw_layers.ps1). It lives here, next to the keymap folder and not in it, because `qmk lint` rejects
+# any file inside a keymap folder that the top-level .gitignore would ignore.
+!horwitz_layers.svg
