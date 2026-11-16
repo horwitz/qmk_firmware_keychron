@@ -197,8 +197,9 @@ about 6 KB larger.
   2026-11-15: 8 characters in CI's shallow clone, 10 in the full local one), so the workflow sets `git config --global
   core.abbrev 10`, which is what the full local clone gives today. A local setting is not needed: git's automatic length
   grows by about one character per fourfold growth in the number of objects, so the local length is not expected to change,
-  and the length never matters for what Fn + V does, only for this byte comparison. Verified: a build made by CI from a
-  commit has no `*`. Typed text uses US-layout key codes,
+  and the length never matters for what Fn + V does, only for this byte comparison. Verified on 2026-11-15, commit
+  `ba59dbbb97`: the CI artifact (69,116 bytes, SHA-256 `0905346D0FBFD746D7E4BF64024FE514EF2EE51F38573B7677F514877584084F`)
+  holds `horwitz x4 ba59dbbb97` with no `*` and is byte-identical to a local QMK MSYS build of that clean commit. Typed text uses US-layout key codes,
   so on another input source the `*` or `-` could come out differently (hex digits are safe). Tested on the X4 (owner,
   2026-11-15): Fn + V in a text field on the Windows PC and on the Mac, the key lit under Fn, and nothing else changed; the
   results were not itemized.
