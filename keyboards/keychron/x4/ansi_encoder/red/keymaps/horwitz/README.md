@@ -67,7 +67,7 @@ Hold **Fn** and press:
 | Tab | Backlight on/off |
 | Q | Next lighting effect |
 | W / S | Backlight brighter / dimmer |
-| N | Toggle N-key rollover |
+| N | Switch between N-key rollover and 6-key mode. N-key rollover is the default: any number of keys can be held at once. Leave it on, and press this only if a BIOS, a boot menu or a KVM switch ignores the keyboard. The keyboard does not show which mode it is in; to check, hold seven ordinary keys (not Shift, Ctrl, Alt or Cmd) at once in an online key tester: if all seven show, N-key rollover is on |
 | `\` | Windows mode |
 | `/` | Mac mode |
 | Arrow keys | Left: Home. Up: PgUp. Down: PgDn. Right: End (the X4 has no End key) |
