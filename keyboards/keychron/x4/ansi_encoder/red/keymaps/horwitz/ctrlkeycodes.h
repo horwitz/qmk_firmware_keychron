@@ -12,4 +12,5 @@
 enum ctrl_keycodes {
     MODE_WIN = SAFE_RANGE, // select Windows mode (persistent): Fn + \ (the Windows directory separator)
     MODE_MAC,              // select Mac mode (persistent): Fn + / (the macOS directory separator)
+    SHOW_VER,              // type the firmware's identity into the focused window: Fn + V ("version")
 };

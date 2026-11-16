@@ -48,7 +48,7 @@ Selecting Mac mode also turns off the Win lock (below), so Command can never be 
   dimmed or off.
 - **The Fn display.** While Fn is held, only the keys that do something on the Fn layer are lit, at full brightness, and
   every other key is dark (with the backlight on, dimmed or off). Both mode keys are lit, and **the active mode's key
-  breathes** (fades slowly), so the key that moves is the mode you are in. That is 25 keys in Windows mode and 24 in Mac
+  breathes** (fades slowly), so the key that moves is the mode you are in. That is 26 keys in Windows mode and 25 in Mac
   mode. The display is read from the keymap, so a key added to a Fn layer lights up on its own.
 - **Sleep.** The lighting turns off when the computer sleeps and comes back when it wakes.
 
@@ -67,6 +67,7 @@ Hold **Fn** and press:
 | Tab | Backlight on/off |
 | Q | Next lighting effect |
 | W / S | Backlight brighter / dimmer |
+| V | Types the firmware's identity into the focused window: `horwitz x4` and the git commit it was built from, e.g., `horwitz x4 1ca1dbfc19`. A `*` after the hash means it was built with uncommitted changes (a build from GitHub has no `*`). Use it in a text field to tell which build is on the keyboard |
 | N | Switch between N-key rollover and 6-key mode. N-key rollover is the default: any number of keys can be held at once. Leave it on, and press this only if a BIOS, a boot menu or a KVM switch ignores the keyboard. The keyboard does not show which mode it is in; to check, hold seven ordinary keys (not Shift, Ctrl, Alt or Cmd) at once in an online key tester: if all seven show, N-key rollover is on |
 | `\` | Windows mode |
 | `/` | Mac mode |
@@ -108,7 +109,7 @@ flashed with `qmk flash`.
 | `keymap.c` | The base layers and the encoder map |
 | `keymaps.h` | The two Fn layers and the Windows shortcuts |
 | `layers.h` | The layer numbers |
-| `ctrlkeycodes.h` | The two custom keycodes for choosing the mode |
+| `ctrlkeycodes.h` | The custom keycodes: choosing the mode, and typing the firmware's identity |
 | `horwitz.c` | The behavior: choosing the mode, the Win-lock release, the blink, and the Fn display |
 | `rules.mk` | Build options (the encoder map, OS detection and the `DEBUG=1` switch) |
 

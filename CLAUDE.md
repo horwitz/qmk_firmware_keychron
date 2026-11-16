@@ -80,9 +80,12 @@ running a command; **(general)** = ordinary QMK knowledge, not verified here; **
 ## Mac/Windows design
 
 Decided 2026-11-09. Everything below was built and tested on the board, on a Windows PC and a real Mac, between 2026-11-09
-and 2026-11-15. The sizes and hashes of earlier images are in `TASKS.md` and git history. The **current firmware** is 68,388
-bytes, SHA-256 `1A2D93C3F90C94048C9676C61E32617F60E5A7D1F5A7A99566DC99E1E4CBCE6E` (the CI artifact and the local QMK MSYS
-build are byte-identical); a DEBUG build is about 6 KB larger.
+and 2026-11-15. The sizes and hashes of earlier images are in `TASKS.md` and git history. Since task 32 the firmware
+contains the git commit it was built from (Fn + V types it), so its exact bytes and SHA-256 differ with every commit: identify
+a build by that hash, and get a commit's exact image from the CI artifact, whose run summary shows its SHA-256. The last build
+before the identity was added was 68,388 bytes, SHA-256 `1A2D93C3F90C94048C9676C61E32617F60E5A7D1F5A7A99566DC99E1E4CBCE6E`
+(the CI artifact and the local QMK MSYS build were byte-identical); the identity adds about 0.7 KB, and a DEBUG build is
+about 6 KB larger.
 
 - **Four layers in stock order:** `WIN_BASE` 0, `WIN_FN` 1, `MAC_BASE` 2, `MAC_FN` 3 (taking the two empty `WIN_L2`/`WIN_L3`
   slots). Windows is layer 0, the boot layer of a fresh or erased board, and the stock Windows layers keep their indices.
@@ -177,6 +180,22 @@ build are byte-identical); a DEBUG build is about 6 KB larger.
   without it), and would need the `uprintf` calls changed to `dprintf` so they respect `debug_enable`. **Revisit if**
   debugging a host-specific problem (as with the Mac's iOS result, which needed a diagnostic build flashed from the Windows
   PC) becomes frequent.
+- **Build identity (task 32):** Fn + V (`SHOW_VER`, free on both Fn layers) types `horwitz x4 ` and the git commit the
+  firmware was built from, with `SEND_STRING("horwitz x4 " QMK_GIT_HASH)`; a `*` after the hash means the build had
+  uncommitted changes, and a build made by CI from a commit has none. The build already writes `version.h` for every build
+  (`qmk generate-version-h`, from `builddefs/build_keyboard.mk`) with `QMK_VERSION` (a `git describe`: the nearest tag, here
+  QMK's `0.14.29`, plus the distance and hash, not meaningful for this project until we tag our own releases, task 40),
+  `QMK_BUILDDATE` (a timestamp) and `QMK_GIT_HASH`; before this key nothing referenced them, so the firmware contained none.
+  **The build date is deliberately not used:** it would make every build differ (verified 2026-11-15: two builds of the same
+  source, with different build dates, are byte-identical, and the date string is not in the image). **The cost:** the image
+  now changes with every commit, because the hash is inside it, so "a comments-only commit gives a byte-identical binary"
+  can no longer be checked by comparing two plain builds. To compare builds of different commits, or to prove that a change
+  altered no code, build both with `-e SKIP_VERSION=yes` (QMK's switch: `version.h` then holds constant placeholders, `NA` and
+  a 1970 date; verified: the image is 69,108 bytes against 69,120 and the identity reads `horwitz x4 NA`). A committed build
+  in CI and a local build of the same commit from a clean tree are still byte-identical. Typed text uses US-layout key codes,
+  so on another input source the `*` or `-` could come out differently (hex digits are safe). Tested on the X4 (owner,
+  2026-11-15): Fn + V in a text field on the Windows PC and on the Mac, the key lit under Fn, and nothing else changed; the
+  results were not itemized.
 - **Navigation keys (task 24, 2026-11-15):** the X4 has no End key (observed: the right-hand column is the encoder, Home,
   PgUp and PgDn, and `KC_END` was on no layer). On **both** Fn layers, with plain keycodes (the owner's decision: plain End on
   the Mac layer too, not Cmd+Right): Fn + Left = Home, Fn + Up = PgUp, Fn + Down = PgDn, Fn + Right = End, and Fn + Del = End
@@ -187,7 +206,7 @@ build are byte-identical); a DEBUG build is about 6 KB larger.
 - **LED feedback: FN-HI and the mode display (task 11-3, 2026-11-10 to 2026-11-15):** while a Fn layer is active (Fn held),
   every key that does something on that layer is drawn steady at full brightness and every other key is dark: the K3's
   "FN-HI" (highlight the used Fn keys) in an on/off variant for single-color LEDs, working with the backlight on, dimmed or
-  off. That is 25 keys in Windows mode and 24 in Mac mode: F1-F12, Tab, Q, W, S, N, `\` and `/`, the four arrows and Del
+  off. That is 26 keys in Windows mode and 25 in Mac mode: F1-F12, Tab, Q, W, S, N, V, `\` and `/`, the four arrows and Del
   (navigation, task 24), plus Left Win on Windows (the Win-lock key, transparent on the Mac Fn layer). Which keys are "used"
   is **read from the keymap**, not hard-coded: `find_used_keys` (`horwitz.c`) scans both Fn layers once, at first use, taking
   each key's LED from `g_led_config.matrix_co` and its keycode from `keymap_key_to_keycode()`, and counts anything but
@@ -248,9 +267,9 @@ macro names match the K3's where the roles match. Build it with `-km horwitz`.
 - `keymap.c`: `keymaps[]` (the base layers spelled out; the Fn layers are the macros below) and `encoder_map`.
 - `keymaps.h`: `LAYOUT_winfn` and `LAYOUT_macfn`, and the `KC_TASK`/`KC_FLXP` shortcuts.
 - `layers.h`: the layer enum (`WIN_BASE`, `WIN_FN`, `MAC_BASE`, `MAC_FN`, in stock order).
-- `ctrlkeycodes.h`: `MODE_WIN` and `MODE_MAC`.
+- `ctrlkeycodes.h`: `MODE_WIN`, `MODE_MAC` and `SHOW_VER`.
 - `horwitz.c`: the behavior. Mode selection and the Win-lock release (`process_record_user`, `select_mode`, `set_mode`);
-  auto-detect (`notify_usb_device_state_change_user`, `housekeeping_task_user`, `last_detected_layer`, `live_mode`); the Fn
+  the version key (`SHOW_VER` in `process_record_user`); auto-detect (`notify_usb_device_state_change_user`, `housekeeping_task_user`, `last_detected_layer`, `live_mode`); the Fn
   display (`find_used_keys`, `breathe_level`, `led_matrix_indicators_user`); the blink (`start_mode_blink`, `apply_blink`);
   and the prints that exist only in a DEBUG build.
 - `README.md`: the user-facing description: the modes, how the mode is chosen, the Fn layer's keys, and how to build, flash
@@ -387,7 +406,9 @@ container, and takes about 1 minute 45 seconds in total (observed 2026-11-11).
   effect would have been small, but a pinned runner keeps CI from changing under us); actions at exact tags.
 - **CI and QMK MSYS build the same bytes.** The container's GCC (15.2.0, the same `qmk_toolchains` build) and `qmk` (1.2.0)
   match MSYS. On 2026-11-15 the artifact CI built (68,388 bytes, SHA-256 `1A2D93C3…`) was byte-identical to the local QMK
-  MSYS build; an identical result was first observed on 2026-11-10 with an earlier image.
+  MSYS build; an identical result was first observed on 2026-11-10 with an earlier image. Since task 32 the image contains
+  the git commit hash, so this holds only for the same commit built from a clean tree (see "Build identity"; with
+  `-e SKIP_VERSION=yes` on both sides, any commit can be compared).
 - **To reproduce CI locally** (about 12.5 minutes, against 1.7 for MSYS, because of the Windows bind mount):
 
 ```powershell

@@ -13,6 +13,7 @@
 #include "layers.h"
 #include "ctrlkeycodes.h"
 #include "os_detection.h"
+#include "version.h" // QMK_GIT_HASH, written by the build (see SHOW_VER)
 #include "usb_device_state.h"
 #if DEBUG
 #    include "print.h"
@@ -178,6 +179,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MODE_MAC:
             if (record->event.pressed) {
                 select_mode(MAC_BASE);
+            }
+            return false;
+        case SHOW_VER:
+            // Types, e.g., "horwitz x4 1ca1dbfc19": the git commit this firmware was built from. A "*" after the hash means
+            // the build had uncommitted changes. The build date is deliberately not typed: it would make every build differ.
+            if (record->event.pressed) {
+                SEND_STRING("horwitz x4 " QMK_GIT_HASH);
             }
             return false;
         default:
